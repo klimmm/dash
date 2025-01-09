@@ -1,4 +1,5 @@
 import os
+import multiprocessing
 
 # Get port from environment variable with a default of 10000
 port = int(os.environ.get("PORT", 10000))
@@ -7,8 +8,9 @@ port = int(os.environ.get("PORT", 10000))
 bind = f"0.0.0.0:{port}"
 
 # Worker configuration
-workers = 4
-threads = 4
+workers = multiprocessing.cpu_count() * 2 + 1
+threads = 2
+worker_class = "gthread"
 timeout = 120
 
 # Access logging
@@ -18,5 +20,6 @@ errorlog = "-"
 # Preload the application
 preload_app = True
 
-# Worker class
-worker_class = "sync"
+# Max requests per worker
+max_requests = 1000
+max_requests_jitter = 50
