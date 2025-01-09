@@ -175,3 +175,5 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+logs/
+outputs/
