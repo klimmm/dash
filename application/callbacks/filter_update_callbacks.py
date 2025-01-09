@@ -8,7 +8,7 @@ from data_process.data_utils import category_structure_162, category_structure_1
 from config.logging_config import get_logger, track_callback, track_callback_end
 from constants.filter_options import METRICS_OPTIONS
 from config.default_values import DEFAULT_PRIMARY_METRICS, DEFAULT_PREMIUM_LOSS_TYPES
-from app.app_layout import create_component
+from application.app_layout import create_component
 
 logger = get_logger(__name__)
 

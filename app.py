@@ -10,10 +10,10 @@ from dash import Input, Output, State
 from typing import Dict, List, Tuple, Any
 from dash.exceptions import PreventUpdate
 from pathlib import Path
-from app.components.insurance_lines_tree import insurance_lines_tree
-from app.callbacks.app_layout_callbacks import setup_tab_state_callbacks, setup_sidebar_callbacks
-from app.callbacks.insurance_lines_callbacks import setup_insurance_lines_callbacks
-from app.callbacks.filter_update_callbacks import setup_filter_update_callbacks
+from application.components.insurance_lines_tree import insurance_lines_tree
+from application.callbacks.app_layout_callbacks import setup_tab_state_callbacks, setup_sidebar_callbacks
+from application.callbacks.insurance_lines_callbacks import setup_insurance_lines_callbacks
+from application.callbacks.filter_update_callbacks import setup_filter_update_callbacks
 from config.main_config import APP_TITLE, DEBUG_MODE, PORT, DATA_FILE_162, DATA_FILE_158
 from config.logging_config import (
         monitor_memory, memory_monitor,
@@ -23,8 +23,8 @@ from config.logging_config import (
 from data_process.data_utils import create_year_quarter_options, load_and_preprocess_data
 from data_process.process_filters import MetricsProcessor
 from data_process.table_data import get_data_table
-from app.app_layout import create_app_layout
-from app.callbacks.period_filter import setup_period_type_callbacks
+from application.app_layout import create_app_layout
+from application.callbacks.period_filter import setup_period_type_callbacks
 logger = get_logger(__name__)
 from config.default_values import DEFAULT_REPORTING_FORM
 from data_process.data_utils import save_df_to_csv, get_required_metrics, map_insurer
@@ -255,9 +255,9 @@ def process_data(
 ) -> Tuple:
     """Process data based on filter state."""
     ctx = dash.callback_context
-    start_time = track_callback('app.main', 'process_data', dash.callback_context)
+    start_time = track_callback('application.main', 'process_data', dash.callback_context)
     if not filter_state:
-        track_callback_end('app.main', 'process_data', start_time, message_no_update="not filter_state")
+        track_callback_end('application.main', 'process_data', start_time, message_no_update="not filter_state")
         raise PreventUpdate
     memory_monitor.log_memory("before_process_data", logger)
     
@@ -331,11 +331,11 @@ def process_data(
 
     except Exception as e:
         logger.error(f"Error in process_data: {str(e)}", exc_info=True)
-        track_callback_end('app.main', 'process_data', start_time, error=e)
+        track_callback_end('application.main', 'process_data', start_time, error=e)
         raise
 
     finally:
-        track_callback_end('app.main', 'process_data', start_time, result=output)
+        track_callback_end('application.main', 'process_data', start_time, result=output)
 
 @app.callback(
     [Output('data-table', 'children'),
@@ -362,7 +362,7 @@ def process_ui(
 ) -> List:
     """Update table based on processed data."""
     memory_monitor.log_memory("before_process_ui", logger)
-    start_time = track_callback('app.main', 'process_ui', dash.callback_context)
+    start_time = track_callback('application.main', 'process_ui', dash.callback_context)
 
     try:
         df = pd.DataFrame.from_records(processed_data['df'])
@@ -387,7 +387,7 @@ def process_ui(
         raise
 
     finally:
-        track_callback_end('app.main', 'process_ui', start_time)
+        track_callback_end('application.main', 'process_ui', start_time)
 
 if __name__ == '__main__':
     try:

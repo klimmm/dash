@@ -1,4 +1,4 @@
-# app.components.dash_table.py
+# application.components.dash_table.py
 
 from dataclasses import dataclass
 import pandas as pd

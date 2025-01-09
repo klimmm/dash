@@ -1,4 +1,4 @@
-# app.__init__
+# application.__init__
 
 from config.default_values import (
     DEFAULT_PREMIUM_LOSS_TYPES,
@@ -26,13 +26,13 @@ from constants.filter_options import (
     RATIO_METRICS_OPTIONS
 )
 
-from .app_layout import create_app_layout
-from app.components.insurance_lines_tree import InsuranceLinesTree
-from app.components.dash_table import generate_dash_table_config
-from app.callbacks.period_filter import setup_period_type_callbacks
-from app.callbacks.app_layout_callbacks import setup_tab_state_callbacks
-from app.callbacks.insurance_lines_callbacks import setup_insurance_lines_callbacks
-from app.callbacks.filter_update_callbacks import setup_filter_update_callbacks
+from application.app_layout import create_app_layout
+from application.components.insurance_lines_tree import InsuranceLinesTree
+from application.components.dash_table import generate_dash_table_config
+from application.callbacks.period_filter import setup_period_type_callbacks
+from application.callbacks.app_layout_callbacks import setup_tab_state_callbacks
+from application.callbacks.insurance_lines_callbacks import setup_insurance_lines_callbacks
+from application.callbacks.filter_update_callbacks import setup_filter_update_callbacks
 
 from data_process.data_utils import (
     create_year_quarter_options, load_and_preprocess_data,

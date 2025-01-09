@@ -1,6 +1,6 @@
 import dash_bootstrap_components as dbc
 from dash import dcc, html
-from app.components.insurance_lines_tree import initial_state
+from application.components.insurance_lines_tree import initial_state
 from constants.translations import translate
 from data_process.data_utils import category_structure_162, category_structure_158, get_categories_by_level
 from constants.filter_options import VALUE_METRICS_OPTIONS, REPORTING_FORM_OPTIONS, PREMIUM_LOSS_OPTIONS

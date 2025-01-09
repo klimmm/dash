@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from dash import dash_table
 from typing import List, Tuple, Optional, Dict, OrderedDict
-from app.components.dash_table import generate_dash_table_config
+from application.components.dash_table import generate_dash_table_config
 from data_process.data_utils import map_line
 from constants.translations import translate
 from config.logging_config import get_logger
