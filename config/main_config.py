@@ -4,7 +4,7 @@ from typing import Dict, List, Any
 
 # Application configuration
 APP_TITLE: str = "Insurance Data Dashboard"
-DEBUG_MODE: bool = True
+DEBUG_MODE: bool = False
 PORT: int = 8051
 
 DATA_FILE_REINSURANCE: str = './data_files/reinsurance_market.csv'

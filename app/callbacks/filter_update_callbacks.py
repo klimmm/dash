@@ -116,8 +116,8 @@ def get_metric_options(reporting_form: str, primary_metric: Optional[str] = None
         allowed_secondary = potential_secondary.intersection(allowed_metrics)
         secondary_options = [opt for opt in METRICS_OPTIONS if opt['value'] in allowed_secondary]
 
-    logger.debug(f"primary_metric {primary_metric}")
-    logger.debug(f"secondary_options {secondary_options}")
+    # logger.debug(f"primary_metric {primary_metric}")
+    # logger.debug(f"secondary_options {secondary_options}")
 
     return {
         'primary_y_metric_options': primary_options,
@@ -160,7 +160,7 @@ def setup_filter_update_callbacks(app: Dash, quarter_options_162, quarter_option
             output = metric_options['primary_y_metric_options'], metric_options['secondary_y_metric_options'], end_quarter_options, insurance_line_dropdown_options, [component]
 
             track_callback_end('app.callbacks.filter_update_callbacks', 'update_options', start_time, result=output)
-            logger.debug(f"secondary_y_metric_options {metric_options['secondary_y_metric_options']}")
+            # logger.debug(f"secondary_y_metric_options {metric_options['secondary_y_metric_options']}")
 
             return output
 

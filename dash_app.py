@@ -3,6 +3,9 @@ import pandas as pd
 import dash_bootstrap_components as dbc
 import dash
 import os 
+import gc
+from functools import lru_cache
+from pandas.tseries.offsets import DateOffset
 from dash import Input, Output, State
 from typing import Dict, List, Tuple, Any
 from dash.exceptions import PreventUpdate
@@ -24,6 +27,12 @@ from app.app_layout import create_app_layout
 from app.callbacks.period_filter import setup_period_type_callbacks
 logger = get_logger(__name__)
 from config.default_values import DEFAULT_REPORTING_FORM
+from data_process.data_utils import save_df_to_csv, get_required_metrics, map_insurer
+from constants.filter_options import (
+    BASE_METRICS, CALCULATED_METRICS, CALCULATED_RATIOS
+)
+from memory_profiler import profile
+
 
 # Initialize the Dash app
 app = dash.Dash(
@@ -75,6 +84,143 @@ initial_quarter_options = quarter_options_162 if DEFAULT_REPORTING_FORM == '0420
 layout = create_app_layout(initial_quarter_options)
 app.layout = layout
 
+
+@lru_cache(maxsize=256)
+def get_cached_grouped_df(
+    reporting_form: str,
+    start_quarter_interm: pd.Timestamp,
+    end_quarter_ts: pd.Timestamp,
+    line_type_tuple: tuple
+) -> pd.DataFrame:
+    """
+    Caches the grouped DataFrame based on reporting_form, start_quarter_interm, end_quarter_ts, and line_type_tuple.
+
+    Parameters:
+    - reporting_form (str): The reporting form identifier.
+    - start_quarter_interm (pd.Timestamp): The start quarter as a Timestamp.
+    - end_quarter_ts (pd.Timestamp): The end quarter as a Timestamp.
+    - line_type_tuple (tuple): Tuple of line types to filter. Empty tuple if no filtering.
+
+    Returns:
+    - pd.DataFrame: The grouped and filtered DataFrame.
+    """
+    # Select the appropriate DataFrame
+    df = insurance_df_162 if reporting_form == '0420162' else insurance_df_158
+
+    # Ensure 'year_quarter' is in datetime format
+    if not pd.api.types.is_datetime64_any_dtype(df['year_quarter']):
+        df = df.copy()
+        df['year_quarter'] = pd.to_datetime(df['year_quarter'])
+
+    # Apply quarter filtering
+    mask = (df['year_quarter'] >= start_quarter_interm) & (df['year_quarter'] <= end_quarter_ts)
+
+    # Apply line_type filtering if provided
+    if line_type_tuple:
+        mask &= df['line_type'].isin(line_type_tuple)
+
+    filtered_df = df.loc[mask].copy()
+
+    # Determine group columns (exclude 'line_type' and 'value')
+    group_cols = [col for col in filtered_df.columns if col not in ['line_type', 'value']]
+
+    # Perform grouping and aggregation
+    grouped_df = filtered_df.groupby(group_cols, observed=True)['value'].sum().reset_index()
+
+    return grouped_df
+
+@lru_cache(maxsize=512)
+def get_cached_filtered_grouped_df(
+    reporting_form: str,
+    start_quarter_interm: pd.Timestamp,
+    end_quarter_ts: pd.Timestamp,
+    line_type_tuple: tuple,
+    selected_lines_tuple: tuple
+) -> pd.DataFrame:
+    """
+    Caches the final filtered DataFrame based on selected_lines.
+
+    Parameters:
+    - reporting_form (str): The reporting form identifier.
+    - start_quarter_interm (pd.Timestamp): The start quarter as a Timestamp.
+    - end_quarter_ts (pd.Timestamp): The end quarter as a Timestamp.
+    - line_type_tuple (tuple): Tuple of line types to filter. Empty tuple if no filtering.
+    - selected_lines_tuple (tuple): Tuple of selected lines to filter. Empty tuple if no filtering.
+
+    Returns:
+    - pd.DataFrame: The final filtered and grouped DataFrame.
+    """
+    # Retrieve the grouped_df from the first cache tier
+    grouped_df = get_cached_grouped_df(
+        reporting_form,
+        start_quarter_interm,
+        end_quarter_ts,
+        line_type_tuple
+    )
+
+    # Apply selected_lines filtering if provided
+    if selected_lines_tuple:
+        mask = grouped_df['linemain'].isin(selected_lines_tuple)
+        filtered_grouped_df = grouped_df.loc[mask].copy()
+    else:
+        filtered_grouped_df = grouped_df.copy()
+
+    return filtered_grouped_df
+
+
+@lru_cache(maxsize=128)
+def get_cached_required_metrics(
+    selected_metrics: tuple,
+    premium_loss_checklist: tuple,
+    reporting_form: str
+) -> frozenset:
+    """
+    Caches the required metrics based on input parameters.
+
+    Parameters:
+    - selected_metrics (tuple): Selected metrics.
+    - premium_loss_checklist (tuple): Premium loss checklist.
+    - reporting_form (str): Reporting form identifier.
+
+    Returns:
+    - frozenset: A set of required metrics.
+    """
+    return frozenset(
+        get_required_metrics(
+            selected_metrics,
+            {**CALCULATED_METRICS, **CALCULATED_RATIOS},
+            premium_loss_checklist,
+            BASE_METRICS
+        )
+    )
+
+@lru_cache(maxsize=128)
+def calculate_start_quarter(
+    reporting_form: str,
+    period_type: str
+) -> pd.Timestamp:
+    """
+    Calculates the start quarter based on reporting_form and period_type.
+
+    Parameters:
+    - reporting_form (str): Reporting form identifier.
+    - period_type (str): Type of the period (e.g., 'ytd', 'mat', 'yoy_y').
+
+    Returns:
+    - pd.Timestamp: The calculated start quarter.
+    """
+    start_quarter_str = '2018Q1' if reporting_form == '0420162' else '2022Q1'
+    start_quarter = pd.Period(start_quarter_str, freq='Q').to_timestamp()
+
+    if period_type == 'ytd':
+        return start_quarter.replace(month=1)
+    elif period_type in ['mat', 'yoy_y']:
+        return start_quarter - DateOffset(months=9)
+    else:
+        return start_quarter  # Ensure it's a Timestamp for consistency
+
+
+
 # Setup basic callbacks
 setup_period_type_callbacks(app)
 setup_tab_state_callbacks(app)
@@ -96,14 +242,16 @@ logger.debug("Dashboard layout created")
     [State('show-data-table', 'data')],
     prevent_initial_call=True
 )
-@monitor_memory
+# @monitor_memory
+@profile
 def process_data(
     filter_state: Dict[str, Any],
     period_type: str,
     end_quarter: str,
     num_periods_table: int,
     number_of_insurers: int,
-    show_data_table: bool
+    show_data_table: bool,
+    line_type: List[str] = None
 ) -> Tuple:
     """Process data based on filter state."""
     ctx = dash.callback_context
@@ -112,14 +260,54 @@ def process_data(
         track_callback_end('app.main', 'process_data', start_time, message_no_update="not filter_state")
         raise PreventUpdate
     memory_monitor.log_memory("before_process_data", logger)
+    
     try:
+    
+        reporting_form = filter_state['reporting_form']
+    
+        # Calculate start quarter based on reporting_form and period_type
+        start_quarter_interm = calculate_start_quarter(reporting_form, period_type)
+    
+        # Convert end_quarter to Timestamp (end of the quarter)
+        end_quarter_period = pd.Period(end_quarter, freq='Q')
+        end_quarter_ts = end_quarter_period.to_timestamp(how='end')
+    
+        # Convert line_type and selected_lines to tuples for hashing
+        line_type_tuple = tuple(sorted(set(line_type))) if line_type else ()
+        selected_lines_tuple = tuple(sorted(set(filter_state['selected_lines']))) if filter_state.get('selected_lines') else ()
+    
+        # Get cached, filtered, and grouped DataFrame including selected_lines
+        grouped_df = get_cached_filtered_grouped_df(
+            reporting_form,
+            start_quarter_interm,
+            end_quarter_ts,
+            line_type_tuple,
+            selected_lines_tuple
+        )
+    
+        # Get cached required metrics
+        selected_metrics = tuple(sorted(set(filter_state['selected_metrics'])))
+        premium_loss_checklist = tuple(sorted(set(filter_state['premium_loss_checklist'])))
+        required_metrics_set = get_cached_required_metrics(
+            selected_metrics,
+            premium_loss_checklist,
+            reporting_form
+        )
+    
+        # Apply additional filters: 'metric'
+        if 'metric' in grouped_df.columns:
+            mask = grouped_df['metric'].isin(required_metrics_set)
+            df = grouped_df.loc[mask].copy()
+        else:
+            df = grouped_df.copy()
+
         processor = MetricsProcessor()
-        logger.debug(f"Process data - processing with parameters: {filter_state}, period_type: {period_type}, end_quarter: {end_quarter}, num_periods_table: {num_periods_table}, number_of_insurers: {number_of_insurers} ")
-        logger.debug(f"reporting_form: {filter_state['reporting_form']}")
+        # logger.debug(f"Process data - processing with parameters: {filter_state}, period_type: {period_type}, end_quarter: {end_quarter}, num_periods_table: {num_periods_table}, number_of_insurers: {number_of_insurers} ")
+        # logger.debug(f"reporting_form: {filter_state['reporting_form']}")
 
         df, insurer_options, compare_options, selected_insurers, prev_ranks, number_of_periods_options, number_of_insurer_options = (
             processor.process_general_filters(
-                df=insurance_df_162 if filter_state['reporting_form'] == '0420162' else insurance_df_158,
+                df=df,
                 show_data_table=show_data_table,
                 premium_loss_selection=filter_state['premium_loss_checklist'],
                 selected_metrics=filter_state['selected_metrics'] or ['direct_premiums'],
@@ -137,7 +325,7 @@ def process_data(
 
         df['year_quarter'] = df['year_quarter'].dt.strftime('%Y-%m-%d')
         output = ({'df': df.to_dict('records'), 'prev_ranks': prev_ranks}, min(num_periods_table, number_of_periods_options), min(number_of_insurers, number_of_insurer_options))
-        logger.debug(f"metrics unique: {df['metric'].unique() }")
+        # logger.debug(f"metrics unique: {df['metric'].unique() }")
 
         return output
 
@@ -190,8 +378,8 @@ def process_ui(
             toggle_selected_qtoq=toggle_selected_qtoq,
             prev_ranks=processed_data['prev_ranks']
         )
-        logger.debug(f"table_data {table_data}")
-        logger.debug("Returning table data")
+        # logger.debug(f"table_data {table_data}")
+        # logger.debug("Returning table data")
         return table_data[0], table_data[1], table_data[2]
 
     except Exception as e:

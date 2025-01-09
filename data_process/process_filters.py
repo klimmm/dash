@@ -7,7 +7,7 @@ import logging
 import time
 from typing import List, Tuple, Dict
 from dataclasses import dataclass
-# from memory_profiler import profile
+from memory_profiler import profile
 from data_process.data_utils import save_df_to_csv, get_required_metrics, map_insurer
 from constants.filter_options import (
     BASE_METRICS, CALCULATED_METRICS, CALCULATED_RATIOS
@@ -20,7 +20,7 @@ logger = get_logger(__name__)
 class MetricsProcessor:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-    #@profile
+    # @profile
     def process_general_filters(
         self,
         df: pd.DataFrame,
@@ -43,25 +43,28 @@ class MetricsProcessor:
         main_insurer: str = None
     ) -> Tuple[pd.DataFrame, List[Dict], List[Dict], List[str]]:
 
-        #self.logger.debug(f"Initial DataFrame shape: {df.shape}")
+        #self.# logger.debug(f"Initial DataFrame shape: {df.shape}")
         current_time = time.time()
 
-        logger.debug(f"process_general_filters called, Time: {current_time}")
+        # logger.debug(f"process_general_filters called, Time: {current_time}")
         start_time = time.perf_counter_ns()  # Nanosecond precision
         try:
-            gc.enable()
-            # Build mask incrementally without intermediate Series objects
-            mask = pd.Series(True, index=df.index)
-            # Get required metrics and convert to set once
+            
             required_metrics_set = set(get_required_metrics(
                 selected_metrics,
                 {**CALCULATED_METRICS, **CALCULATED_RATIOS},
                 premium_loss_selection,
                 BASE_METRICS
             ))
-            logger.debug(f"required_metrics_set: {required_metrics_set}")
-            logger.debug(f"metrics unique: {df['metric'].unique()}")
-            logger.debug(f"linemain unique: {df['linemain'].unique()}")
+            
+            '''gc.enable()
+            # Build mask incrementally without intermediate Series objects
+            mask = pd.Series(True, index=df.index)
+            # Get required metrics and convert to set once
+
+            # logger.debug(f"required_metrics_set: {required_metrics_set}")
+            # logger.debug(f"metrics unique: {df['metric'].unique()}")
+            # logger.debug(f"linemain unique: {df['linemain'].unique()}")
             # Apply linemain filter using isin() directly
             mask &= df['linemain'].isin(selected_linemains)
             mask &= df['metric'].isin(required_metrics_set)
@@ -82,7 +85,7 @@ class MetricsProcessor:
 
                 mask &= (df['year_quarter'] >= start_quarter_interm) & (df['year_quarter'] <= end_quarter)
 
-            logger.debug(f"df shape before remaining filters: {df.shape}")
+            # logger.debug(f"df shape before remaining filters: {df.shape}")
 
             # Apply remaining filters efficiently
             for col, values in {
@@ -105,9 +108,8 @@ class MetricsProcessor:
             df = df.groupby(group_cols, observed=True)['value'].sum().reset_index()
 
             
-            logger.debug(f"df shape after remaining filters: {df.shape}")
-            logger.debug(f"metrics unique: {df['metric'].unique()}")
-            # Process data in chunks
+            # logger.debug(f"df shape after remaining filters: {df.shape}")
+            # logger.debug(f"metrics unique: {df['metric'].unique()}")'''
 
             df = self.filter_by_date_range_and_period_type(
                 df,
@@ -132,7 +134,7 @@ class MetricsProcessor:
             df = self.add_calculated_metrics(df, list(required_metrics))
 
 
-            logger.debug(f"metrics unique after add_calculated_metrics: {df['metric'].unique()}")
+            # logger.debug(f"metrics unique after add_calculated_metrics: {df['metric'].unique()}")
 
             # Filter by required ratio metrics
             required_ratio_metrics = set(get_required_metrics(
@@ -141,7 +143,7 @@ class MetricsProcessor:
                 premium_loss_selection,
                 BASE_METRICS
             ))
-            logger.debug(f"required_ratio_metrics: {required_ratio_metrics}")
+            # logger.debug(f"required_ratio_metrics: {required_ratio_metrics}")
             df = df[df['metric'].isin(required_ratio_metrics)]
 
             # Handle aggregation
@@ -157,8 +159,8 @@ class MetricsProcessor:
                                      for metric in selected_metrics):
                 df = self.add_market_share_rows(df, selected_insurers, selected_metrics, show_data_table)
 
-            logger.debug(f"metrics uniqye: {df['metric'].unique() }")
-            logger.debug(f"required_metrics : {required_ratio_metrics}")
+            # logger.debug(f"metrics uniqye: {df['metric'].unique() }")
+            # logger.debug(f"required_metrics : {required_ratio_metrics}")
             # Add averages and ratios if needed
             required_metrics = get_required_metrics(selected_metrics, CALCULATED_RATIOS)
             if set(required_metrics) - BASE_METRICS:
@@ -167,9 +169,9 @@ class MetricsProcessor:
 
             end_quarter_df = df[df['year_quarter'] == sorted(df['year_quarter'].unique())[-1]]
             number_of_insurer_options = len(end_quarter_df['insurer'].unique())
-            logger.debug(f"number of insurers options: {number_of_insurer_options}")
-            logger.debug(f"number of insurers: {number_of_insurers}")
-            logger.debug(f"min of insurers: {min(number_of_insurers, number_of_insurer_options)}")
+            # logger.debug(f"number of insurers options: {number_of_insurer_options}")
+            # logger.debug(f"number of insurers: {number_of_insurers}")
+            # logger.debug(f"min of insurers: {min(number_of_insurers, number_of_insurer_options)}")
 
             # Process insurers once
             if show_data_table or selected_insurers:
@@ -178,7 +180,7 @@ class MetricsProcessor:
                     selected_metrics, min(number_of_insurers, number_of_insurer_options), main_insurer
                 )
             
-            logger.debug(f"metrics unique: {df['metric'].unique() }")
+            # logger.debug(f"metrics unique: {df['metric'].unique() }")
             # Add growth calculations if needed
             if show_data_table or any(metric.endswith("q_to_q_change") for metric in selected_metrics):
                 df = self.add_growth_rows_long(df, selected_insurers, show_data_table, num_periods, period_type)
@@ -193,14 +195,14 @@ class MetricsProcessor:
 
             save_df_to_csv(df, "process_dataframe.csv")
 
-            logger.debug(f"process_general_filters returns, Time: {current_time}")
-            logger.debug(f"metrics unique: {df['metric'].unique() }")
+            # logger.debug(f"process_general_filters returns, Time: {current_time}")
+            # logger.debug(f"metrics unique: {df['metric'].unique() }")
             return df, insurer_options, compare_options, selected_insurers, prev_ranks, number_of_periods_options, number_of_insurer_options
 
         finally:
             end_time = time.perf_counter_ns()
             duration_ms = (end_time - start_time) / 1_000_000
-            logger.debug(f"process_general_filters actual duration: {duration_ms:.3f}ms")
+            # logger.debug(f"process_general_filters actual duration: {duration_ms:.3f}ms")
 
     #@profile
     def filter_by_date_range_and_period_type(
@@ -289,31 +291,31 @@ class MetricsProcessor:
             if len(quarters) >= 2:
                 end_quarter_dt = quarters[-1]
                 prev_quarter_dt = quarters[-2]
-                logger.debug(f"end_quarter_dt: {end_quarter_dt}")
-                logger.debug(f"prev_quarter_dt: {prev_quarter_dt}")
+                # logger.debug(f"end_quarter_dt: {end_quarter_dt}")
+                # logger.debug(f"prev_quarter_dt: {prev_quarter_dt}")
                 
                 # Current quarter rankings
                 end_quarter_ranking_df = ranking_df[ranking_df['year_quarter'] == end_quarter_dt]
                 end_quarter_ranking_df = end_quarter_ranking_df.sort_values(
                     ['value'], ascending=[False]
                 ).reset_index(drop=True)
-                logger.debug(f"end_quarter_ranking_df head: {end_quarter_ranking_df.head()}")
+                # logger.debug(f"end_quarter_ranking_df head: {end_quarter_ranking_df.head()}")
                 # Previous quarter rankings
                 prev_quarter_ranking_df = ranking_df[ranking_df['year_quarter'] == prev_quarter_dt]
                 prev_quarter_ranking_df = prev_quarter_ranking_df.sort_values(
                     ['value'], ascending=[False]
                 ).reset_index(drop=True)
-                logger.debug(f"prev_quarter_ranking_df metric unique: {prev_quarter_ranking_df['metric'].unique()}")
-                logger.debug(f"prev_quarter_ranking_df year_quarter unique: {prev_quarter_ranking_df['year_quarter'].unique()}")
-                logger.debug(f"prev_quarter_ranking_df linemain unique: {prev_quarter_ranking_df['linemain'].unique()}")
+                # logger.debug(f"prev_quarter_ranking_df metric unique: {prev_quarter_ranking_df['metric'].unique()}")
+                # logger.debug(f"prev_quarter_ranking_df year_quarter unique: {prev_quarter_ranking_df['year_quarter'].unique()}")
+                # logger.debug(f"prev_quarter_ranking_df linemain unique: {prev_quarter_ranking_df['linemain'].unique()}")
                 
-                logger.debug(f"prev_quarter_ranking_df head: {prev_quarter_ranking_df.head()}")
+                # logger.debug(f"prev_quarter_ranking_df head: {prev_quarter_ranking_df.head()}")
                 # Store previous ranks for selected insurers
                 prev_ranks = {
                     row['insurer']: idx + 1
                     for idx, row in prev_quarter_ranking_df.iterrows()
                 }
-                logger.debug(f"prev_ranks: {prev_ranks}")
+                # logger.debug(f"prev_ranks: {prev_ranks}")
             
             else:
                 end_quarter_ranking_df = ranking_df[ranking_df['year_quarter'] == end_quarter_dt]
@@ -485,19 +487,19 @@ class MetricsProcessor:
         required_metrics: List[str]
     ) -> pd.DataFrame:
         """Calculate averages and ratios with optimized performance."""
-        logger.debug(f"Unique metrics df before averages_and_ratio: {df['metric'].unique().tolist()}")
-        logger.debug(f"required_metrics: {required_metrics}")
+        # logger.debug(f"Unique metrics df before averages_and_ratio: {df['metric'].unique().tolist()}")
+        # logger.debug(f"required_metrics: {required_metrics}")
             
         if 'ceded_premiums_ratio' in required_metrics:
-            logger.debug("Checking presence of required metrics:")
-            logger.debug(f"'ceded_premiums' in df: {'ceded_premiums' in df['metric'].unique()}")
-            logger.debug(f"'total_premiums' in df: {'total_premiums' in df['metric'].unique()}")
+            # logger.debug("Checking presence of required metrics:")
+            # logger.debug(f"'ceded_premiums' in df: {'ceded_premiums' in df['metric'].unique()}")
+            # logger.debug(f"'total_premiums' in df: {'total_premiums' in df['metric'].unique()}")
             
             # Sample data for both metrics
-            logger.debug("\nSample ceded_premiums data:")
-            logger.debug(df[df['metric'] == 'ceded_premiums'].head())
-            logger.debug("\nSample total_premiums data:")
-            logger.debug(df[df['metric'] == 'total_premiums'].head())        
+            # logger.debug("\nSample ceded_premiums data:")
+            # logger.debug(df[df['metric'] == 'ceded_premiums'].head())
+            # logger.debug("\nSample total_premiums data:")
+            # logger.debug(df[df['metric'] == 'total_premiums'].head())        
         
         
         METRIC_GROUPS = {
@@ -633,9 +635,9 @@ class MetricsProcessor:
                 ).reset_index()
 
                 if 'ceded_premiums_ratio' in required_metrics:
-                    logger.debug("Checking ceded_premiums_ratio components:")
-                    logger.debug(f"ceded_premiums values: {pivot_df['ceded_premiums'].head()}")
-                    logger.debug(f"total_premiums values: {pivot_df['total_premiums'].head()}")
+                    # logger.debug("Checking ceded_premiums_ratio components:")
+                    # logger.debug(f"ceded_premiums values: {pivot_df['ceded_premiums'].head()}")
+                    # logger.debug(f"total_premiums values: {pivot_df['total_premiums'].head()}")
                     
 
                 
@@ -643,8 +645,8 @@ class MetricsProcessor:
 
                 # After calculation
                 if 'ceded_premiums_ratio' in new_metrics:
-                    logger.debug("Resulting ceded_premiums_ratio:")
-                    logger.debug(new_metrics['ceded_premiums_ratio'].head())
+                    # logger.debug("Resulting ceded_premiums_ratio:")
+                    # logger.debug(new_metrics['ceded_premiums_ratio'].head())
                 
                 for metric, values in new_metrics.items():
                     new_rows = pd.DataFrame({
@@ -653,7 +655,7 @@ class MetricsProcessor:
                         'value': values
                     })
                     result_df = pd.concat([result_df, new_rows], ignore_index=True)
-            logger.debug(f"Unique metrics df after averages_and_ratio: {result_df['metric'].unique().tolist()}")
+            # logger.debug(f"Unique metrics df after averages_and_ratio: {result_df['metric'].unique().tolist()}")
             return result_df
 
         except Exception as e:
@@ -775,7 +777,7 @@ class MetricsProcessor:
 
         if not active_calculations:
             return df
-        logger.debug(f"active_calculations {active_calculations}")
+        # logger.debug(f"active_calculations {active_calculations}")
 
         def calculate_for_group(group):
             try:
