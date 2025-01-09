@@ -243,7 +243,7 @@ logger.debug("Dashboard layout created")
     prevent_initial_call=True
 )
 # @monitor_memory
-@profile
+# @profile
 def process_data(
     filter_state: Dict[str, Any],
     period_type: str,
@@ -350,7 +350,7 @@ def process_data(
      State('number-of-insurers', 'value')],
     prevent_initial_call=True
 )
-@monitor_memory
+# @monitor_memory
 def process_ui(
     processed_data: Dict,
     toggle_selected_market_share: bool,
