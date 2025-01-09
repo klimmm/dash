@@ -25,38 +25,37 @@ from app.callbacks.period_filter import setup_period_type_callbacks
 logger = get_logger(__name__)
 from config.default_values import DEFAULT_REPORTING_FORM
 
-def create_dash_app() -> dash.Dash:
-    """Create and configure the Dash application."""
-    app = dash.Dash(
-        __name__,
-        assets_folder=Path(__file__).parent / "assets",
-        external_stylesheets=[dbc.themes.BOOTSTRAP],
-        suppress_callback_exceptions=True
-    )
-    app.title = APP_TITLE
-    app.index_string = '''
-    <!DOCTYPE html>
-    <html>
-        <head>
-            {%metas%}
-            <title>{%title%}</title>
-            {%favicon%}
-            {%css%}
-        </head>
-        <body>
-            {%app_entry%}
-            <footer>
-                {%config%}
-                {%scripts%}
-                {%renderer%}
-            </footer>
-        </body>
-    </html>
-    '''
-    return app
+app = dash.Dash(
+    __name__,
+    assets_folder=Path(__file__).parent / "assets",
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
+    suppress_callback_exceptions=True
+)
+app.title = APP_TITLE
+app.index_string = '''
+<!DOCTYPE html>
+<html>
+    <head>
+        {%metas%}
+        <title>{%title%}</title>
+        {%favicon%}
+        {%css%}
+    </head>
+    <body>
+        {%app_entry%}
+        <footer>
+            {%config%}
+            {%scripts%}
+            {%renderer%}
+        </footer>
+    </body>
+</html>
+'''
+
+server = app.server
 
 
-def main() -> dash.Dash:
+def main() -> None: 
     """Initialize and configure the main application."""
     print("Starting main()")
 
@@ -72,7 +71,6 @@ def main() -> dash.Dash:
         raise
 
     # Create application and initialize filters
-    app = create_dash_app()
     quarter_options_162 = create_year_quarter_options(insurance_df_162)
     quarter_options_158 = create_year_quarter_options(insurance_df_158)
     initial_quarter_options = quarter_options_162 if DEFAULT_REPORTING_FORM == '0420162' else quarter_options_158
@@ -206,10 +204,8 @@ def main() -> dash.Dash:
         finally:
             track_callback_end('app.main', 'process_ui', start_time)
 
-    return app
 
-app = main()
-server = app.server
+main()
 
 if __name__ == '__main__':
     try:
