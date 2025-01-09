@@ -1,0 +1,509 @@
+
+
+
+/***************************************************************
+  1. Root Variables & Basic Resets
+***************************************************************/
+:root {
+  --sidebar-width: 400px;
+  --color-border: #cccccc;
+  --color-bg: #f8f9fa;
+  --color-text: #333333;
+  --font-family-base: Arial, sans-serif;
+  --font-size-base: 18px;
+  --sidebar-transition: 0.3s;
+  --navbar-height: 56px;
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --border-radius: 4px;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+
+/* Example responsive rule */
+@media screen and (max-width: 48rem) {
+  .dash-table-container {
+    font-size: 0.889rem;
+  }
+  .dash-header {
+    font-size: 0.667rem;
+  }
+}
+
+/* Add these to your styles.css */
+.data-table-wrapper {
+    position: relative;
+    width: 100%;
+    overflow-x: auto;
+}
+
+.data-table-wrapper .dash-table-container {
+    min-width: 100%;
+    overflow: visible;
+}
+
+/* Ensure the table menu is completely hidden */
+.data-table-wrapper .dash-table-container .dash-table-menu {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    pointer-events: none !important;
+}
+
+/* Prevent any hover interactions on headers */
+.data-table-wrapper .dash-header {
+    pointer-events: none !important;
+}
+
+/* Only allow sorting interaction */
+.data-table-wrapper .dash-header[data-dash-column] {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+
+
+/***************************************************************
+  2. Layout Container
+***************************************************************/
+
+.layout-wrapper {
+    display: flex;
+    flex: 1;
+    min-height: calc(100vh - var(--navbar-height));
+    position: relative;
+    padding: 0 var(--spacing-md); /* Remove top/bottom padding */
+    background-color: var(--color-bg);
+    gap: var(--spacing-md);
+}
+
+.layout-wrapper .gx-0 {
+    min-height: 100%; /* Added */
+    height: 100%;    /* Added */
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.gx-0 {
+    --bs-gutter-x: 0;
+    flex: 1;
+    display: flex;
+}
+
+
+/***************************************************************
+  3. Navbar
+***************************************************************/
+.main-navbar {
+  background-color: #343a40 !important; 
+  border-bottom: 1px solid var(--color-border);
+}
+
+.navbar-brand-text {
+  font-weight: bold !important;
+  color: #ffffff !important;
+}
+
+/***************************************************************
+  4. Sidebar - Updated for toggle functionality
+***************************************************************/
+.sidebar-col {
+    flex: 0 0 auto;
+    width: 0;
+    transition: width var(--sidebar-transition) ease;
+    height: 100%; /* Added this */
+}
+
+.sidebar-col.expanded {
+    width: var(--sidebar-width);
+}
+
+/* Updated CardBody sidebar with consistent styling */
+#sidebar-filters {
+    width: var(--sidebar-width);
+    height: 100%; /* This ensures full height */
+    background-color: var(--bs-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--bs-border-radius);
+    transition: width var(--sidebar-transition) ease;
+    padding: var(--spacing-md) !important;
+    margin-top: var(--spacing-md);
+    display: flex;         /* Added */
+    flex-direction: column; /* Added */
+}
+
+#sidebar-filters.collapsed {
+    width: 0;
+    padding: 0 !important;
+    overflow: hidden;
+    border: none;
+    margin: 0;
+}
+
+.sidebar-content {
+    width: var(--sidebar-width);
+    height: 100%;
+    overflow-y: auto;
+    padding: var(--spacing-md);
+    transition: opacity var(--sidebar-transition) ease;
+}
+
+#sidebar-filters.collapsed .sidebar-content {
+    opacity: 0;
+}
+
+#sidebar-filters.expanded .sidebar-content {
+    opacity: 1;
+}
+
+#toggle-sidebar-button {
+    min-width: 120px;
+    white-space: nowrap;
+}
+
+#toggle-sidebar-button:hover {
+    opacity: 0.9;
+}
+/***************************************************************
+  5. Main Content
+***************************************************************/
+/* Main content adjustments */
+.main-col {
+    flex: 1;
+    min-width: 0;
+    transition: margin-left var(--sidebar-transition) ease;
+    display: flex;        /* Added */
+    flex-direction: column; /* Added */
+}
+
+.main-content {
+    height: 100%;
+    width: 100%;
+    display: flex;         /* Added */
+    flex-direction: column; /* Added */
+}
+
+/* Ensure cards inside main content can grow */
+.main-content .card {
+    flex: 1;              /* Added */
+    height: auto;         /* Changed from 100% */
+    border: 1px solid var(--color-border);
+}
+
+.data-table-content {
+  border: 1px solid var(--color-border);
+  background-color: #ffffff;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* (6) Increased font size for readability */
+.table-title {
+  font-size: 1rem !important; /* was 1rem */
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+}
+
+.table-subtitle {
+  font-size: 0.9rem !important; /* was 1rem */
+  margin-bottom: 0rem;
+  margin-bottom: 0.25rem;
+}
+
+.period-type-text {
+  font-size: 0.8rem !important; /* was 0.9rem */
+  margin-bottom: 0rem;
+}
+
+.placeholder-charts {
+  min-height: 150px;
+  background-color: #e9ecef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.tree-container {
+  /* Additional styling for hierarchical tree if needed */
+}
+
+/***************************************************************
+  6. Debug Footer
+***************************************************************/
+.debug-footer {
+  background-color: #ffffff;
+  border-top: 1px solid var(--color-border);
+  padding: 1rem;
+}
+
+.debug-card {
+  border: 1px solid var(--color-border);
+}
+
+.debug-title {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.debug-output {
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/***************************************************************
+  7. Utility Classes
+***************************************************************/
+
+.form-control {
+  font-size: 0.85rem;
+  color: var(--color-text);
+}
+
+.dash-dropdown .Select-control {
+  min-height: 36px !important;
+  font-size: 0.85rem !important;
+}
+
+/* Maximum specificity for dropdown options */
+body .dash-dropdown .Select-menu-outer .Select-menu .Select-option,
+body .dash-dropdown .Select-menu-outer .Select-menu .VirtualizedSelectOption {
+    font-size: 0.85rem !important;
+    font-family: var(--font-family-base) !important;
+}
+
+/* Target the menu container */
+body .dash-dropdown .Select-menu-outer,
+body .dash-dropdown .Select-menu {
+    font-size: 0.85rem !important;
+    font-family: var(--font-family-base) !important;
+}
+
+/* Target virtualized select specifically */
+body .VirtualizedSelectOption,
+body .VirtualizedSelectFocusedOption {
+    font-size: 0.85rem !important;
+    font-family: var(--font-family-base) !important;
+}
+
+/* Target React-Select v2 components if they're being used */
+body .dash-dropdown [class*="menu"],
+body .dash-dropdown [class*="option"] {
+    font-size: 0.85rem !important;
+    font-family: var(--font-family-base) !important;
+}
+
+/* Override any potential inline styles */
+body .dash-dropdown * {
+    font-size: 0.85rem !important;
+}
+
+.btn-debug-toggle {
+  margin-bottom: 0.5rem;
+}
+
+/* Example for hiding advanced buttons initially */
+#expand-all-button,
+#collapse-button,
+#detailize-button {
+  display: none;
+}
+/***************************************************************
+  8. Responsive Design - New section
+***************************************************************/
+
+@media (max-width: 768px) {
+    .sidebar-col {
+        position: absolute;
+        z-index: 1000;
+        height: 100%;
+    }
+    
+    #sidebar-filters {
+        height: 100%;
+    }
+
+    #sidebar-filters.collapsed {
+        width: 0;
+    }
+
+    .sidebar-col.expanded {
+        width: var(--sidebar-width);
+    }
+}
+
+/* Additional utility classes for proper spacing */
+.card-body {
+    height: 100%;
+}
+/* Ensure filters stay in view */
+.filter-row {
+  margin-bottom: 0.5rem;
+  white-space: nowrap;
+}
+
+/* Improve dropdown positioning */
+.dash-dropdown {
+  position: relative;
+}
+
+.dash-dropdown .Select-menu-outer {
+  width: 100%;
+  max-width: 100%;
+}
+
+/***************************************************************
+  9. Table filters row
+***************************************************************/
+
+/* Target specifically the number inputs and their labels in table filters */
+.table-filters-row div[id*="number-of-insurers"],
+.table-filters-row div[id*="number-of-periods-data-table"] {
+    display: flex;
+    align-items: center;
+}
+
+/* Input styling */
+#number-of-insurers,
+#number-of-periods-data-table {
+    margin-left: 0.5rem;
+    width: 60px;
+}
+
+/* For checkboxes in table filters */
+.table-filters-row div[id*="toggle-selected"] {
+    display: flex;
+    align-items: center;
+}
+
+.table-filters-row div[id*="toggle-selected"] .form-check {
+    margin-left: 0.5rem;
+}
+
+/***************************************************************
+  10. Dropdown height
+***************************************************************/
+
+/* Adjust dropdown height */
+.dash-dropdown .Select-control {
+    height: 32px !important;  /* Reduced from default */
+    min-height: 32px !important;  /* Ensure consistency */
+}
+
+/* Adjust the input within the dropdown */
+.dash-dropdown .Select-input {
+    height: 30px !important;
+}
+
+/* Center the placeholder and value vertically */
+.dash-dropdown .Select-placeholder,
+.dash-dropdown .Select-value {
+    line-height: 30px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/* Adjust the arrow position */
+.dash-dropdown .Select-arrow-zone {
+    padding-top: 4px !important;
+}
+
+
+/***************************************************************
+  11. Input height and alignment 
+***************************************************************/
+
+/* Target the specific dash input component */
+.input.form-control.input-short {
+    height: 24px !important;  /* Reduced from 28px */
+    padding: 0 8px !important;
+    line-height: 24px !important;  /* Match the height */
+    font-size: 0.85rem !important;
+}
+
+/* For Dash core components inputs */
+.dash-input.form-control.input-short {
+    height: 24px !important;  /* Reduced from 28px */
+    padding: 0 8px !important;
+    line-height: 24px !important;  /* Match the height */
+    font-size: 0.85rem !important;
+}
+
+.input-container {
+    display: flex !important;
+    align-items: center !important;
+    min-height: 32px !important; /* Adjust this value to match your desired height */
+}
+
+.filter-row, /* or whatever your container class is */
+.form-group {
+    display: flex !important;
+    align-items: center !important;
+    min-height: 32px !important;
+}
+
+/* Target number inputs specifically */
+.input[type="number"].form-control.input-short {
+    text-align: center !important;
+    padding-right: 2px !important;
+}
+
+/***************************************************************
+  12. Filter label
+***************************************************************/
+.filter-label {
+    font-size: 0.85rem;  /* 18px ÷ 16 = 1.125rem */
+    font-weight: 600 !important; 
+    margin-bottom: 0 !important;
+    display: flex !important;    
+    align-items: center !important;
+    min-height: 32px !important;
+}
+
+/* If the label is inside a column in a row, ensure the column is also flex */
+.filter-row .col {
+    display: flex !important;
+    align-items: center !important;
+}
+
+
+/* Add these to your CSS */
+.checklist-row-label {
+    display: flex !important;
+    align-items: center !important;
+}
+
+.checklist-row-content {
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* Ensure these styles don't affect dropdowns */
+.checklist-row .dash-dropdown {
+    display: block !important;  /* Override flex display for dropdowns */
+    align-items: initial !important;  /* Reset alignment for dropdowns */
+}

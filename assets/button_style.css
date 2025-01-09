@@ -1,0 +1,215 @@
+:root {
+    /* Core Colors */
+    --gray-light: #9ca3af;      /* Light gray for most buttons */
+    --gray-medium: #6b7280;     /* Medium gray for borders */
+    --gray-dark: #4b5563;       /* Darker gray for hover states */
+    --active-blue: #2563eb;     /* Active state blue */
+    --active-green: #059669;    /* Active state green */
+    --danger-red: #dc2626;      /* Warning red */
+    
+    /* Toggle Button Colors */
+    --toggle-btn-bg: #e5e7eb;
+    --toggle-btn-border: #9ca3af;
+    --toggle-btn-text: #4b5563;
+    --toggle-btn-active-bg: #2563eb;
+    --toggle-btn-active-border: #2563eb;
+    --toggle-btn-active-text: #ffffff;
+    --toggle-btn-success-bg: #059669;
+    --toggle-btn-success-border: #059669;
+    --toggle-btn-success-text: #ffffff;
+    --toggle-btn-danger-bg: #dc2626;
+    --toggle-btn-danger-border: #dc2626;
+    --toggle-btn-danger-text: #ffffff;
+
+    /* Custom Button Colors */
+    --btn-custom-bg: #9ca3af;
+    --btn-custom-border: #9ca3af;
+    --btn-custom-text: #ffffff;
+    --btn-custom-hover-bg: #6b7280;
+    --btn-custom-hover-border: #6b7280;
+    --btn-custom-active-bg: #2563eb;
+    --btn-custom-active-border: #2563eb;
+    --btn-custom-active-text: #ffffff;
+
+    /* Secondary Custom Button Colors */
+    --btn-secondary-custom-bg: #9ca3af;
+    --btn-secondary-custom-border: #9ca3af;
+    --btn-secondary-custom-text: #ffffff;
+
+    /* Period Main Button Colors */
+    --period-main-btn-bg: #9ca3af;
+    --period-main-btn-border: #9ca3af;
+    --period-main-btn-text: #ffffff;
+    --period-main-btn-active-bg: #2563eb;
+    --period-main-btn-active-border: #2563eb;
+    --period-main-btn-active-text: #ffffff;
+
+    /* Period Sub Button Colors */
+    --period-sub-btn-bg: #9ca3af;
+    --period-sub-btn-border: #9ca3af;
+    --period-sub-btn-text: #ffffff;
+    --period-sub-btn-active-bg: #2563eb;
+    --period-sub-btn-active-border: #2563eb;
+    --period-sub-btn-active-text: #ffffff;
+
+    /* Range Main Button Colors */
+    --range-main-btn-bg: #9ca3af;
+    --range-main-btn-border: #9ca3af;
+    --range-main-btn-text: #ffffff;
+    --range-main-btn-active-bg: #2563eb;
+    --range-main-btn-active-border: #2563eb;
+    --range-main-btn-active-text: #ffffff;
+
+    /* Range Custom Button Colors */
+    --range-custom-btn-bg: #9ca3af;
+    --range-custom-btn-border: #9ca3af;
+    --range-custom-btn-text: #ffffff;
+    --range-custom-btn-active-bg: #2563eb;
+    --range-custom-btn-active-border: #2563eb;
+    --range-custom-btn-active-text: #ffffff;
+
+    /* Navbar Colors */
+    --navbar-bg: #4b5563;
+    --navbar-text: #ffffff;
+} 
+
+/* Common base styles for all buttons except toggle-btn */
+/* Common base styles */
+.toggle-btn,
+.toggle-btn-active,
+.btn-custom,
+.btn-custom.active,
+.btn-secondary-custom,
+.period-main-btn,
+.period-main-btn-active,
+.range-main-btn,
+
+.range-main-btn-active,
+.range-custom-btn,
+.range-custom-btn-active {
+    height: 26px !important;
+    min-height: 20px !important;
+    padding: 0 0.5rem !important;
+    margin: 0 !important;
+    font-size: 0.8rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+}
+
+/* Specific styles for sub buttons */
+.period-sub-btn,
+.period-sub-btn-active {
+    height: 22px !important;          /* Reduced from 26px */
+    min-height: 18px !important;      /* Reduced from 20px */
+    padding: 0 0.4rem !important;     /* Slightly reduced padding */
+    font-size: 0.7rem !important;     /* Smaller font */
+    min-width: 40px !important;       /* Maintained min-width requirement */
+}
+
+/* Toggle Button Styles */
+.toggle-btn {
+    background-color: var(--toggle-btn-bg) !important;
+    border: 1px solid var(--toggle-btn-border) !important;
+    color: var(--toggle-btn-text) !important;
+}
+
+.toggle-btn.toggle-btn-active {
+    background-color: var(--toggle-btn-active-bg) !important;
+    border-color: var(--toggle-btn-active-border) !important;
+    color: var(--toggle-btn-active-text) !important;
+}
+
+.toggle-btn.toggle-btn-success {
+    background-color: var(--toggle-btn-success-bg) !important;
+    border-color: var(--toggle-btn-success-border) !important;
+    color: var(--toggle-btn-success-text) !important;
+}
+
+.toggle-btn.toggle-btn-danger {
+    background-color: var(--toggle-btn-danger-bg) !important;
+    border-color: var(--toggle-btn-danger-border) !important;
+    color: var(--toggle-btn-danger-text) !important;
+}
+
+/* Custom Button Styles */
+.btn-custom {
+    background-color: var(--btn-custom-bg) !important;
+    border-color: var(--btn-custom-border) !important;
+    color: var(--btn-custom-text) !important;
+}
+
+.btn-custom:hover {
+    background-color: var(--btn-custom-hover-bg) !important;
+    border-color: var(--btn-custom-hover-border) !important;
+}
+
+.btn-custom.active {
+    background-color: var(--btn-custom-active-bg) !important;
+    border-color: var(--btn-custom-active-border) !important;
+    color: var(--btn-custom-active-text) !important;
+}
+
+.btn-secondary-custom {
+    background-color: var(--btn-secondary-custom-bg) !important;
+    border-color: var(--btn-secondary-custom-border) !important;
+    color: var(--btn-secondary-custom-text) !important;
+}
+
+/* Period Button Styles */
+.period-main-btn {
+    background-color: var(--period-main-btn-bg) !important;
+    border-color: var(--period-main-btn-border) !important;
+    color: var(--period-main-btn-text) !important;
+}
+
+.period-main-btn-active {
+    background-color: var(--period-main-btn-active-bg) !important;
+    border-color: var(--period-main-btn-active-border) !important;
+    color: var(--period-main-btn-active-text) !important;
+}
+
+.period-sub-btn {
+    background-color: var(--period-sub-btn-bg) !important;
+    border-color: var(--period-sub-btn-border) !important;
+    color: var(--period-sub-btn-text) !important;
+    min-width: 40px !important;
+}
+
+.period-sub-btn-active {
+    background-color: var(--period-sub-btn-active-bg) !important;
+    border-color: var(--period-sub-btn-active-border) !important;
+    color: var(--period-sub-btn-active-text) !important;
+}
+
+/* Range Button Styles */
+.range-main-btn {
+    background-color: var(--range-main-btn-bg) !important;
+    border-color: var(--range-main-btn-border) !important;
+    color: var(--range-main-btn-text) !important;
+}
+
+.range-main-btn-active {
+    background-color: var(--range-main-btn-active-bg) !important;
+    border-color: var(--range-main-btn-active-border) !important;
+    color: var(--range-main-btn-active-text) !important;
+}
+
+.range-custom-btn {
+    background-color: var(--range-custom-btn-bg) !important;
+    border-color: var(--range-custom-btn-border) !important;
+    color: var(--range-custom-btn-text) !important;
+}
+
+.range-custom-btn-active {
+    background-color: var(--range-custom-btn-active-bg) !important;
+    border-color: var(--range-custom-btn-active-border) !important;
+    color: var(--range-custom-btn-active-text) !important;
+}
+
+/* Navbar */
+.navbar {
+    background-color: var(--navbar-bg) !important;
+    color: var(--navbar-text) !important;
+}
