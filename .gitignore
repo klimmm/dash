@@ -177,3 +177,6 @@ __pycache__/
 *.pyd
 logs/
 outputs/
+.ipynb_checkpoints/
+.DS_Store
+.DS_Store

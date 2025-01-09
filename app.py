@@ -2,6 +2,7 @@ import logging
 import pandas as pd
 import dash_bootstrap_components as dbc
 import dash
+import os 
 from dash import Input, Output, State
 from typing import Dict, List, Tuple, Any
 from dash.exceptions import PreventUpdate
@@ -207,13 +208,15 @@ def main() -> dash.Dash:
 
     return app
 
+app = main()
+server = app.server
 
 if __name__ == '__main__':
     try:
         print("Starting application initialization...")
-        app = main()
+        port = int(os.environ.get("PORT", PORT))
         print("Starting server...")
-        app.run_server(debug=DEBUG_MODE, port=PORT)
+        app.run_server(debug=DEBUG_MODE, port=port, host='0.0.0.0')
     except Exception as e:
         print(f"Error during startup: {e}")
         raise
