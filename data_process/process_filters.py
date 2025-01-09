@@ -490,7 +490,7 @@ class MetricsProcessor:
         # logger.debug(f"Unique metrics df before averages_and_ratio: {df['metric'].unique().tolist()}")
         # logger.debug(f"required_metrics: {required_metrics}")
             
-        if 'ceded_premiums_ratio' in required_metrics:
+        # if 'ceded_premiums_ratio' in required_metrics:
             # logger.debug("Checking presence of required metrics:")
             # logger.debug(f"'ceded_premiums' in df: {'ceded_premiums' in df['metric'].unique()}")
             # logger.debug(f"'total_premiums' in df: {'total_premiums' in df['metric'].unique()}")
@@ -634,7 +634,7 @@ class MetricsProcessor:
                     aggfunc='first'
                 ).reset_index()
 
-                if 'ceded_premiums_ratio' in required_metrics:
+                # if 'ceded_premiums_ratio' in required_metrics:
                     # logger.debug("Checking ceded_premiums_ratio components:")
                     # logger.debug(f"ceded_premiums values: {pivot_df['ceded_premiums'].head()}")
                     # logger.debug(f"total_premiums values: {pivot_df['total_premiums'].head()}")
@@ -644,7 +644,7 @@ class MetricsProcessor:
                 new_metrics = calculate_ratios(pivot_df)
 
                 # After calculation
-                if 'ceded_premiums_ratio' in new_metrics:
+                # if 'ceded_premiums_ratio' in new_metrics:
                     # logger.debug("Resulting ceded_premiums_ratio:")
                     # logger.debug(new_metrics['ceded_premiums_ratio'].head())
                 
