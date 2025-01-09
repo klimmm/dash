@@ -171,3 +171,7 @@ cython_debug/
 .pypirc
 .virtual_documents/
 .ipynb_checkpoints/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
