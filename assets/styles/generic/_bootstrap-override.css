@@ -1,0 +1,17 @@
+:root {
+  --bs-font-sans-serif: var(--font-family-base);
+  --bs-body-font-family: var(--font-family-base);
+  --bs-body-font-size: var(--text-base);
+  --bs-body-line-height: var(--line-height-normal);
+  --bs-body-color: var(--color-text-primary);
+  --bs-body-bg: var(--color-bg-primary);
+}
+
+.btn {
+  font-size: var(--text-sm);
+  padding: var(--space-2) var(--space-3);
+}
+
+.form-control {
+  font-size: var(--text-sm);
+}

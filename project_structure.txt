@@ -1,7 +1,7 @@
 Repository Structure
 ================================================================
 dash-table-app/
-    app/
+    application/
       callbacks/
         app_layout_callbacks.py
         filter_update_callbacks.py
@@ -34,6 +34,13 @@ dash-table-app/
       data_utils.py
       process_filters.py
       table_data.py
+    .gitattributes
+    .gitignore
     app.py
+    gunicorn_config.py
+    LICENSE
+    Procfile
     project_structure.txt
+    README.md
     requirements.txt
+    wsgi.py

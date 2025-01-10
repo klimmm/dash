@@ -141,6 +141,21 @@ def create_component(component_type, id=None, **kwargs):
             className="filter-label"
         )
 
+    elif component_type == "button":
+        return dbc.Button(
+            kwargs.get("text", ""),
+            id=id,
+            className=f"btn-custom {kwargs.get('className', '')}",
+            color=kwargs.get("color", "primary"),
+        )
+
+    elif component_type == "input":
+        return dcc.Input(
+            id=id,
+            className="form-control-custom input-short",
+            **{k: v for k, v in kwargs.items() if k not in ["className"]}
+        )
+
 ###############################################################################
 # 3) HELPER FUNCTION: CREATE_FILTER_ROW
 ###############################################################################
@@ -216,6 +231,7 @@ def create_app_layout(initial_quarter_options=None):
         ]
 
         # Navbar definition
+        # Update navbar definition
         navbar = dbc.Navbar(
             [
                 dbc.Container(
@@ -225,10 +241,15 @@ def create_app_layout(initial_quarter_options=None):
                             "Show Filters",
                             id="toggle-sidebar-button",
                             color="secondary",
-                            className="ms-3 toggle-sidebar-btn"
+                            className="btn-custom btn-sidebar-toggle"
                         ),                        
                         dbc.NavbarToggler(id="navbar-toggler", n_clicks=0),
-                        dbc.Button("Data Table", id="data-table-tab", color="light", className="ms-3")
+                        dbc.Button(
+                            "Data Table",
+                            id="data-table-tab",
+                            color="light",
+                            className="btn-custom btn-table-tab"
+                        )
                     ]
                 )
             ],
@@ -236,6 +257,7 @@ def create_app_layout(initial_quarter_options=None):
             dark=True,
             className="main-navbar"
         )
+        
 
         # Hierarchy buttons definition
         hierarchy_buttons = dbc.Row(
@@ -287,7 +309,7 @@ def create_app_layout(initial_quarter_options=None):
                 create_filter_row("Кол-во периодов для сравнения:", "number-of-periods-data-table", component_type="input", label_width=9, component_width=3),
                 create_filter_row("Линия:", "insurance-line-dropdown", vertical=True),
                 create_filter_row("Основной показатель:", "primary-y-metric", vertical=True),
-                create_filter_row("Бизнес:", "premium-loss-checklist", component_type="checklist", label_width=4, component_width=8),
+                create_filter_row("Бизнес:", "premium-loss-checklist", component_type="checklist", label_width=5, component_width=7),
                 create_filter_row("Доп. показатель:", "secondary-y-metric", vertical=True),
                 create_filter_row("Показать долю рынка:", "toggle-selected-market-share", component_type="checklist", label_width=10, component_width=2),
                 create_filter_row("Показать динамику:", "toggle-selected-qtoq", component_type="checklist", label_width=10, component_width=2),
@@ -295,9 +317,8 @@ def create_app_layout(initial_quarter_options=None):
                 dbc.Button(
                     "Clear Filters",
                     id="clear-filters-button",
-                    color="warning",
-                    className="mt-3 mb-2 w-100",
-                    style={"fontSize": "0.85rem", "padding": "0.3rem 0.6rem"}
+                    className="btn-custom btn-clear-filters",
+                    color="warning"
                 )
             ]
         )
@@ -336,12 +357,17 @@ def create_app_layout(initial_quarter_options=None):
             ]
         )
 
-        # Debug footer
+        # Update debug footer
         debug_footer = html.Div(
             id="debug-footer",
-            className="debug-footer p-3",
+            className="debug-footer",
             children=[
-                dbc.Button("Toggle Debug Logs", id="debug-toggle", color="secondary", className="btn-debug-toggle mb-2"),
+                dbc.Button(
+                    "Toggle Debug Logs",
+                    id="debug-toggle",
+                    color="secondary",
+                    className="btn-custom btn-debug-toggle"
+                ),
                 dbc.Collapse(
                     dbc.Card(
                         dbc.CardBody([

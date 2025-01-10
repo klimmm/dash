@@ -4,11 +4,14 @@ import dash
 from dash import Input, Output, State
 from constants.translations import translate
 from config.default_values import (
-    DEFAULT_PERIOD_TYPE,
-    button_period_main, button_period_main_active
+    DEFAULT_PERIOD_TYPE
 )
 from config.logging_config import get_logger, track_callback, track_callback_end
 logger = get_logger(__name__)
+
+
+button_period_main = "btn-custom btn-period"
+button_period_main_active = "btn-custom btn-period active"
 
 
 def setup_period_type_callbacks(app: dash.Dash) -> None:

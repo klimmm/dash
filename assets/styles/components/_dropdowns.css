@@ -1,0 +1,46 @@
+/* components/_dropdowns.css */
+
+/* Dropdown Variables */
+:root {
+  --dropdown-height: 32px;
+  --dropdown-font-size: var(--text-sm);
+}
+
+/* Dropdown Container */
+.dash-dropdown {
+  position: relative;
+}
+
+/* Dropdown Control */
+.dash-dropdown .Select-control {
+  height: var(--dropdown-height);
+  min-height: var(--dropdown-height);
+  border-color: var(--color-border-light);
+  font-size: var(--dropdown-font-size);
+}
+
+/* Dropdown Input */
+.dash-dropdown .Select-input {
+  height: calc(var(--dropdown-height) - 2px);
+}
+
+/* Dropdown Placeholder */
+.dash-dropdown .Select-placeholder,
+.dash-dropdown .Select-value {
+  line-height: calc(var(--dropdown-height) - 2px);
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* Dropdown Menu */
+.dash-dropdown .Select-menu-outer {
+  width: 100%;
+  max-width: 100%;
+  font-size: var(--dropdown-font-size);
+}
+
+/* Dropdown Options */
+.dash-dropdown .Select-option {
+  padding: var(--space-2);
+  font-size: var(--dropdown-font-size);
+}

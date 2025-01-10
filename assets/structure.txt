@@ -1,0 +1,24 @@
+
+assets/
+├── styles/
+│   ├── settings/
+│   │   ├── _variables.css      # Core variables
+│   │   ├── _colors.css         # Color system
+│   │   ├── _typography.css     # Typography scale
+│   │   └── _spacing.css        # Spacing system
+│   ├── tools/
+│   │   └── _mixins.css         # Custom CSS properties
+│   ├── generic/
+│   │   ├── _reset.css          # CSS reset
+│   │   └── _bootstrap-override.css
+│   ├── elements/
+│   │   └── _base.css           # Base element styles
+│   ├── components/
+│   │   ├── _buttons.css        # Button styles
+│   │   ├── _dropdowns.css      # Dropdown styles
+│   │   ├── _sidebar.css        # Sidebar styles
+│   │   ├── _navbar.css         # Navbar styles
+│   │   └── _data-table.css     # Table styles
+│   ├── utilities/
+│   │   └── _helpers.css        # Utility classes
+│   └── main.css                # Main stylesheet

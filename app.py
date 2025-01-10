@@ -49,6 +49,7 @@ app.index_string = '''
         {%metas%}
         <title>{%title%}</title>
         {%favicon%}
+        <link rel="stylesheet" href="/assets/styles/main.css">
         {%css%}
     </head>
     <body>

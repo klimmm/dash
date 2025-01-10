@@ -1,0 +1,15 @@
+:root {
+  /* Base Spacing Scale */
+  --space-1: 0.25rem;  /*  4px */
+  --space-2: 0.5rem;   /*  8px */
+  --space-3: 1rem;     /* 16px */
+  --space-4: 1.5rem;   /* 24px */
+  --space-5: 2rem;     /* 32px */
+  --space-6: 3rem;     /* 48px */
+  
+  /* Component Specific Spacing */
+  --spacing-navbar: var(--space-4);
+  --spacing-sidebar: var(--space-3);
+  --spacing-card: var(--space-4);
+  --spacing-table-cell: var(--space-2);
+}

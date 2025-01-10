@@ -1,0 +1,324 @@
+/* components/_data-table.css */
+
+/* Table Variables */
+:root {
+  --table-header-height: 3.333rem;
+  --table-cell-padding: var(--space-2);
+  --table-font-size: var(--text-sm);
+}
+
+/* Table Container */
+.data-table-wrapper {
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.data-table-wrapper .dash-table-container {
+  min-width: 100%;
+  overflow: visible;
+}
+
+/* Table Header */
+.dash-header {
+  background-color: var(--color-blue-500);
+  color: var(--btn-text-light);
+  font-weight: var(--font-weight-semibold);
+  text-transform: none;
+  border-bottom: 2px solid var(--color-border-light);
+  text-align: center;
+  font-size: var(--table-font-size);
+  height: auto;
+  min-height: var(--table-header-height);
+  white-space: normal;
+  position: relative;
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-2);
+}
+
+/* Table Cells */
+.dash-cell {
+  text-align: left;
+  padding: var(--table-cell-padding);
+  border: 1px solid var(--color-border-light);
+  font-size: var(--table-font-size);
+  color: var(--color-text-primary);
+  white-space: normal;
+  height: auto;
+}
+
+/* Special Columns */
+.dash-cell[data-dash-column="Место"],
+.dash-header[data-dash-column="Место"] {
+  text-align: center;
+  width: 2rem;
+  min-width: 2rem;
+  max-width: 2rem;
+}
+
+.dash-cell[data-dash-column="insurer"],
+.dash-header[data-dash-column="insurer"] {
+  width: 10rem;
+  min-width: 10rem;
+  max-width: 10rem;
+  text-align: left;
+}
+
+/* Hide Table Menu */
+.dash-table-container .dash-table-menu {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  position: absolute !important;
+  pointer-events: none !important;
+}
+
+
+/* Base Table Container */
+.dash-table {
+  width: 100%;
+  overflow-x: auto;
+  background-color: var(--color-bg-primary);
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-md);
+}
+
+/* Table Cell Base */
+.dash-table__cell {
+  text-align: left;
+  padding: var(--table-cell-padding);
+  border: 1px solid var(--color-border-light);
+  font-size: var(--table-font-size);
+  font-family: var(--font-family-base);
+  color: var(--color-text-primary);
+  white-space: normal;
+  height: auto;
+}
+
+/* Table Header */
+.dash-table__header {
+  background-color: var(--color-blue-500);
+  color: var(--color-white);
+  font-weight: var(--font-weight-semibold);
+  text-transform: none;
+  border-bottom: 2px solid var(--color-border-light);
+  text-align: center;
+  font-size: var(--table-font-size);
+  height: auto;
+  min-height: var(--table-header-height);
+  white-space: normal;
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-2);
+}
+
+/* Data Cells */
+.dash-table__data {
+  background-color: var(--color-bg-primary);
+}
+
+/* Special Column Styles */
+.dash-table__cell--number {
+  width: 2rem;
+  min-width: 2rem;
+  max-width: 2rem;
+  text-align: center;
+}
+
+.dash-table__cell--insurer {
+  width: 10rem;
+  min-width: 10rem;
+  max-width: 10rem;
+  text-align: left;
+}
+
+/* Conditional Styles */
+.dash-table__cell--highlight {
+  background-color: var(--color-gray-50);
+}
+
+.dash-table__cell--sohags {
+  background-color: var(--color-success-50);
+}
+
+.dash-table__cell--change-positive {
+  color: var(--color-success-600);
+  font-weight: var(--font-weight-semibold);
+}
+
+.dash-table__cell--change-negative {
+  color: var(--color-danger-600);
+  font-weight: var(--font-weight-semibold);
+}
+
+.dash-table__cell--qtoq {
+  background-color: var(--color-bg-secondary);
+}
+
+/* Hide Table Menu */
+.dash-table__menu-hidden {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  position: absolute !important;
+  pointer-events: none !important;
+}
+
+/* Base Table Container */
+.dash-table-container {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  font-family: var(--font-family-base);
+}
+
+/* Table Base */
+.dash-table.dash-spreadsheet {
+  overflow-x: auto;
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  --dt-border-color: var(--color-border-light);
+  --dt-cell-padding: var(--space-2);
+  --dt-font-size: var(--text-sm);
+}
+
+/* All Cells Base Styling */
+.dash-table .dash-spreadsheet-container .dash-spreadsheet-inner td,
+.dash-table .dash-spreadsheet-container .dash-spreadsheet-inner th {
+  height: auto;
+  min-height: var(--table-header-height);
+  padding: var(--dt-cell-padding);
+  font-size: var(--dt-font-size);
+  border: 1px solid var(--dt-border-color);
+  font-family: var(--font-family-base);
+  white-space: normal;
+  text-align: left;
+  vertical-align: middle;
+}
+
+/* Header Cells */
+.dash-table .dash-header {
+  background-color: var(--color-table-header-bg, var(--color-blue-500)) !important;
+  color: var(--btn-text-light) !important;
+  font-weight: var(--font-weight-semibold);
+  text-transform: none;
+  border-bottom: 2px solid var(--dt-border-color);
+  text-align: center;
+  font-size: var(--dt-font-size);
+  height: auto;
+  min-height: var(--table-header-height);
+  position: relative;
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-2);
+}
+
+/* Data Cells */
+.dash-table .dash-cell {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+}
+
+/* Special Column: Number (Место) */
+.dash-table [data-dash-column="Место"],
+.dash-table .dash-cell[data-dash-column="Место"] {
+  width: 2rem !important;
+  min-width: 2rem !important;
+  max-width: 2rem !important;
+  text-align: center !important;
+}
+
+/* Special Column: Insurer */
+.dash-table [data-dash-column="insurer"],
+.dash-table .dash-cell[data-dash-column="insurer"] {
+  width: 10rem !important;
+  min-width: 10rem !important;
+  max-width: 10rem !important;
+  text-align: left !important;
+}
+
+/* Data Column Width */
+.dash-table .dash-cell:not([data-dash-column="Место"]):not([data-dash-column="insurer"]) {
+  width: 5rem !important;
+  min-width: 5rem !important;
+  max-width: 5rem !important;
+  text-align: center !important;
+}
+
+/* Conditional Styles */
+.dash-table .dash-cell--highlight {
+  background-color: var(--color-bg-highlight);
+}
+
+.dash-table .dash-cell--sohags {
+  background-color: var(--color-success-50);
+}
+
+.dash-table .dash-cell--selected {
+  background-color: var(--color-bg-highlight) !important;
+}
+
+/* Change Indicators */
+.dash-table .dash-cell--change-positive {
+  color: var(--color-success-600) !important;
+  font-weight: var(--font-weight-semibold);
+}
+
+.dash-table .dash-cell--change-negative {
+  color: var(--color-danger-600) !important;
+  font-weight: var(--font-weight-semibold);
+}
+
+.dash-table .dash-cell--qtoq {
+  background-color: var(--color-bg-secondary);
+}
+
+/* Hide Table Menu and Controls */
+.dash-table .dash-table-menu__toggle,
+.dash-table .dash-spreadsheet-menu,
+.dash-table .column-header--toggle,
+.dash-table .dash-filter--case,
+.dash-table .dash-filter {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  position: absolute !important;
+  pointer-events: none !important;
+}
+
+/* Remove Sort Icons */
+.dash-table .dash-header-cell::after,
+.dash-table .dash-header-cell--sort-asc::after,
+.dash-table .dash-header-cell--sort-desc::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Data Table Wrapper */
+.data-table-wrapper {
+    position: relative;
+    width: 100%;
+    overflow-x: auto;
+}
+
+.data-table-wrapper .dash-table-container {
+    min-width: 100%;
+    overflow: visible;
+}
+
+/* Special Column Styles - Applied via style_cell_conditional */
+[data-dash-column="Место"] {
+    width: 2rem !important;
+    min-width: 2rem !important;
+    max-width: 2rem !important;
+    text-align: center !important;
+}
+
+[data-dash-column="insurer"] {
+    width: 10rem !important;
+    min-width: 10rem !important;
+    max-width: 10rem !important;
+    text-align: left !important;
+}

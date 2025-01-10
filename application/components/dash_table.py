@@ -13,16 +13,16 @@ logger = get_logger(__name__)
 
 @dataclass(frozen=True)
 class TableColors:
-    PRIMARY: str = '#3C5A99'
-    SECONDARY: str = '#6C757D'
-    BACKGROUND: str = '#F8F9FA'
-    TEXT: str = '#212529'
-    SUCCESS: str = '#28a745'
-    DANGER: str = '#dc3545'
-    HIGHLIGHT: str = '#FFFFE0'
-    SOHAGS: str = '#D4EDDA'
-    QTOQ_BG: str = '#E9ECEF'
-    INSURER_BG: str = '#F1F3F5'
+    PRIMARY: str = 'var(--color-table-header-bg)'
+    SECONDARY: str = 'var(--color-gray-500)'
+    BACKGROUND: str = 'var(--color-bg-primary)'
+    TEXT: str = 'var(--color-text-primary)'
+    SUCCESS: str = 'var(--color-state-success)'
+    DANGER: str = 'var(--color-state-danger)'
+    HIGHLIGHT: str = 'var(--color-bg-highlight)'
+    SOHAGS: str = 'var(--color-success-50)'
+    QTOQ_BG: str = 'var(--color-bg-secondary)'
+    INSURER_BG: str = 'var(--color-gray-100)'
 
 @dataclass(frozen=True)
 class TableStyles:
@@ -38,6 +38,11 @@ class TableStyles:
     CELL_PADDING: str = 'var(--spacing-md)'
     HEADER_PADDING: str = 'var(--spacing-sm) var(--spacing-lg) var(--spacing-sm) var(--spacing-sm)'
 
+    SHADOW: str = '0 0.25rem 0.375rem rgba(0, 0, 0, 0.1)'
+    BORDER_STYLE: str = '1px solid var(--color-border-light)'
+    HEADER_BORDER: str = '2px solid var(--color-border-light)'
+
+
 class TableStyler:
     def __init__(self):
         self.colors = TableColors()
@@ -47,46 +52,36 @@ class TableStyler:
         return {
             'style_table': {
                 'overflowX': 'auto',
-                'backgroundColor': 'var(--color-bg)',
-                'boxShadow': '0 0.25rem 0.375rem rgba(0, 0, 0, 0.1)',
-                'borderRadius': 'var(--border-radius)',
+                'minWidth': '100%'
             },
             'style_cell': {
-                'textAlign': 'left',
-                'padding': self.styles.CELL_PADDING,
-                'border': '1px solid var(--color-border)',
-                'fontSize': self.styles.CELL_FONT_SIZE,
-                'fontFamily': self.styles.FONT_FAMILY,
-                'color': 'var(--color-text)',
-                'whiteSpace': 'normal',
+                'fontFamily': 'var(--font-family-base)',
+                'fontSize': 'var(--text-sm)',
+                'padding': 'var(--space-2)',
                 'height': 'auto',
+                'minHeight': 'var(--table-header-height)',
+                'whiteSpace': 'normal',
+                'border': '1px solid var(--color-border-light)'
             },
             'style_header': {
-                'backgroundColor': self.colors.PRIMARY,
-                'color': 'white',
-                'fontWeight': 'bold',
-                'textTransform': 'none',
-                'borderBottom': '2px solid var(--color-border)',
+                'backgroundColor': 'var(--color-blue-500)',
+                'color': 'var(--color-white)',
+                'fontWeight': 'var(--font-weight-semibold)',
                 'textAlign': 'center',
-                'fontSize': self.styles.HEADER_FONT_SIZE,
                 'height': 'auto',
-                'minHeight': '3.333rem',
-                'whiteSpace': 'normal',
-                'position': 'relative',
-                'padding': self.styles.HEADER_PADDING,
+                'minHeight': 'var(--table-header-height)',
+                'whiteSpace': 'normal'
             },
             'style_data': {
-                'backgroundColor': 'var(--color-bg)',
-            },
+                'backgroundColor': 'var(--color-bg-primary)',
+                'color': 'var(--color-text-primary)'
+            }
         }
 
     def create_conditional_styles(self, df: pd.DataFrame) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         special_insurers = {
             'Топ': {'backgroundColor': self.colors.HIGHLIGHT, 'fontWeight': 'normal'},
             'Весь рынок': {'backgroundColor': self.colors.HIGHLIGHT, 'fontWeight': 'bold'},
-            'СОГАЗ': {'backgroundColor': self.colors.SOHAGS, 'fontWeight': 'normal'},
-            'Газпром': {'backgroundColor': self.colors.SOHAGS, 'fontWeight': 'normal'},
-            'КПСК': {'backgroundColor': self.colors.SOHAGS, 'fontWeight': 'normal'},
         }
 
         row_styles = [
