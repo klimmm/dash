@@ -1,12 +1,5 @@
 /* components/_data-table.css */
 
-/* Table Variables */
-:root {
-  --table-header-height: 3.333rem;
-  --table-cell-padding: var(--space-2);
-  --table-font-size: var(--text-sm);
-}
-
 /* Table Container */
 .data-table-wrapper {
   position: relative;
@@ -17,268 +10,113 @@
 .data-table-wrapper .dash-table-container {
   min-width: 100%;
   overflow: visible;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family-base);
 }
 
-/* Table Header */
-.dash-header {
-  background-color: var(--color-blue-500);
-  color: var(--btn-text-light);
-  font-weight: var(--font-weight-semibold);
-  text-transform: none;
-  border-bottom: 2px solid var(--color-border-light);
-  text-align: center;
-  font-size: var(--table-font-size);
-  height: auto;
-  min-height: var(--table-header-height);
-  white-space: normal;
-  position: relative;
-  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-2);
-}
-
-/* Table Cells */
-.dash-cell {
-  text-align: left;
-  padding: var(--table-cell-padding);
-  border: 1px solid var(--color-border-light);
-  font-size: var(--table-font-size);
-  color: var(--color-text-primary);
-  white-space: normal;
-  height: auto;
-}
-
-/* Special Columns */
-.dash-cell[data-dash-column="Место"],
-.dash-header[data-dash-column="Место"] {
-  text-align: center;
-  width: 2rem;
-  min-width: 2rem;
-  max-width: 2rem;
-}
-
-.dash-cell[data-dash-column="insurer"],
-.dash-header[data-dash-column="insurer"] {
-  width: 10rem;
-  min-width: 10rem;
-  max-width: 10rem;
-  text-align: left;
-}
-
-/* Hide Table Menu */
-.dash-table-container .dash-table-menu {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-  position: absolute !important;
-  pointer-events: none !important;
-}
-
-
-/* Base Table Container */
+/* Base Table Styles */
 .dash-table {
   width: 100%;
   overflow-x: auto;
-  background-color: var(--color-bg-primary);
+  background-color: var(--table-cell-bg);
   box-shadow: var(--shadow-sm);
   border-radius: var(--radius-md);
-}
-
-/* Table Cell Base */
-.dash-table__cell {
-  text-align: left;
-  padding: var(--table-cell-padding);
-  border: 1px solid var(--color-border-light);
-  font-size: var(--table-font-size);
-  font-family: var(--font-family-base);
-  color: var(--color-text-primary);
-  white-space: normal;
-  height: auto;
-}
-
-/* Table Header */
-.dash-table__header {
-  background-color: var(--color-blue-500);
-  color: var(--color-white);
-  font-weight: var(--font-weight-semibold);
-  text-transform: none;
-  border-bottom: 2px solid var(--color-border-light);
-  text-align: center;
-  font-size: var(--table-font-size);
-  height: auto;
-  min-height: var(--table-header-height);
-  white-space: normal;
-  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-2);
-}
-
-/* Data Cells */
-.dash-table__data {
-  background-color: var(--color-bg-primary);
-}
-
-/* Special Column Styles */
-.dash-table__cell--number {
-  width: 2rem;
-  min-width: 2rem;
-  max-width: 2rem;
-  text-align: center;
-}
-
-.dash-table__cell--insurer {
-  width: 10rem;
-  min-width: 10rem;
-  max-width: 10rem;
-  text-align: left;
-}
-
-/* Conditional Styles */
-.dash-table__cell--highlight {
-  background-color: var(--color-gray-50);
-}
-
-.dash-table__cell--sohags {
-  background-color: var(--color-success-50);
-}
-
-.dash-table__cell--change-positive {
-  color: var(--color-success-600);
-  font-weight: var(--font-weight-semibold);
-}
-
-.dash-table__cell--change-negative {
-  color: var(--color-danger-600);
-  font-weight: var(--font-weight-semibold);
-}
-
-.dash-table__cell--qtoq {
-  background-color: var(--color-bg-secondary);
-}
-
-/* Hide Table Menu */
-.dash-table__menu-hidden {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-  position: absolute !important;
-  pointer-events: none !important;
-}
-
-/* Base Table Container */
-.dash-table-container {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  font-family: var(--font-family-base);
-}
-
-/* Table Base */
-.dash-table.dash-spreadsheet {
-  overflow-x: auto;
-  width: 100%;
-  margin: 0;
   border-collapse: collapse;
-  --dt-border-color: var(--color-border-light);
-  --dt-cell-padding: var(--space-2);
-  --dt-font-size: var(--text-sm);
 }
 
-/* All Cells Base Styling */
+/* Base Cell Styles */
 .dash-table .dash-spreadsheet-container .dash-spreadsheet-inner td,
 .dash-table .dash-spreadsheet-container .dash-spreadsheet-inner th {
-  height: auto;
+  height: var(--table-cell-height);
   min-height: var(--table-header-height);
-  padding: var(--dt-cell-padding);
-  font-size: var(--dt-font-size);
-  border: 1px solid var(--dt-border-color);
+  padding: var(--table-cell-padding);
+  font-size: var(--table-font-size);
+  border: 1px solid var(--table-border);
   font-family: var(--font-family-base);
   white-space: normal;
   text-align: left;
   vertical-align: middle;
 }
 
-/* Header Cells */
+/* Header Styles */
 .dash-table .dash-header {
-  background-color: var(--color-table-header-bg, var(--color-blue-500)) !important;
-  color: var(--btn-text-light) !important;
-  font-weight: var(--font-weight-semibold);
+  background-color: var(--table-header-bg) !important;
+  color: var(--table-header-text) !important;
+  font-weight: var(--table-header-font-weight);
   text-transform: none;
-  border-bottom: 2px solid var(--dt-border-color);
+  border-bottom: 2px solid var(--table-border);
   text-align: center;
-  font-size: var(--dt-font-size);
-  height: auto;
+  height: var(--table-cell-height);
   min-height: var(--table-header-height);
   position: relative;
-  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-2);
+  padding: var(--table-header-padding);
 }
 
-/* Data Cells */
+/* Cell Styles */
 .dash-table .dash-cell {
-  background-color: var(--color-bg-primary);
-  color: var(--color-text-primary);
+  background-color: var(--table-cell-bg);
+  color: var(--table-cell-text);
 }
 
-/* Special Column: Number (Место) */
-.dash-table [data-dash-column="Место"],
-.dash-table .dash-cell[data-dash-column="Место"] {
-  width: 2rem !important;
-  min-width: 2rem !important;
-  max-width: 2rem !important;
+/* Special Column Styles */
+.dash-table [data-dash-column="N"],
+.dash-table .dash-cell[data-dash-column="N"] {
+  width: calc(var(--table-number-col-width) * var(--table-width-scale-sm)) !important;
+  min-width: calc(var(--table-number-col-width) * var(--table-width-scale-sm)) !important;
+  max-width: calc(var(--table-number-col-width) * var(--table-width-scale-sm)) !important;
   text-align: center !important;
 }
 
-/* Special Column: Insurer */
 .dash-table [data-dash-column="insurer"],
 .dash-table .dash-cell[data-dash-column="insurer"] {
-  width: 10rem !important;
-  min-width: 10rem !important;
-  max-width: 10rem !important;
+  width: var(--table-insurer-col-width) !important;
+  min-width: var(--table-insurer-col-width) !important;
+  max-width: var(--table-insurer-col-width) !important;
   text-align: left !important;
 }
 
 /* Data Column Width */
-.dash-table .dash-cell:not([data-dash-column="Место"]):not([data-dash-column="insurer"]) {
-  width: 5rem !important;
-  min-width: 5rem !important;
-  max-width: 5rem !important;
+.dash-table .dash-cell:not([data-dash-column="N"]):not([data-dash-column="insurer"]) {
+  width: var(--table-data-col-width) !important;
+  min-width: var(--table-data-col-width) !important;
+  max-width: var(--table-data-col-width) !important;
   text-align: center !important;
 }
 
+
+
 /* Conditional Styles */
-.dash-table .dash-cell--highlight {
-  background-color: var(--color-bg-highlight);
+.dash-table .dash-cell--highlight,
+.dash-table .dash-cell--selected {
+  background-color: var(--table-highlight-bg) !important;
 }
 
 .dash-table .dash-cell--sohags {
-  background-color: var(--color-success-50);
+  background-color: var(--table-success-bg);
 }
 
-.dash-table .dash-cell--selected {
-  background-color: var(--color-bg-highlight) !important;
-}
-
-/* Change Indicators */
 .dash-table .dash-cell--change-positive {
-  color: var(--color-success-600) !important;
+  color: var(--table-success-text) !important;
   font-weight: var(--font-weight-semibold);
 }
 
 .dash-table .dash-cell--change-negative {
-  color: var(--color-danger-600) !important;
+  color: var(--table-danger-text) !important;
   font-weight: var(--font-weight-semibold);
 }
 
 .dash-table .dash-cell--qtoq {
-  background-color: var(--color-bg-secondary);
+  background-color: var(--table-qtoq-bg);
 }
 
-/* Hide Table Menu and Controls */
+/* Hide Table Controls */
 .dash-table .dash-table-menu__toggle,
 .dash-table .dash-spreadsheet-menu,
 .dash-table .column-header--toggle,
 .dash-table .dash-filter--case,
-.dash-table .dash-filter {
+.dash-table .dash-filter,
+.dash-table-container .dash-table-menu {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
@@ -296,29 +134,142 @@
   content: none !important;
 }
 
-/* Data Table Wrapper */
-.data-table-wrapper {
-    position: relative;
-    width: 100%;
-    overflow-x: auto;
+/* Table Visibility Control */
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner 
+.dash-fixed-content .dash-fixed-row .dash-fixed-row-info .dash-table-menu__toggle,
+.dash-spreadsheet-inner th .column-header--toggle,
+th .column-header--toggle,
+.dash-table-menu__toggle,
+.dash-table-menu__toggle--open,
+.dash-table-menu__toggle--closed,
+.dash-spreadsheet-menu,
+.dash-spreadsheet-menu * {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    visibility: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
 }
 
-.data-table-wrapper .dash-table-container {
-    min-width: 100%;
-    overflow: visible;
+/* Table Menu Control */
+.dash-table-menu,
+.dash-menu-item,
+.dash-menu-item--show-hide-toggle-columns,
+.dash-menu-item--hide-columns,
+.show-hide-toggle-columns,
+.dash-table-menu__dropdown,
+.dash-table-menu__dropdown--content,
+[class*="dash-menu-item"] {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    visibility: hidden !important;
 }
 
-/* Special Column Styles - Applied via style_cell_conditional */
-[data-dash-column="Место"] {
-    width: 2rem !important;
-    min-width: 2rem !important;
-    max-width: 2rem !important;
+/* Sort Icons Control */
+.dash-header-cell::after,
+.dash-header-cell--sort-asc::after,
+.dash-header-cell--sort-desc::after {
+    display: none !important;
+    content: none !important;
+}
+
+/* Header Alignment */
+.dash-header[data-dash-column="N"],
+.dash-header[data-dash-column="N"] {
+    text-align: center !important;
+    vertical-align: bottom !important;
+}
+
+.dash-header[data-dash-column="insurer"] {
+    text-align: left !important;
+    vertical-align: bottom !important;
+}
+
+/* Header Spacing */
+.dash-spreadsheet th {
+    padding-right: var(--spacing-md) !important;
+}
+
+/* Table Cell Base Styles */
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner td {
+    font-family: var(--font-family-base);
+    font-size: var(--table-font-size);
+    padding: var(--table-cell-padding);
+    height: var(--table-cell-height);
+    min-height: var(--table-cell-height);
+    white-space: normal;
+    border: 1px solid var(--table-border);
+}
+
+/* Header Styles */
+.dash-table .dash-header {
+    background-color: var(--table-header-bg);
+    color: var(--table-header-text);
+    font-weight: var(--table-header-font-weight);
+    text-align: center;
+    height: var(--table-header-height);
+    min-height: var(--table-header-height);
+    padding: var(--table-header-padding);
+}
+
+/* Column Width Control */
+.dash-table [data-dash-column="N"],
+.dash-table .dash-cell[data-dash-column="N"] {
+    width: var(--table-number-col-width) !important;
+    min-width: var(--table-number-col-width) !important;
+    max-width: var(--table-number-col-width) !important;
     text-align: center !important;
 }
 
-[data-dash-column="insurer"] {
-    width: 10rem !important;
-    min-width: 10rem !important;
-    max-width: 10rem !important;
+.dash-table [data-dash-column="insurer"],
+.dash-table .dash-cell[data-dash-column="insurer"] {
+    width: var(--table-insurer-col-width) !important;
+    min-width: var(--table-insurer-col-width) !important;
+    max-width: var(--table-insurer-col-width) !important;
     text-align: left !important;
+}
+
+/* Data Column Styles */
+.dash-table .dash-cell:not([data-dash-column="N"]):not([data-dash-column="insurer"]) {
+    width: var(--table-data-col-width) !important;
+    min-width: var(--table-data-col-width) !important;
+    max-width: var(--table-data-col-width) !important;
+    text-align: center !important;
+}
+
+/* Special Row Styles */
+.dash-table .dash-cell--special-row-top {
+    background-color: var(--table-highlight-bg);
+    font-weight: normal;
+}
+
+.dash-table .dash-cell--special-row-market {
+    background-color: var(--table-highlight-bg);
+    font-weight: bold;
+}
+
+/* Change Column Styles */
+.dash-table .dash-cell--change-positive {
+    color: var(--table-success-text) !important;
+    font-weight: bold;
+}
+
+.dash-table .dash-cell--change-negative {
+    color: var(--table-danger-text) !important;
+    font-weight: bold;
+}
+
+.dash-table .dash-cell--qtoq {
+    background-color: var(--table-qtoq-bg);
 }

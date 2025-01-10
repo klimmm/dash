@@ -8,163 +8,156 @@ from constants.translations import translate
 from constants.filter_options import METRICS
 from data_process.data_utils import map_insurer
 from config.logging_config import get_logger
+from application.components.table_theme import TableTheme, create_default_theme
 
 logger = get_logger(__name__)
+# Column identifier constants
 
-@dataclass(frozen=True)
-class TableColors:
-    PRIMARY: str = 'var(--color-table-header-bg)'
-    SECONDARY: str = 'var(--color-gray-500)'
-    BACKGROUND: str = 'var(--color-bg-primary)'
-    TEXT: str = 'var(--color-text-primary)'
-    SUCCESS: str = 'var(--color-state-success)'
-    DANGER: str = 'var(--color-state-danger)'
-    HIGHLIGHT: str = 'var(--color-bg-highlight)'
-    SOHAGS: str = 'var(--color-success-50)'
-    QTOQ_BG: str = 'var(--color-bg-secondary)'
-    INSURER_BG: str = 'var(--color-gray-100)'
+class ColumnIds:
+    """Constants for column identifiers"""
+    PLACE = 'N'
+    INSURER = 'insurer'
 
-@dataclass(frozen=True)
-class TableStyles:
-    FONT_FAMILY: str = 'var(--font-family-base)'
-    BASE_FONT_SIZE: str = '0.8rem'
-    HEADER_FONT_SIZE: str = '0.8rem'
-    CELL_FONT_SIZE: str = '0.8rem'
-    
-    NUMBER_COL_WIDTH: str = '2rem'
-    INSURER_COL_WIDTH: str = '10rem'
-    DATA_COL_WIDTH: str = '5rem'
-    
-    CELL_PADDING: str = 'var(--spacing-md)'
-    HEADER_PADDING: str = 'var(--spacing-sm) var(--spacing-lg) var(--spacing-sm) var(--spacing-sm)'
+    @classmethod
+    def is_identifier_column(cls, column_id: str) -> bool:
+        """Check if column is an identifier column"""
+        return column_id.lower() in [cls.PLACE.lower(), cls.INSURER.lower()]
 
-    SHADOW: str = '0 0.25rem 0.375rem rgba(0, 0, 0, 0.1)'
-    BORDER_STYLE: str = '1px solid var(--color-border-light)'
-    HEADER_BORDER: str = '2px solid var(--color-border-light)'
+    @classmethod
+    def is_data_column(cls, column_id: str) -> bool:
+        """Check if column is a data column"""
+        return not cls.is_identifier_column(column_id)
 
 
 class TableStyler:
-    def __init__(self):
-        self.colors = TableColors()
-        self.styles = TableStyles()
+    """Handles table styling with theme support"""
+    
+    def __init__(self, theme: Optional[TableTheme] = None):
+        self.theme = theme or create_default_theme()
 
     def get_base_styles(self) -> Dict[str, Any]:
+        """Generate base styles using theme configuration"""
         return {
             'style_table': {
                 'overflowX': 'auto',
                 'minWidth': '100%'
             },
             'style_cell': {
-                'fontFamily': 'var(--font-family-base)',
-                'fontSize': 'var(--text-sm)',
-                'padding': 'var(--space-2)',
-                'height': 'auto',
-                'minHeight': 'var(--table-header-height)',
+                'fontFamily': self.theme.get_typography('font_family'),
+                'fontSize': self.theme.get_typography('font_size'),
+                'padding': self.theme.get_spacing('cell_padding'),
+                'height': self.theme.get_dimension('cell_height'),
+                'minHeight': self.theme.get_dimension('cell_height'),
                 'whiteSpace': 'normal',
-                'border': '1px solid var(--color-border-light)'
+                'border': f"1px solid {self.theme.get_color('border')}"
             },
             'style_header': {
-                'backgroundColor': 'var(--color-blue-500)',
-                'color': 'var(--color-white)',
-                'fontWeight': 'var(--font-weight-semibold)',
+                'backgroundColor': self.theme.get_color('header_bg'),
+                'color': self.theme.get_color('header_text'),
+                'fontWeight': self.theme.get_typography('header_weight'),
                 'textAlign': 'center',
-                'height': 'auto',
-                'minHeight': 'var(--table-header-height)',
-                'whiteSpace': 'normal'
+                'height': self.theme.get_dimension('header_height'),
+                'minHeight': self.theme.get_dimension('header_height'),
+                'whiteSpace': 'normal',
+                'padding': self.theme.get_spacing('header_padding')
             },
             'style_data': {
-                'backgroundColor': 'var(--color-bg-primary)',
-                'color': 'var(--color-text-primary)'
+                'backgroundColor': self.theme.get_color('cell_bg'),
+                'color': self.theme.get_color('cell_text')
             }
         }
-
     def create_conditional_styles(self, df: pd.DataFrame) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+        """Create conditional styles for the table"""
         special_insurers = {
-            'Топ': {'backgroundColor': self.colors.HIGHLIGHT, 'fontWeight': 'normal'},
-            'Весь рынок': {'backgroundColor': self.colors.HIGHLIGHT, 'fontWeight': 'bold'},
+            'Топ': {
+                'backgroundColor': self.theme.get_color('highlight'),
+                'fontWeight': 'normal'
+            },
+            'Весь рынок': {
+                'backgroundColor': self.theme.get_color('highlight'),
+                'fontWeight': 'bold'
+            },
         }
-
+    
         row_styles = [
             {'if': {'filter_query': f'{{insurer}} contains "{insurer}"'}, **style}
             for insurer, style in special_insurers.items()
         ]
-
+    
         column_styles = []
         for col in df.columns:
             if any(pattern in col for pattern in ('_q_to_q_change', '_market_share_q_to_q_change')):
                 column_styles.extend(self._get_change_column_styles(col))
-            elif col.lower() in ['место', 'insurer']:
+            elif ColumnIds.is_identifier_column(col):
                 column_styles.append(self._get_identifier_column_style(col))
-
+    
         return column_styles, row_styles
 
+
     def _get_change_column_styles(self, col: str) -> List[Dict[str, Any]]:
+        """Generate styles for change columns"""
         return [
             {
                 'if': {'column_id': col, 'filter_query': f'{{{col}}} > 0'},
-                'color': self.colors.SUCCESS,
+                'color': self.theme.get_color('success'),
                 'fontWeight': 'bold'
             },
             {
                 'if': {'column_id': col, 'filter_query': f'{{{col}}} < 0'},
-                'color': self.colors.DANGER,
+                'color': self.theme.get_color('danger'),
                 'fontWeight': 'bold'
             },
             {
                 'if': {'column_id': col},
-                'backgroundColor': self.colors.QTOQ_BG,
+                'backgroundColor': self.theme.get_color('qtoq_bg'),
             }
         ]
 
     def _get_identifier_column_style(self, col: str) -> Dict[str, Any]:
+        """Generate styles for identifier columns"""
         return {
             'if': {'column_id': col},
-            'backgroundColor': self.colors.INSURER_BG,
-            'textAlign': 'left' if col.lower() == 'insurer' else 'center',
+            'backgroundColor': self.theme.get_color('insurer_bg'),
+            'textAlign': 'left' if col.lower() == ColumnIds.INSURER.lower() else 'center',
         }
-
+    
     def get_column_width_styles(self) -> List[Dict[str, Any]]:
+        """Generate column width styles - only alignment, widths handled by CSS"""
         return [
             {
-                'if': {'column_id': 'Место'},
-                'width': self.styles.NUMBER_COL_WIDTH,
-                'minWidth': self.styles.NUMBER_COL_WIDTH,
-                'maxWidth': self.styles.NUMBER_COL_WIDTH,
+                'if': {'column_id': ColumnIds.PLACE},
                 'textAlign': 'center'
             },
             {
-                'if': {'column_id': 'insurer'},
-                'width': self.styles.INSURER_COL_WIDTH,
-                'minWidth': self.styles.INSURER_COL_WIDTH,
-                'maxWidth': self.styles.INSURER_COL_WIDTH,
+                'if': {'column_id': ColumnIds.INSURER},
                 'textAlign': 'left'
             }
         ]
-
-    def get_data_column_style(self, column_id: str) -> Dict[str, Any]:
-        return {
-            'if': {'column_id': column_id},
-            'width': self.styles.DATA_COL_WIDTH,
-            'minWidth': self.styles.DATA_COL_WIDTH,
-            'maxWidth': self.styles.DATA_COL_WIDTH,
-            'textAlign': 'center'
-        }
-
+    
     def get_header_styles(self) -> List[Dict[str, Any]]:
+        """Get header styles using column constants"""
+        identifier_columns = [ColumnIds.PLACE, ColumnIds.INSURER]
         return [
             {
                 'if': {'column_id': col, 'header_index': 0},
                 'borderBottom': 'none',
                 'paddingBottom': '0',
-            } for col in ['Место', 'insurer']
+            } for col in identifier_columns
         ] + [
             {
                 'if': {'column_id': col, 'header_index': 1},
                 'borderTop': 'none',
                 'paddingTop': '0',
                 'color': 'transparent'
-            } for col in ['Место', 'insurer']
+            } for col in identifier_columns
         ]
+
+    def get_data_column_style(self, column_id: str) -> Dict[str, Any]:
+        """Generate style for data columns - only alignment"""
+        return {
+            'if': {'column_id': column_id},
+            'textAlign': 'center'
+        }
 
 
 class ColumnFormatter:
@@ -199,7 +192,7 @@ class ColumnFormatter:
         formatted_columns = []
         for col in columns:
             col_id = col['id']
-            if col_id in ['Место', 'insurer']:
+            if col_id in ['N', 'insurer']:
                 formatted_columns.append(self._format_identifier_column(col_id))
                 continue
 
@@ -246,17 +239,23 @@ class ColumnFormatter:
         else:
             return [f"{translated_metric}, {translate('млрд руб.')}", self.parse_quarter(quarter, period_type)]
 
-def prepare_dash_table_data(df: pd.DataFrame, period_type: str) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+def prepare_dash_table_data(
+    df: pd.DataFrame, 
+    period_type: str,
+    styler: Optional[TableStyler] = None
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """Prepare data and styling for the dash table"""
     table_columns = [{"name": col, "id": col} for col in df.columns]
     table_data = df.assign(insurer=lambda x: x['insurer'].map(map_insurer)).to_dict('records')
 
     formatter = ColumnFormatter()
-    styler = TableStyler()
+    styler = styler or TableStyler()  # Use provided styler or create new one
 
     table_columns = formatter.format_columns(table_columns, METRICS, period_type)
     column_styles, row_styles = styler.create_conditional_styles(df)
 
     return table_columns, table_data, (column_styles + row_styles)
+
 
 def generate_dash_table_config(
     df: pd.DataFrame,
@@ -268,12 +267,18 @@ def generate_dash_table_config(
     show_selected_market_share = toggle_selected_market_share and "show" in toggle_selected_market_share
     show_selected_qtoq = toggle_selected_qtoq and "show" in toggle_selected_qtoq
 
-    # Prepare columns & data
-    table_columns, table_data, style_data_conditional = prepare_dash_table_data(df, period_type)
+    # Create single styler instance to be used throughout
     styler = TableStyler()
 
+    # Prepare columns & data using the same styler
+    table_columns, table_data, style_data_conditional = prepare_dash_table_data(
+        df, 
+        period_type,
+        styler=styler  # Pass the styler instance
+    )
+
     # Use hidden_columns for visibility control
-    visible_columns = ['Место', 'insurer']
+    visible_columns = [ColumnIds.PLACE, ColumnIds.INSURER]
     hidden_columns = [
         col['id'] for col in table_columns
         if col['id'] not in visible_columns and (
@@ -298,16 +303,16 @@ def generate_dash_table_config(
     
     # Updated header styles with specific alignments for N and insurer
     style_header_conditional = [
-        # N column - bottom center alignment
+        # Place column - bottom center alignment
         {
-            'if': {'column_id': 'Место', 'header_index': 0},
+            'if': {'column_id': ColumnIds.PLACE, 'header_index': 0},
             'textAlign': 'center',
             'verticalAlign': 'bottom',
             'borderBottom': 'none',
-            'paddingBottom': 'var(--spacing-sm)',
+            'paddingBottom': styler.theme.get_spacing('cell_padding'),
         },
         {
-            'if': {'column_id': 'Место', 'header_index': 1},
+            'if': {'column_id': ColumnIds.PLACE, 'header_index': 1},
             'borderTop': 'none',
             'paddingTop': '0',
             'color': 'transparent',
@@ -315,14 +320,14 @@ def generate_dash_table_config(
         },
         # Insurer column - bottom left alignment
         {
-            'if': {'column_id': 'insurer', 'header_index': 0},
+            'if': {'column_id': ColumnIds.INSURER, 'header_index': 0},
             'textAlign': 'left',
             'verticalAlign': 'bottom',
             'borderBottom': 'none',
-            'paddingBottom': 'var(--spacing-sm)',
+            'paddingBottom': styler.theme.get_spacing('cell_padding'),
         },
         {
-            'if': {'column_id': 'insurer', 'header_index': 1},
+            'if': {'column_id': ColumnIds.INSURER, 'header_index': 1},
             'borderTop': 'none',
             'paddingTop': '0',
             'color': 'transparent',
@@ -334,94 +339,6 @@ def generate_dash_table_config(
     style_cell_conditional = styler.get_column_width_styles() + [
         styler.get_data_column_style(col['id'])
         for col in enforced_columns if col['id'] not in visible_columns
-    ]
-
-    # Enhanced CSS rules with more specificity and !important flags
-    css_rules = [
-        # Target the toggle button container and all its variations
-        {
-            'selector': '''
-                .dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner 
-                    .dash-fixed-content .dash-fixed-row .dash-fixed-row-info .dash-table-menu__toggle,
-                .dash-spreadsheet-inner th .column-header--toggle,
-                th .column-header--toggle,
-                .dash-table-menu__toggle,
-                .dash-table-menu__toggle--open,
-                .dash-table-menu__toggle--closed,
-                .dash-spreadsheet-menu,
-                .dash-spreadsheet-menu *
-            ''',
-            'rule': '''
-                display: none !important;
-                width: 0 !important;
-                height: 0 !important;
-                opacity: 0 !important;
-                pointer-events: none !important;
-                position: absolute !important;
-                visibility: hidden !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                border: none !important;
-                clip: rect(0 0 0 0) !important;
-                clip-path: inset(50%) !important;
-            '''
-        },
-        # Target menu items and dropdowns
-        {
-            'selector': '''
-                .dash-table-menu,
-                .dash-menu-item,
-                .dash-menu-item--show-hide-toggle-columns,
-                .dash-menu-item--hide-columns,
-                .show-hide-toggle-columns,
-                .dash-table-menu__dropdown,
-                .dash-table-menu__dropdown--content,
-                [class*="dash-menu-item"]
-            ''',
-            'rule': '''
-                display: none !important;
-                width: 0 !important;
-                height: 0 !important;
-                opacity: 0 !important;
-                pointer-events: none !important;
-                position: absolute !important;
-                visibility: hidden !important;
-            '''
-        },
-        # Hide sort icons
-        {
-            'selector': '''
-                .dash-header-cell::after,
-                .dash-header-cell--sort-asc::after,
-                .dash-header-cell--sort-desc::after
-            ''',
-            'rule': '''
-                display: none !important;
-                content: none !important;
-            '''
-        },
-        # Header alignment specificity
-        {
-            'selector': '.dash-header[data-dash-column="N"]',
-            'rule': '''
-                text-align: center !important;
-                vertical-align: bottom !important;
-            '''
-        },
-        {
-            'selector': '.dash-header[data-dash-column="insurer"]',
-            'rule': '''
-                text-align: left !important;
-                vertical-align: bottom !important;
-            '''
-        },
-        # Remove any menu-related margins/padding
-        {
-            'selector': '.dash-spreadsheet th',
-            'rule': '''
-                padding-right: var(--spacing-md) !important;
-            '''
-        }
     ]
 
     # Return table configuration with modified settings
@@ -442,7 +359,6 @@ def generate_dash_table_config(
         'row_selectable': False,
         'cell_selectable': False,
         'page_action': 'none',
-        'css': css_rules,
         'style_table': {
             'overflowX': 'auto',
             'minWidth': '100%'

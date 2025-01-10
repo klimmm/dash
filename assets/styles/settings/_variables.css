@@ -25,4 +25,208 @@
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+
+  /* Breakpoints */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+
+  /* Table Dimensions */
+  --table-min-width: 100%;
+  --table-max-width: 1400px;
+  --table-cell-height: 2rem;
+  --table-header-height: 2rem;
+  
+  /* Column Base Widths */
+  --table-number-col-width: 1rem;
+  --table-insurer-col-width: 10rem;
+  --table-data-col-width: 5rem;
+  
+  /* Responsive Scale Factors */
+  --table-width-scale-sm: 0.85;
+  --table-width-scale-md: 1;
+  --table-width-scale-lg: 1.15;
+  --table-width-scale-xl: 1.25;
+
+  /* Typography */
+  --table-font-size: var(--text-sm);
+  --table-header-font-weight: var(--font-weight-semibold);
+  
+  /* Spacing */
+  --table-cell-padding: var(--space-2);
+  --table-header-padding: var(--space-2) var(--space-3);
+  
+  /* Colors */
+  --table-header-bg: var(--color-blue-500);
+  --table-header-text: var(--color-white);
+  --table-cell-bg: var(--color-bg-primary);
+  --table-cell-text: var(--color-text-primary);
+  --table-border: var(--color-border-light);
+  --table-highlight-bg: var(--color-gray-50);
+  --table-success-bg: var(--color-success-50);
+  --table-success-text: var(--color-success-600);
+  --table-danger-text: var(--color-danger-600);
+  --table-qtoq-bg: var(--color-bg-secondary);
+  --table-insurer-bg: var(--color-gray-100);
+  
+  /* Scrollbar Colors */
+  --table-scrollbar-thumb: var(--color-gray-400);
+  --table-scrollbar-track: var(--color-gray-200);
+    
+}
+
+/* Table Container Styles */
+.data-table-wrapper {
+  width: 100%;
+  max-width: var(--table-max-width);
+  margin: 0 auto;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative; /* For fade indicators */
+}
+
+/* Scrollbar Styling - Consolidated */
+.data-table-wrapper,
+.dash-table-container {
+  scrollbar-width: thin;
+  scrollbar-color: var(--table-scrollbar-thumb) var(--table-scrollbar-track);
+}
+
+.data-table-wrapper::-webkit-scrollbar,
+.dash-table-container::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.data-table-wrapper::-webkit-scrollbar-track,
+.dash-table-container::-webkit-scrollbar-track {
+  background: var(--table-scrollbar-track);
+  border-radius: 3px;
+}
+
+.data-table-wrapper::-webkit-scrollbar-thumb,
+.dash-table-container::-webkit-scrollbar-thumb {
+  background-color: var(--table-scrollbar-thumb);
+  border-radius: 3px;
+}
+
+/* Base Column Styles */
+.dash-table [data-dash-column],
+.dash-table .dash-cell {
+  transition: width var(--transition-normal);
+}
+
+/* Mobile First - Default (Small) Screens */
+.dash-table [data-dash-column="Место"],
+.dash-table .dash-cell[data-dash-column="Место"] {
+  width: calc(var(--table-number-col-width) * var(--table-width-scale-sm)) !important;
+  min-width: calc(var(--table-number-col-width) * var(--table-width-scale-sm)) !important;
+  max-width: calc(var(--table-number-col-width) * var(--table-width-scale-sm)) !important;
+  text-align: center !important;
+}
+
+.dash-table [data-dash-column="insurer"],
+.dash-table .dash-cell[data-dash-column="insurer"] {
+  width: calc(var(--table-insurer-col-width) * var(--table-width-scale-sm)) !important;
+  min-width: calc(var(--table-insurer-col-width) * var(--table-width-scale-sm)) !important;
+  max-width: calc(var(--table-insurer-col-width) * var(--table-width-scale-sm)) !important;
+  text-align: left !important;
+}
+
+.dash-table .dash-cell:not([data-dash-column="Место"]):not([data-dash-column="insurer"]) {
+  width: calc(var(--table-data-col-width) * var(--table-width-scale-sm)) !important;
+  min-width: calc(var(--table-data-col-width) * var(--table-width-scale-sm)) !important;
+  max-width: calc(var(--table-data-col-width) * var(--table-width-scale-sm)) !important;
+  text-align: center !important;
+}
+
+/* Tablet (md) */
+@media (min-width: var(--breakpoint-md)) {
+  .dash-table [data-dash-column="Место"],
+  .dash-table .dash-cell[data-dash-column="Место"] {
+    width: var(--table-number-col-width) !important;
+    min-width: var(--table-number-col-width) !important;
+    max-width: var(--table-number-col-width) !important;
+  }
+
+  .dash-table [data-dash-column="insurer"],
+  .dash-table .dash-cell[data-dash-column="insurer"] {
+    width: var(--table-insurer-col-width) !important;
+    min-width: var(--table-insurer-col-width) !important;
+    max-width: var(--table-insurer-col-width) !important;
+  }
+
+  .dash-table .dash-cell:not([data-dash-column="Место"]):not([data-dash-column="insurer"]) {
+    width: var(--table-data-col-width) !important;
+    min-width: var(--table-data-col-width) !important;
+    max-width: var(--table-data-col-width) !important;
+  }
+}
+
+/* Desktop (lg) */
+@media (min-width: var(--breakpoint-lg)) {
+  .dash-table [data-dash-column="Место"],
+  .dash-table .dash-cell[data-dash-column="Место"] {
+    width: calc(var(--table-number-col-width) * var(--table-width-scale-lg)) !important;
+    min-width: calc(var(--table-number-col-width) * var(--table-width-scale-lg)) !important;
+    max-width: calc(var(--table-number-col-width) * var(--table-width-scale-lg)) !important;
+  }
+
+  .dash-table [data-dash-column="insurer"],
+  .dash-table .dash-cell[data-dash-column="insurer"] {
+    width: calc(var(--table-insurer-col-width) * var(--table-width-scale-lg)) !important;
+    min-width: calc(var(--table-insurer-col-width) * var(--table-width-scale-lg)) !important;
+    max-width: calc(var(--table-insurer-col-width) * var(--table-width-scale-lg)) !important;
+  }
+
+  .dash-table .dash-cell:not([data-dash-column="Место"]):not([data-dash-column="insurer"]) {
+    width: calc(var(--table-data-col-width) * var(--table-width-scale-lg)) !important;
+    min-width: calc(var(--table-data-col-width) * var(--table-width-scale-lg)) !important;
+    max-width: calc(var(--table-data-col-width) * var(--table-width-scale-lg)) !important;
+  }
+}
+
+/* Font size adjustments */
+@media (max-width: var(--breakpoint-sm)) {
+  .dash-table .dash-cell,
+  .dash-table .dash-header {
+    font-size: calc(var(--table-font-size) * 0.9);
+    padding: calc(var(--table-cell-padding) * 0.75);
+  }
+}
+
+/* Scroll Fade Indicators */
+.data-table-wrapper::after,
+.data-table-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.data-table-wrapper::before {
+  left: 0;
+  background: linear-gradient(to right, 
+    rgba(var(--color-bg-primary-rgb), 0.9), 
+    rgba(var(--color-bg-primary-rgb), 0));
+}
+
+.data-table-wrapper::after {
+  right: 0;
+  background: linear-gradient(to left, 
+    rgba(var(--color-bg-primary-rgb), 0.9), 
+    rgba(var(--color-bg-primary-rgb), 0));
+}
+
+.data-table-wrapper.scroll-start::before {
+  opacity: 1;
+}
+
+.data-table-wrapper.scroll-end::after {
+  opacity: 1;
 }

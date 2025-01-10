@@ -164,18 +164,18 @@ def table_data_pivot(
             main_df = main_df.sort_values(by=sort_col, ascending=False)
 
             # Add numbering with previous rank
-            main_df.insert(0, 'Место', range(1, len(main_df) + 1))
+            main_df.insert(0, 'N', range(1, len(main_df) + 1))
             if prev_ranks:
-                main_df['Место'] = main_df.apply(
-                    lambda row: f"{int(row['Место'])} ({prev_ranks.get(row['insurer'], 'n/a')})"
-                    if row['insurer'] in prev_ranks else str(int(row['Место'])),
+                main_df['N'] = main_df.apply(
+                    lambda row: f"{int(row['N'])} ({prev_ranks.get(row['insurer'], 'n/a')})"
+                    if row['insurer'] in prev_ranks else str(int(row['N'])),
                     axis=1
                 )
             else:
-                main_df['Место'] = main_df['Место'].astype(str)
+                main_df['N'] = main_df['N'].astype(str)
 
             # Combine and finalize
-            summary_df.insert(0, 'Место', np.nan)
+            summary_df.insert(0, 'N', np.nan)
             final_df = pd.concat([main_df, summary_df], ignore_index=True)
 
             return final_df.fillna('n/a')
