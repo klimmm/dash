@@ -1,5 +1,6 @@
 /* _sidebar.css */
 
+/* Base Sidebar */
 .sidebar-filters {
     width: var(--sidebar-width);
     height: 100%;
@@ -51,7 +52,7 @@
     margin-left: var(--space-4);
 }
 
-/* Responsive Behavior */
+/* Mobile Responsiveness */
 @media (max-width: 768px) {
     .sidebar-filters.expanded {
         position: fixed;
@@ -66,20 +67,4 @@
     .main-col.shifted {
         margin-left: 0;
     }
-}
-
-/* Button States */
-.btn-sidebar-toggle,
-.btn-period {
-    transition: all var(--transition-duration-fast);
-}
-
-.btn-sidebar-toggle:hover,
-.btn-period:hover {
-    opacity: 0.9;
-}
-
-.btn-period.active {
-    background-color: var(--color-blue-600);
-    color: var(--color-text-inverse);
 }

@@ -1,11 +1,16 @@
-@import url('/assets/styles/01_settings/_tokens.css');
-@import url('/assets/styles/01_settings/_utilities.css');
-@import url('/assets/styles/01_settings/_mixins.css');
-@import url('/assets/styles/01_settings/_reset.css');
-@import url('/assets/styles/02_components/_layout.css');
-@import url('/assets/styles/02_components/_data-table.css');
-@import url('/assets/styles/02_components/_navbar.css');
-@import url('/assets/styles/02_components/_sidebar.css');
-@import url('/assets/styles/02_components/_buttons.css');
-@import url('/assets/styles/02_components/_forms.css');
-@import url('/assets/styles/02_components/_dropdowns.css');
+/* main.css */
+
+/* Settings */
+@import url('./01_settings/_tokens.css');
+@import url('./01_settings/_utilities.css');
+@import url('./01_settings/_mixins.css');
+@import url('./01_settings/_reset.css');
+
+/* Components - order matters for specificity */
+@import url('./02_components/_layout.css');
+@import url('./02_components/_buttons.css');  
+@import url('./02_components/_forms.css');   
+@import url('./02_components/_sidebar.css');
+@import url('./02_components/_navbar.css');
+@import url('./02_components/_data-table.css');
+@import url('./02_components/_dropdowns.css');

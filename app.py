@@ -32,17 +32,22 @@ from constants.filter_options import (
     BASE_METRICS, CALCULATED_METRICS, CALCULATED_RATIOS
 )
 from memory_profiler import profile
+# Get absolute path to assets folder
+ASSETS_PATH = Path(__file__).parent / "assets"
 
-
-# Initialize the Dash app
+# Initialize the Dash app with proper asset configuration
 app = dash.Dash(
     __name__,
-    assets_folder=Path(__file__).parent / "assets",
-    assets_url_path='/assets', 
+    assets_folder=str(ASSETS_PATH),
+    assets_url_path='/assets',  # Explicitly set the URL path
     external_stylesheets=[dbc.themes.BOOTSTRAP],
-    suppress_callback_exceptions=True
+    suppress_callback_exceptions=True,
+    serve_locally=True  # Ensure assets are served locally
 )
+
 app.title = APP_TITLE
+
+# Remove manual CSS injection from index_string
 app.index_string = '''
 <!DOCTYPE html>
 <html>
@@ -50,7 +55,6 @@ app.index_string = '''
         {%metas%}
         <title>{%title%}</title>
         {%favicon%}
-        <link rel="stylesheet" href="/assets/styles/main.css?v=1.0">
         {%css%}
     </head>
     <body>
@@ -64,18 +68,37 @@ app.index_string = '''
 </html>
 '''
 
-
-# Add after server initialization
+# Right after this server initialization
 server = app.server
-app.server.static_folder = str(Path(__file__).parent / "assets")
-app.server.static_url_path = '/assets'
 
-# Add these debug prints
-print(f"Static folder path: {app.server.static_folder}")
-print(f"Static URL path: {app.server.static_url_path}")
-print(f"Assets folder exists: {Path(app.server.static_folder).exists()}")
-print(f"Main CSS exists: {(Path(app.server.static_folder) / 'styles' / 'main.css').exists()}")
-
+# Add debug route here, before any callbacks
+@server.route('/debug-info')
+def debug_info():
+    import os
+    import json  # Add this import at the top of your file
+    
+    # Get list of all CSS files
+    styles_path = Path(app.assets_folder) / 'styles'
+    css_files = []
+    if styles_path.exists():
+        for root, dirs, files in os.walk(styles_path):
+            for file in files:
+                rel_path = Path(root).relative_to(app.assets_folder)
+                css_files.append(str(rel_path / file))
+    
+    info = {
+        "assets_folder": str(app.assets_folder),
+        "assets_url_path": app.assets_url_path,
+        "static_folder": app.server.static_folder if hasattr(app.server, 'static_folder') else None,
+        "static_url_path": app.server.static_url_path if hasattr(app.server, 'static_url_path') else None,
+        "current_dir": os.getcwd(),
+        "files_in_assets": os.listdir(app.assets_folder) if os.path.exists(app.assets_folder) else [],
+        "css_files": css_files,
+        "main_css_path": str(Path(app.assets_folder) / 'styles' / 'main.css'),
+        "main_css_exists": (Path(app.assets_folder) / 'styles' / 'main.css').exists(),
+        "asset_url_main_css": app.get_asset_url('styles/main.css')
+    }
+    return json.dumps(info, indent=2)
 
 # Initialize logging and debug level
 setup_logging(console_level=logging.INFO, file_level=logging.DEBUG)
@@ -401,21 +424,6 @@ def process_ui(
     finally:
         track_callback_end('application.main', 'process_ui', start_time)
 
-
-# Add after your callbacks
-@app.server.route('/debug-assets')
-def debug_assets():
-    """Debug endpoint to check assetestt paths"""
-    asset_folder = app.server.static_folder
-    css_file = Path(asset_folder) / "styles" / "main.css"
-    
-    return {
-        'asset_folder': str(asset_folder),
-        'css_exists': css_file.exists(),
-        'static_url_path': app.server.static_url_path,
-    }
-
-# Then your if __name__ == '__main__': block
 
 if __name__ == '__main__':
     try:
