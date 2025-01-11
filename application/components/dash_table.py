@@ -1,374 +1,64 @@
-# application.components.dash_table.py
-
+from typing import Dict, Any, List, Optional
 import pandas as pd
-from dataclasses import dataclass, field
-from typing import List, Dict, Any, Tuple, Optional, TypedDict, Literal
 from dash.dash_table.Format import Format, Scheme, Group
+from pathlib import Path
+from config.logging_config import get_logger
 from constants.translations import translate
 from constants.filter_options import METRICS
 from data_process.data_utils import map_insurer
-from config.logging_config import get_logger
+from application.components.resolve_variables import load_css_file, resolve_theme_variables
 
 logger = get_logger(__name__)
 
-class ColorConfig(TypedDict):
-    header_bg: str
-    header_text: str
-    cell_bg: str
-    cell_text: str
-    border: str
-    highlight: str
-    success: str
-    danger: str
-    success_bg: str
-    qtoq_bg: str
-    insurer_bg: str
+# Load theme configuration
+CSS_PATH = Path(__file__).parent.parent.parent / "assets" / "styles" / "01_settings" / "_design-tokens.css"
+css_content = load_css_file(str(CSS_PATH))
 
-def default_colors() -> ColorConfig:
-    return ColorConfig(
-        # Header colors
-        header_bg='var(--table-header-bg)',         
-        header_text='var(--table-header-text)',
-        
-        # Cell colors
-        cell_bg='var(--table-cell-bg)',            
-        cell_text='var(--table-cell-text)',        
-        border='var(--table-border)',              
-        
-        # State colors
-        highlight='var(--table-highlight-bg)',     # Row/cell highlighting
-        success='var(--color-status-success)',     # Positive changes
-        danger='var(--color-status-danger)',       # Negative changes
-        success_bg='var(--color-status-success-subtle)', # Success background
-        
-        # Special row/cell colors
-        qtoq_bg='var(--table-qtoq-bg)',           # Quarter-to-quarter comparison
-        insurer_bg='var(--table-cell-bg)'         # Insurer column background
-    )
+# Define base theme structure
+THEME = {
+    'colors': {
+        'header_bg': 'var(--table-header-bg)',
+        'header_text': 'var(--table-header-text)',
+        'cell_bg': 'var(--table-cell-bg)',
+        'cell_text': 'var(--table-cell-text)',
+        'border': 'var(--table-border)',
+        'highlight': 'var(--table-highlight-bg)',
+        'success': 'var(--color-status-success)',
+        'danger': 'var(--color-status-danger)',
+        'qtoq_bg': 'var(--table-qtoq-bg)',
+    },
+    'typography': {
+        'font_family': 'var(--font-family-base)',
+        'font_size': 'var(--table-font-size)',
+        'header_weight': 'var(--font-weight-semibold)',
+        'bold_weight': 'bold',
+        'normal_weight': 'normal'
+    },
+    'spacing': {
+        'cell_padding': 'var(--table-cell-padding-x)',
+        'header_padding': 'var(--table-header-padding)',
+    },
+    'layout': {
+        'white_space': 'normal',
+        'min_width': '100%',
+        'overflow_x': 'auto',
+        'text_align': {'left': 'left', 'center': 'center'},
+        'vertical_align': {'top': 'top', 'bottom': 'bottom'},
+        'border': {'width': '1px', 'style': 'solid', 'none': 'none'}
+    }
+}
 
+# Resolve theme variables
+TABLE_THEME = resolve_theme_variables(THEME, css_content)
 
-class TypographyConfig(TypedDict):
-    font_family: str
-    font_size: str
-    header_weight: str
-
-def default_typography() -> TypographyConfig:
-    return TypographyConfig(
-        font_family='var(--font-family-base)',    # Using base font family token
-        font_size='var(--table-font-size)',       # Using table-specific font size
-        header_weight='var(--font-weight-semibold)' # Using semantic font weight
-    )
-
-class SpacingConfig(TypedDict):
-    cell_padding: str
-    header_padding: str
-
-def default_spacing() -> SpacingConfig:
-    return SpacingConfig(
-        cell_padding='var(--table-cell-padding)',
-        header_padding='var(--table-header-padding)'
-    )
-
-
-class DimensionsConfig(TypedDict):
-    cell_height: str
-    header_height: str
-    place_col_width: str      # Changed from number_col_width
-    insurer_col_width: str
-    data_col_width: str
-
-def default_dimensions() -> DimensionsConfig:
-    return DimensionsConfig(
-        cell_height='var(--table-cell-height)',
-        header_height='var(--table-header-height)',
-        place_col_width='var(--table-number-col-width)',
-        insurer_col_width='var(--table-insurer-col-width)',
-        data_col_width='var(--table-data-col-width)'
-    )
-
-
-
-@dataclass(frozen=True)
-class TableTheme:
-    colors: ColorConfig = field(default_factory=default_colors)
-    typography: TypographyConfig = field(default_factory=default_typography)
-    dimensions: DimensionsConfig = field(default_factory=default_dimensions)
-    spacing: SpacingConfig = field(default_factory=default_spacing)
-
-    def get_color(self, key: Literal['header_bg', 'header_text', 'cell_bg', 'cell_text', 
-                                   'border', 'highlight', 'success', 'danger', 
-                                   'success_bg', 'qtoq_bg', 'insurer_bg']) -> str:
-        return self.colors[key]
-
-    def get_typography(self, key: Literal['font_family', 'font_size', 'header_weight']) -> str:
-        return self.typography[key]
-
-    def get_dimension(self, key: Literal['cell_height', 'header_height', 
-                                       'number_col_width', 'insurer_col_width', 
-                                       'data_col_width']) -> str:
-        return self.dimensions[key]
-
-    def get_spacing(self, key: Literal['cell_padding', 'header_padding']) -> str:
-        return self.spacing[key]
-
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            'colors': dict(self.colors),
-            'typography': dict(self.typography),
-            'dimensions': dict(self.dimensions),
-            'spacing': dict(self.spacing)
-        }
-
-
-def create_default_theme() -> TableTheme:
-    return TableTheme()
-
-class ColumnIds:
-    """Constants for column identifiers"""
-    PLACE = 'N'
-    INSURER = 'insurer'
-
-    @classmethod
-    def is_identifier_column(cls, column_id: str) -> bool:
-        """Check if column is an identifier column"""
-        return column_id.lower() in [cls.PLACE.lower(), cls.INSURER.lower()]
-
-    @classmethod
-    def is_data_column(cls, column_id: str) -> bool:
-        """Check if column is a data column"""
-        return not cls.is_identifier_column(column_id)
-
-
-
-
-
-        
-class TableStyler:
-    """Handles table styling with theme support"""
-    
-    def __init__(self, theme: Optional[TableTheme] = None):
-        self.theme = theme or create_default_theme()
-
-    def get_base_styles(self) -> Dict[str, Any]:
-        """Generate base styles using theme configuration"""
-        return {
-            'style_table': {
-                'className': 'dt-container'
-            },
-            'style_cell': {
-                'fontFamily': self.theme.get_typography('font_family'),
-                'fontSize': self.theme.get_typography('font_size'),
-                'padding': self.theme.get_spacing('cell_padding'),
-                'height': self.theme.get_dimension('cell_height'),
-                'minHeight': self.theme.get_dimension('cell_height'),
-                'whiteSpace': 'normal',
-                'border': f"1px solid {self.theme.get_color('border')}"
-            },
-            'style_header': {
-                'backgroundColor': self.theme.get_color('header_bg'),
-                'color': self.theme.get_color('header_text'),
-                'fontWeight': self.theme.get_typography('header_weight'),
-                'textAlign': 'center',
-                'height': self.theme.get_dimension('header_height'),
-                'minHeight': self.theme.get_dimension('header_height'),
-                'whiteSpace': 'normal',
-                'padding': self.theme.get_spacing('header_padding')
-            },
-            'style_data': {
-                'backgroundColor': self.theme.get_color('cell_bg'),
-                'color': self.theme.get_color('cell_text')
-            }
-        }
-    def create_conditional_styles(self, df: pd.DataFrame) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-        """Create conditional styles for the table"""
-        special_insurers = {
-            'Топ': {
-                'backgroundColor': self.theme.get_color('highlight'),
-                'fontWeight': 'normal'
-            },
-            'Весь рынок': {
-                'backgroundColor': self.theme.get_color('highlight'),
-                'fontWeight': 'bold'
-            },
-        }
-    
-        row_styles = [
-            {'if': {'filter_query': f'{{insurer}} contains "{insurer}"'}, **style}
-            for insurer, style in special_insurers.items()
-        ]
-    
-        column_styles = []
-        for col in df.columns:
-            if any(pattern in col for pattern in ('_q_to_q_change', '_market_share_q_to_q_change')):
-                column_styles.extend(self._get_change_column_styles(col))
-            elif ColumnIds.is_identifier_column(col):
-                column_styles.append(self._get_identifier_column_style(col))
-    
-        return column_styles, row_styles
-
-
-    def _get_change_column_styles(self, col: str) -> List[Dict[str, Any]]:
-        """Generate styles for change columns"""
-        return [
-            {
-                'if': {'column_id': col, 'filter_query': f'{{{col}}} > 0'},
-                'color': self.theme.get_color('success'),
-                'fontWeight': 'bold'
-            },
-            {
-                'if': {'column_id': col, 'filter_query': f'{{{col}}} < 0'},
-                'color': self.theme.get_color('danger'),
-                'fontWeight': 'bold'
-            },
-            {
-                'if': {'column_id': col},
-                'backgroundColor': self.theme.get_color('qtoq_bg'),
-            }
-        ]
-
-    def _get_identifier_column_style(self, col: str) -> Dict[str, Any]:
-        """Generate styles for identifier columns"""
-        return {
-            'if': {'column_id': col},
-            'backgroundColor': self.theme.get_color('insurer_bg'),
-            'textAlign': 'left' if col.lower() == ColumnIds.INSURER.lower() else 'center',
-        }
-    
-    def get_column_width_styles(self) -> List[Dict[str, Any]]:
-        """Generate column width styles - only alignment, widths handled by CSS"""
-        return [
-            {
-                'if': {'column_id': ColumnIds.PLACE},
-                'textAlign': 'center'
-            },
-            {
-                'if': {'column_id': ColumnIds.INSURER},
-                'textAlign': 'left'
-            }
-        ]
-    
-    def get_header_styles(self) -> List[Dict[str, Any]]:
-        """Get header styles using column constants"""
-        identifier_columns = [ColumnIds.PLACE, ColumnIds.INSURER]
-        return [
-            {
-                'if': {'column_id': col, 'header_index': 0},
-                'borderBottom': 'none',
-                'paddingBottom': '0',
-            } for col in identifier_columns
-        ] + [
-            {
-                'if': {'column_id': col, 'header_index': 1},
-                'borderTop': 'none',
-                'paddingTop': '0',
-                'color': 'transparent'
-            } for col in identifier_columns
-        ]
-
-    def get_data_column_style(self, column_id: str) -> Dict[str, Any]:
-        """Generate style for data columns - only alignment"""
-        return {
-            'if': {'column_id': column_id},
-            'textAlign': 'center'
-        }
-
-
-class ColumnFormatter:
-    @staticmethod
-    def get_format(col_type: str) -> Format:
-        if 'market_share' in col_type or 'q_to_q_change' in col_type:
-            return Format(precision=2, scheme=Scheme.percentage)
-        return Format(
-            precision=3,
-            scheme=Scheme.fixed,
-            group=Group.yes,
-            groups=3,
-            group_delimiter=','
-        )
-
-    @staticmethod
-    def parse_quarter(quarter_str: str, period_type: str) -> str:
-        if not quarter_str or 'Q' not in quarter_str:
-            return quarter_str
-        try:
-            year, q = quarter_str.split('Q')
-            period_map = {
-                'ytd': {'1': '3 мес.', '2': '6 мес.', '3': '9 мес.', '4': '12 мес.'},
-                'default': {'1': '1 кв.', '2': '2 кв.', '3': '3 кв.', '4': '4 кв.'}
-            }
-            quarter_map = period_map.get(period_type, period_map['default'])
-            return f"{quarter_map.get(q, q)} {year}"
-        except Exception:
-            return quarter_str
-
-    def format_columns(self, columns: List[Dict[str, Any]], metrics: Dict[str, Dict[str, str]], period_type: str) -> List[Dict[str, Any]]:
-        formatted_columns = []
-        for col in columns:
-            col_id = col['id']
-            if col_id in ['N', 'insurer']:
-                formatted_columns.append(self._format_identifier_column(col_id))
-                continue
-
-            metric, quarter, additional_info = self._parse_column_components(col_id, metrics)
-            column_name = self._get_column_name(metric, quarter, additional_info, metrics, period_type)
-
-            formatted_columns.append({
-                'id': col_id,
-                'type': 'numeric',
-                'format': self.get_format(additional_info),
-                'name': column_name
-            })
-        return formatted_columns
-
-    def _parse_column_components(self, col_id: str, metrics: Dict[str, Dict[str, str]]) -> Tuple[str, str, str]:
-        metric = next((m for m in sorted(metrics.keys(), key=len, reverse=True) 
-                       if col_id.startswith(m)), None)
-        if metric:
-            remaining = col_id[len(metric)+1:].split('_')
-            quarter = remaining[0] if remaining else ""
-            additional_info = '_'.join(remaining[1:]) if len(remaining) > 1 else ""
-        else:
-            parts = col_id.split('_')
-            metric, quarter, *additional_parts = parts + ["", ""]
-            additional_info = '_'.join(additional_parts)
-        return metric, quarter, additional_info
-
-    def _format_identifier_column(self, col_id: str) -> Dict[str, Any]:
-        translated_col = translate(col_id)
-        return {
-            'name': [translated_col, translated_col],
-            'id': col_id
-        }
-
-    def _get_column_name(self, metric: str, quarter: str, additional_info: str, 
-                        metrics: Dict[str, Dict[str, str]], period_type: str) -> List[str]:
-        translated_metric = translate(metrics.get(metric, {}).get('label', metric))
-        if 'market_share_q_to_q_change' in additional_info:
-            return [f"{translated_metric}, {translate('market_share')}", translate('q_to_q_change')]
-        elif 'market_share' in additional_info:
-            return [f"{translated_metric}, {translate('market_share')}", self.parse_quarter(quarter, period_type)]
-        elif 'q_to_q_change' in additional_info:
-            return [f"{translated_metric}, {translate('млрд руб.')}", translate('q_to_q_change')]
-        else:
-            return [f"{translated_metric}, {translate('млрд руб.')}", self.parse_quarter(quarter, period_type)]
-
-def prepare_dash_table_data(
-    df: pd.DataFrame, 
-    period_type: str,
-    styler: Optional[TableStyler] = None
-) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
-    """Prepare data and styling for the dash table"""
-    table_columns = [{"name": col, "id": col} for col in df.columns]
-    table_data = df.assign(insurer=lambda x: x['insurer'].map(map_insurer)).to_dict('records')
-
-    formatter = ColumnFormatter()
-    styler = styler or TableStyler()  # Use provided styler or create new one
-
-    table_columns = formatter.format_columns(table_columns, METRICS, period_type)
-    column_styles, row_styles = styler.create_conditional_styles(df)
-
-    return table_columns, table_data, (column_styles + row_styles)
-
+# Constants
+PLACE_COL = 'N'
+INSURER_COL = 'insurer'
+IDENTIFIER_COLS = {PLACE_COL, INSURER_COL}
+SPECIAL_INSURERS = {
+    'Топ': {'backgroundColor': TABLE_THEME['colors']['highlight'], 'fontWeight': 'bold'},
+    'Весь рынок': {'backgroundColor': TABLE_THEME['colors']['highlight'], 'fontWeight': 'bold'}
+}
 
 def generate_dash_table_config(
     df: pd.DataFrame,
@@ -377,92 +67,155 @@ def generate_dash_table_config(
     toggle_selected_market_share: Optional[List[str]] = None,
     toggle_selected_qtoq: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
-    show_selected_market_share = toggle_selected_market_share and "show" in toggle_selected_market_share
-    show_selected_qtoq = toggle_selected_qtoq and "show" in toggle_selected_qtoq
-
-    # Create single styler instance to be used throughout
-    styler = TableStyler()
-
-    # Prepare columns & data using the same styler
-    table_columns, table_data, style_data_conditional = prepare_dash_table_data(
-        df, 
-        period_type,
-        styler=styler  # Pass the styler instance
-    )
-
-    # Use hidden_columns for visibility control
-    visible_columns = [ColumnIds.PLACE, ColumnIds.INSURER]
+    """Generate complete table configuration with styling and formatting"""
+    
+    # Visibility settings
+    show_market_share = toggle_selected_market_share and "show" in toggle_selected_market_share
+    show_qtoq = toggle_selected_qtoq and "show" in toggle_selected_qtoq
+    
+    # Format columns and prepare data
+    columns = []
+    for col in df.columns:
+        # Base column config
+        column_config = {"id": col}
+        
+        if col in IDENTIFIER_COLS:
+            # Handle identifier columns
+            translated_col = translate(col)
+            column_config["name"] = [translated_col, translated_col]
+        else:
+            # Handle metric columns
+            metric = next((m for m in sorted(METRICS.keys(), key=len, reverse=True) 
+                         if col.startswith(m)), '')
+            parts = col[len(metric)+1:].split('_') if metric else col.split('_')
+            quarter = parts[0] if parts else ""
+            suffix = '_'.join(parts[1:]) if len(parts) > 1 else ""
+            
+            # Format column name
+            metric_label = translate(METRICS.get(metric, {}).get('label', metric))
+            if 'market_share' in suffix:
+                base = f"{metric_label}, {translate('market_share')}"
+                header = translate('q_to_q_change') if 'q_to_q_change' in suffix else \
+                        (quarter and f"{quarter.split('Q')[1]} кв. {quarter.split('Q')[0]}")
+            else:
+                base = f"{metric_label}, {translate('млрд руб.')}"
+                header = translate('q_to_q_change') if 'q_to_q_change' in suffix else \
+                        (quarter and f"{quarter.split('Q')[1]} кв. {quarter.split('Q')[0]}")
+            
+            column_config.update({
+                "name": [base, header],
+                "type": "numeric",
+                "format": Format(
+                    precision=2 if any(x in col for x in ['market_share', 'q_to_q_change', 'ratio', 'rate']) 
+                    else 3,
+                    scheme=Scheme.percentage if any(x in col for x in ['market_share', 'q_to_q_change', 'ratio', 'rate'])
+                    else Scheme.fixed,
+                    group=Group.yes,
+                    groups=3,
+                    group_delimiter=','
+                )
+            })
+        
+        columns.append(column_config)
+    
+    # Hidden columns
     hidden_columns = [
-        col['id'] for col in table_columns
-        if col['id'] not in visible_columns and (
-            ('_market_share' in col['id'] and not show_selected_market_share) or
-            ('_q_to_q_change' in col['id'] and not show_selected_qtoq)
+        col["id"] for col in columns
+        if col["id"] not in IDENTIFIER_COLS and (
+            ('market_share' in col["id"] and not show_market_share) or
+            ('q_to_q_change' in col["id"] and not show_qtoq)
         )
     ]
-
-    # Make all columns non-hideable and non-toggleable
-    enforced_columns = [
-        {
-            **col_def,
-            "hideable": False,
-            "selectable": False,
-            "deletable": False,
-            "renamable": False
-        } for col_def in table_columns
-    ]
-
-    # Get base styles from the styler instance
-    base_styles = styler.get_base_styles()
     
-    # Updated header styles with specific alignments for N and insurer
-    style_header_conditional = [
-        # Place column - bottom center alignment
-        {
-            'if': {'column_id': ColumnIds.PLACE, 'header_index': 0},
-            'textAlign': 'center',
-            'verticalAlign': 'bottom',
-            'borderBottom': 'none',
-            'paddingBottom': styler.theme.get_spacing('cell_padding'),
-        },
-        {
-            'if': {'column_id': ColumnIds.PLACE, 'header_index': 1},
-            'borderTop': 'none',
-            'paddingTop': '0',
-            'color': 'transparent',
-            'textAlign': 'center',
-        },
-        # Insurer column - bottom left alignment
-        {
-            'if': {'column_id': ColumnIds.INSURER, 'header_index': 0},
-            'textAlign': 'left',
-            'verticalAlign': 'bottom',
-            'borderBottom': 'none',
-            'paddingBottom': styler.theme.get_spacing('cell_padding'),
-        },
-        {
-            'if': {'column_id': ColumnIds.INSURER, 'header_index': 1},
-            'borderTop': 'none',
-            'paddingTop': '0',
-            'color': 'transparent',
-            'textAlign': 'left',
-        }
-    ]
+    # Style configuration
+    style_data_conditional = []
     
-    # Style conditionals without column visibility CSS
-    style_cell_conditional = styler.get_column_width_styles() + [
-        styler.get_data_column_style(col['id'])
-        for col in enforced_columns if col['id'] not in visible_columns
-    ]
-
-    # Return table configuration with modified settings
+    # Special insurer styles
+    for insurer, style in SPECIAL_INSURERS.items():
+        style_data_conditional.append({
+            'if': {'filter_query': f'{{insurer}} contains "{insurer}"'},
+            **style
+        })
+    
+    # Column-specific styles
+    for col in df.columns:
+        if '_q_to_q_change' in col:
+            style_data_conditional.extend([
+                {
+                    'if': {'column_id': col, 'filter_query': f'{{{col}}} > 0'},
+                    'color': TABLE_THEME['colors']['success'],
+                    'fontWeight': TABLE_THEME['typography']['normal_weight']
+                },
+                {
+                    'if': {'column_id': col, 'filter_query': f'{{{col}}} < 0'},
+                    'color': TABLE_THEME['colors']['danger'],
+                    'fontWeight': TABLE_THEME['typography']['normal_weight']
+                },
+                {
+                    'if': {'column_id': col},
+                    'backgroundColor': TABLE_THEME['colors']['qtoq_bg']
+                }
+            ])
+        elif col in IDENTIFIER_COLS:
+            style_data_conditional.append({
+                'if': {'column_id': col},
+                'backgroundColor': TABLE_THEME['colors']['cell_bg'],
+                'textAlign': TABLE_THEME['layout']['text_align']['left'] if col == INSURER_COL 
+                            else TABLE_THEME['layout']['text_align']['center']
+            })
+    
     return {
-        **base_styles,
-        'columns': enforced_columns,
-        'data': table_data,
+        # Base styles
+        'style_table': {
+            'overflowX': TABLE_THEME['layout']['overflow_x'],
+            'minWidth': TABLE_THEME['layout']['min_width']
+        },
+        'style_cell': {
+            'fontFamily': TABLE_THEME['typography']['font_family'],
+            'fontSize': TABLE_THEME['typography']['font_size'],
+            'padding': TABLE_THEME['spacing']['cell_padding'],
+            'whiteSpace': TABLE_THEME['layout']['white_space'],
+            'border': f"{TABLE_THEME['layout']['border']['width']} "
+                     f"{TABLE_THEME['layout']['border']['style']} "
+                     f"{TABLE_THEME['colors']['border']}"
+        },
+        'style_header': {
+            'backgroundColor': TABLE_THEME['colors']['header_bg'],
+            'color': TABLE_THEME['colors']['header_text'],
+            'fontWeight': TABLE_THEME['typography']['header_weight'],
+            'textAlign': TABLE_THEME['layout']['text_align']['center'],
+            'whiteSpace': TABLE_THEME['layout']['white_space'],
+            'padding': TABLE_THEME['spacing']['header_padding']
+        },
+        'style_data': {
+            'backgroundColor': TABLE_THEME['colors']['cell_bg'],
+            'color': TABLE_THEME['colors']['cell_text']
+        },
+        
+        # Data and columns
+        'columns': [{**col, "hideable": False, "selectable": False, 
+                    "deletable": False, "renamable": False} for col in columns],
+        'data': df.assign(insurer=lambda x: x['insurer'].map(map_insurer)).to_dict('records'),
         'hidden_columns': hidden_columns,
-        'style_header_conditional': style_header_conditional,
-        'style_cell_conditional': style_cell_conditional,
+        
+        # Conditional styles
         'style_data_conditional': style_data_conditional,
+        'style_header_conditional': [
+            {
+                'if': {'column_id': col, 'header_index': idx},
+                'textAlign': 'left' if col == INSURER_COL else 'center',
+                'verticalAlign': 'bottom',
+                'borderBottom': TABLE_THEME['layout']['border']['none'] if idx == 0 else None,
+                'borderTop': TABLE_THEME['layout']['border']['none'] if idx == 1 else None,
+                'paddingBottom': '0',
+                'paddingTop': '0',
+                'color': 'transparent' if idx == 1 else TABLE_THEME['colors']['header_text']
+            }
+            for col in IDENTIFIER_COLS
+            for idx in [0, 1]
+        ],
+        
+        # Table behavior
         'sort_action': 'none',
         'sort_mode': None,
         'filter_action': 'none',
@@ -472,11 +225,9 @@ def generate_dash_table_config(
         'row_selectable': False,
         'cell_selectable': False,
         'page_action': 'none',
-        'style_table': {
-            'overflowX': 'auto',
-            'minWidth': '100%'
-        },
         'editable': False,
+        
+        # Additional settings
         'dropdown': {},
         'tooltip_conditional': [],
         'tooltip_data': [],

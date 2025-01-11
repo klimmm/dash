@@ -174,21 +174,65 @@
   background-color: var(--table-qtoq-bg);
 }
 
-/*----------  9. Table Control Visibility  ----------*/
-/* Hide table controls */
+/*----------  10. Table Control Visibility  ----------*/
+
+/* Hide table controls in dash-table */
 .dash-table .dash-table-menu__toggle,
 .dash-table .dash-spreadsheet-menu,
 .dash-table .column-header--toggle,
 .dash-table .dash-filter--case,
 .dash-table .dash-filter,
-.dash-table-container .dash-table-menu {
+.dash-table-container .dash-table-menu,
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner .dash-fixed-content .dash-fixed-row .dash-fixed-row-info .dash-table-menu__toggle,
+.dash-spreadsheet-inner th .column-header--toggle,
+th .column-header--toggle {
     display: none !important;
     width: 0 !important;
     height: 0 !important;
     opacity: 0 !important;
-    visibility: hidden !important;
-    position: absolute !important;
     pointer-events: none !important;
+    position: absolute !important;
+    visibility: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+}
+
+/* Hide specific toggle states */
+.dash-table-menu__toggle--open,
+.dash-table-menu__toggle--closed {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    visibility: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+}
+
+/* Hide all descendants within dash-spreadsheet-menu */
+.dash-spreadsheet-menu *,
+.dash-spreadsheet-menu *::before,
+.dash-spreadsheet-menu *::after {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    visibility: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
 }
 
 /* Hide menu items */
@@ -207,6 +251,11 @@
     pointer-events: none !important;
     position: absolute !important;
     visibility: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
 }
 
 /* Hide sort icons */
@@ -216,6 +265,49 @@
     display: none !important;
     content: none !important;
 }
+
+/* Hide additional control elements such as pagination, column resizing, and filters */
+.dash-table .dash-pagination,
+.dash-table .dash-column-resize-handle,
+.dash-table .dash-filter-dropdown,
+.dash-table .dash-filter-input {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    visibility: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+}
+
+/* Ensure all hidden elements are not accessible via keyboard or screen readers */
+.dash-table .dash-table-menu__toggle,
+.dash-table .dash-spreadsheet-menu,
+.dash-table .column-header--toggle,
+.dash-table .dash-filter--case,
+.dash-table .dash-filter,
+.dash-table-container .dash-table-menu,
+.dash-table-menu,
+.dash-menu-item,
+.dash-menu-item--show-hide-toggle-columns,
+.dash-menu-item--hide-columns,
+.show-hide-toggle-columns,
+.dash-table-menu__dropdown,
+.dash-table-menu__dropdown--content,
+[class*="dash-menu-item"],
+.dash-table .dash-pagination,
+.dash-table .dash-column-resize-handle,
+.dash-table .dash-filter-dropdown,
+.dash-table .dash-filter-input {
+    aria-hidden: true;
+    tabindex: -1;
+}
+
 
 /*----------  10. Scroll Indicators  ----------*/
 .data-table-wrapper::after,

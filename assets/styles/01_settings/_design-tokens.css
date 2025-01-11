@@ -104,7 +104,7 @@
 
   --table-header-bg: var(--color-surface-brand);
   --table-header-text: var(--color-text-inverse);
-  --table-cell-bg: var(--color-surface-primary);
+  --table-cell-bg: var(--color-surface-secondary);
   --table-cell-text: var(--color-text-primary);
   --table-border: var(--color-border-weak);
   --table-highlight-bg: var(--color-surface-secondary);
@@ -236,13 +236,17 @@
   --table-insurer-col-width: 12rem;
   --table-data-col-width: 5rem;
 
-
     
   --table-font-size: var(--font-size-sm);
   --table-header-font-weight: var(--font-weight-semibold);
   
 
-  
+  --table-header-padding: var(--space-2) var(--space-3);
   --table-cell-padding-x: var(--spacing-inset-sm);
   --table-cell-padding-y: var(--spacing-inset-sm);
+
+  /*----------  7. Typography  ----------*/
+
+  --font-family-base: Arial, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
 }
