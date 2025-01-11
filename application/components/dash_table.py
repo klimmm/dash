@@ -11,7 +11,7 @@ from application.components.resolve_variables import load_css_file, resolve_them
 logger = get_logger(__name__)
 
 # Load theme configuration
-CSS_PATH = Path(__file__).parent.parent.parent / "assets" / "styles" / "01_settings" / "_design-tokens.css"
+CSS_PATH = Path(__file__).parent.parent.parent / "assets" / "styles" / "combined.css"
 css_content = load_css_file(str(CSS_PATH))
 
 # Define base theme structure

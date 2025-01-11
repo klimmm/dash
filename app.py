@@ -56,7 +56,56 @@ def add_test_style():
     else:
         logger.error(f"main.css not found at {css_path}")
 
+def combine_css_files():
+    """Combine all CSS files into one"""
+    try:
+        assets_path = Path(__file__).parent / "assets" / "styles"
+        css_files = [
+            '01_settings/_design-tokens.css',
+            '01_settings/_variables.css',
+            '01_settings/_mixins.css',
+            '02_base/_reset.css',
+            '02_base/_base.css',
+            '03_components/_buttons.css',
+            '03_components/_forms.css',
+            '03_components/_dropdowns.css',
+            '03_components/_sidebar.css',
+            '03_components/_navbar.css',
+            '03_components/_data-table.css',
+            '03_components/_checklist.css',
+            '03_components/_layout.css'
+        ]
+        
+        combined_css = ''
+        for css_file in css_files:
+            file_path = assets_path / css_file
+            if file_path.exists():
+                with open(file_path, 'r') as f:
+                    content = f.read()
+                    combined_css += f"/* {css_file} */\n{content}\n\n"
+        
+        # Add test style at the end
+        test_style = """
+        /* Test Style */
+        .test-style {
+            border: 5px solid red !important;
+            background-color: yellow !important;
+            padding: 10px !important;
+        }
+        """
+        combined_css += test_style
+        
+        # Write combined CSS
+        with open(assets_path / 'combined.css', 'w') as f:
+            f.write(combined_css)
+            
+        print(f"Combined CSS created at {assets_path / 'combined.css'}")
+        
+    except Exception as e:
+        print(f"Error combining CSS: {e}")
 
+# Call the function here, before app initialization
+combine_css_files()
 
 # Initialize the Dash app
 app = dash.Dash(
@@ -74,7 +123,7 @@ app.index_string = '''
         {%metas%}
         <title>{%title%}</title>
         {%favicon%}
-        <link rel="stylesheet" href="/assets/styles/main.css?v=1.0">
+        <link rel="stylesheet" href="/assets/styles/combined.css?v=1.0">
         {%css%}
     </head>
     <body>
@@ -88,11 +137,25 @@ app.index_string = '''
 </html>
 '''
 
-
 # Add after server initialization
 server = app.server
 app.server.static_folder = str(Path(__file__).parent / "assets")
 app.server.static_url_path = '/assets'
+
+# Add this after server initialization
+@app.server.route('/assets/styles/<path:path>')
+def serve_static(path):
+    """Serve static files explicitly"""
+    try:
+        root_dir = Path(__file__).parent / "assets" / "styles"
+        response = flask.send_from_directory(root_dir, path)
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
+    except Exception as e:
+        print(f"Error serving {path}: {e}")
+        return str(e), 404
 
 # Add these debug prints
 print(f"Static folder path: {app.server.static_folder}")

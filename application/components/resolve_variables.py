@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Dict, Any
+import re
 
 def get_project_root() -> Path:
     """Get the project root directory."""
