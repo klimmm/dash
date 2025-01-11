@@ -231,7 +231,6 @@ def create_app_layout(initial_quarter_options=None):
         ]
 
         # Navbar definition
-        # Update navbar definition
         navbar = dbc.Navbar(
             [
                 dbc.Container(
@@ -255,7 +254,7 @@ def create_app_layout(initial_quarter_options=None):
             ],
             color="dark",
             dark=True,
-            className="main-navbar"
+            className="main-navbar test-style"
         )
         
 

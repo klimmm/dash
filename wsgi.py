@@ -1,5 +1,8 @@
+# wsgi.py
+
 import sys
 from pathlib import Path
+
 
 # Get the absolute path of the current directory
 current_dir = str(Path(__file__).parent.absolute())

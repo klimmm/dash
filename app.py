@@ -34,10 +34,35 @@ from constants.filter_options import (
 from memory_profiler import profile
 
 
+def add_test_style():
+    """Add test style to main.css"""
+    css_path = Path(__file__).parent / "assets" / "styles" / "main.css"
+    test_style = """
+
+/* Test Style */
+.test-style {
+    border: 5px solid red !important;
+    background-color: yellow !important;
+    padding: 10px !important;
+}
+"""
+    # Check if test style already exists
+    if css_path.exists():
+        with open(css_path, 'r') as f:
+            content = f.read()
+            if '.test-style' not in content:
+                with open(css_path, 'a') as f:
+                    f.write(test_style)
+    else:
+        logger.error(f"main.css not found at {css_path}")
+
+
+
 # Initialize the Dash app
 app = dash.Dash(
     __name__,
     assets_folder=Path(__file__).parent / "assets",
+    assets_url_path='/assets', 
     external_stylesheets=[dbc.themes.BOOTSTRAP],
     suppress_callback_exceptions=True
 )
@@ -49,7 +74,7 @@ app.index_string = '''
         {%metas%}
         <title>{%title%}</title>
         {%favicon%}
-        <link rel="stylesheet" href="/assets/styles/main.css">
+        <link rel="stylesheet" href="/assets/styles/main.css?v=1.0">
         {%css%}
     </head>
     <body>
@@ -63,8 +88,18 @@ app.index_string = '''
 </html>
 '''
 
-# Initialize the Flask server
+
+# Add after server initialization
 server = app.server
+app.server.static_folder = str(Path(__file__).parent / "assets")
+app.server.static_url_path = '/assets'
+
+# Add these debug prints
+print(f"Static folder path: {app.server.static_folder}")
+print(f"Static URL path: {app.server.static_url_path}")
+print(f"Assets folder exists: {Path(app.server.static_folder).exists()}")
+print(f"Main CSS exists: {(Path(app.server.static_folder) / 'styles' / 'main.css').exists()}")
+
 
 # Initialize logging and debug level
 setup_logging(console_level=logging.INFO, file_level=logging.DEBUG)
@@ -76,6 +111,8 @@ try:
 except Exception as e:
     logger.error(f"Failed to load data: {str(e)}")
     raise
+
+add_test_style()
 
 # Create application and initialize filters
 quarter_options_162 = create_year_quarter_options(insurance_df_162)
@@ -390,10 +427,28 @@ def process_ui(
     finally:
         track_callback_end('application.main', 'process_ui', start_time)
 
+
+# Add after your callbacks
+@app.server.route('/debug-assets')
+def debug_assets():
+    """Debug endpoint to check asset paths"""
+    asset_folder = app.server.static_folder
+    css_file = Path(asset_folder) / "styles" / "main.css"
+    
+    return {
+        'asset_folder': str(asset_folder),
+        'css_exists': css_file.exists(),
+        'static_url_path': app.server.static_url_path,
+    }
+
+# Then your if __name__ == '__main__': block
+
 if __name__ == '__main__':
     try:
         print("Starting application initialization...")
         port = int(os.environ.get("PORT", PORT))
+
+
         print("Starting server...")
         app.run_server(debug=DEBUG_MODE, port=port, host='0.0.0.0')
     except Exception as e:
