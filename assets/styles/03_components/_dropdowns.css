@@ -1,0 +1,34 @@
+/* Base dropdown styles */
+.dd-control {
+  height: var(--dropdown-height);
+  border: 1px solid var(--dropdown-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-white);
+  transition: border-color var(--transition-fast);
+}
+
+.dd-input {
+  height: calc(var(--dropdown-height) - 2px);
+}
+
+.dd-value,
+.dd-placeholder {
+  line-height: calc(var(--dropdown-height) - 2px);
+  padding: 0 var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.dd-placeholder {
+  color: var(--color-gray-600);
+}
+
+/* States */
+.dd-control[data-state="focused"] {
+  border-color: var(--color-blue-500);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.dd-control[data-state="disabled"] {
+  background-color: var(--color-gray-50);
+  cursor: not-allowed;
+}

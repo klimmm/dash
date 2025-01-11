@@ -1,17 +1,127 @@
 # application.components.dash_table.py
 
-from dataclasses import dataclass
 import pandas as pd
-from typing import List, Dict, Any, Tuple, Optional
+from dataclasses import dataclass, field
+from typing import List, Dict, Any, Tuple, Optional, TypedDict, Literal
 from dash.dash_table.Format import Format, Scheme, Group
 from constants.translations import translate
 from constants.filter_options import METRICS
 from data_process.data_utils import map_insurer
 from config.logging_config import get_logger
-from application.components.table_theme import TableTheme, create_default_theme
 
 logger = get_logger(__name__)
-# Column identifier constants
+
+class ColorConfig(TypedDict):
+    header_bg: str
+    header_text: str
+    cell_bg: str
+    cell_text: str
+    border: str
+    highlight: str
+    success: str
+    danger: str
+    success_bg: str
+    qtoq_bg: str
+    insurer_bg: str
+
+def default_colors() -> ColorConfig:
+    return ColorConfig(
+        # Header colors
+        header_bg='var(--table-header-bg)',         
+        header_text='var(--table-header-text)',
+        
+        # Cell colors
+        cell_bg='var(--table-cell-bg)',            
+        cell_text='var(--table-cell-text)',        
+        border='var(--table-border)',              
+        
+        # State colors
+        highlight='var(--table-highlight-bg)',     # Row/cell highlighting
+        success='var(--color-status-success)',     # Positive changes
+        danger='var(--color-status-danger)',       # Negative changes
+        success_bg='var(--color-status-success-subtle)', # Success background
+        
+        # Special row/cell colors
+        qtoq_bg='var(--table-qtoq-bg)',           # Quarter-to-quarter comparison
+        insurer_bg='var(--table-cell-bg)'         # Insurer column background
+    )
+
+
+class TypographyConfig(TypedDict):
+    font_family: str
+    font_size: str
+    header_weight: str
+
+def default_typography() -> TypographyConfig:
+    return TypographyConfig(
+        font_family='var(--font-family-base)',    # Using base font family token
+        font_size='var(--table-font-size)',       # Using table-specific font size
+        header_weight='var(--font-weight-semibold)' # Using semantic font weight
+    )
+
+class SpacingConfig(TypedDict):
+    cell_padding: str
+    header_padding: str
+
+def default_spacing() -> SpacingConfig:
+    return SpacingConfig(
+        cell_padding='var(--table-cell-padding)',
+        header_padding='var(--table-header-padding)'
+    )
+
+
+class DimensionsConfig(TypedDict):
+    cell_height: str
+    header_height: str
+    place_col_width: str      # Changed from number_col_width
+    insurer_col_width: str
+    data_col_width: str
+
+def default_dimensions() -> DimensionsConfig:
+    return DimensionsConfig(
+        cell_height='var(--table-cell-height)',
+        header_height='var(--table-header-height)',
+        place_col_width='var(--table-number-col-width)',
+        insurer_col_width='var(--table-insurer-col-width)',
+        data_col_width='var(--table-data-col-width)'
+    )
+
+
+
+@dataclass(frozen=True)
+class TableTheme:
+    colors: ColorConfig = field(default_factory=default_colors)
+    typography: TypographyConfig = field(default_factory=default_typography)
+    dimensions: DimensionsConfig = field(default_factory=default_dimensions)
+    spacing: SpacingConfig = field(default_factory=default_spacing)
+
+    def get_color(self, key: Literal['header_bg', 'header_text', 'cell_bg', 'cell_text', 
+                                   'border', 'highlight', 'success', 'danger', 
+                                   'success_bg', 'qtoq_bg', 'insurer_bg']) -> str:
+        return self.colors[key]
+
+    def get_typography(self, key: Literal['font_family', 'font_size', 'header_weight']) -> str:
+        return self.typography[key]
+
+    def get_dimension(self, key: Literal['cell_height', 'header_height', 
+                                       'number_col_width', 'insurer_col_width', 
+                                       'data_col_width']) -> str:
+        return self.dimensions[key]
+
+    def get_spacing(self, key: Literal['cell_padding', 'header_padding']) -> str:
+        return self.spacing[key]
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            'colors': dict(self.colors),
+            'typography': dict(self.typography),
+            'dimensions': dict(self.dimensions),
+            'spacing': dict(self.spacing)
+        }
+
+
+def create_default_theme() -> TableTheme:
+    return TableTheme()
 
 class ColumnIds:
     """Constants for column identifiers"""
@@ -29,6 +139,10 @@ class ColumnIds:
         return not cls.is_identifier_column(column_id)
 
 
+
+
+
+        
 class TableStyler:
     """Handles table styling with theme support"""
     
@@ -39,8 +153,7 @@ class TableStyler:
         """Generate base styles using theme configuration"""
         return {
             'style_table': {
-                'overflowX': 'auto',
-                'minWidth': '100%'
+                'className': 'dt-container'
             },
             'style_cell': {
                 'fontFamily': self.theme.get_typography('font_family'),

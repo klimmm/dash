@@ -1,0 +1,18 @@
+assets/
+├── styles/
+│   ├── 01_settings/
+│   │   ├── _variables.css      
+│   │   └── _mixins.css              
+│   ├── 02_base/
+│   │   ├── _base.css         
+│   │   └── _reset.css          
+│   ├── 03_components/
+│   │   ├── _buttons.css        
+│   │   ├── _forms.css          
+│   │   ├── _dropdowns.css      
+│   │   ├── _sidebar.css        
+│   │   ├── _navbar.css         
+│   │   ├── _data-table.css
+│   │   ├── _checklist.css
+│   │   └── _layout.css      
+│   └── main.css                

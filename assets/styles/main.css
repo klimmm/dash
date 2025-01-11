@@ -1,28 +1,18 @@
 /* Settings */
-@import './settings/_variables.css';
-@import './settings/_colors.css';
-@import './settings/_typography.css';
-@import './settings/_spacing.css';
+@import './01_settings/_design-tokens.css';
+@import './01_settings/_variables.css';
+@import './01_settings/_mixins.css';
 
-/* Tools */
-@import './tools/_mixins.css';
-
-/* Generic */
-@import './generic/_reset.css';
-@import './generic/_bootstrap-override.css';
-
-/* Elements */
-@import './elements/_base.css';
+/* Base */
+@import './02_base/_reset.css';
+@import './02_base/_base.css';
 
 /* Components */
-@import './components/_buttons.css';
-@import './components/_forms.css';
-@import './components/_dropdowns.css';
-@import './components/_sidebar.css';
-@import './components/_navbar.css';
-@import './components/_data-table.css';
-@import './components/_layout.css';
-
-
-/* Utilities */
-@import './utilities/_helpers.css';
+@import './03_components/_buttons.css';
+@import './03_components/_forms.css';
+@import './03_components/_dropdowns.css';
+@import './03_components/_sidebar.css';
+@import './03_components/_navbar.css';
+@import './03_components/_data-table.css';
+@import './03_components/_checklist.css';
+@import './03_components/_layout.css';

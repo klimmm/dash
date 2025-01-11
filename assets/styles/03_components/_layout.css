@@ -1,0 +1,63 @@
+/* Main Layout Container */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Layout Grid */
+.layout-wrapper {
+  flex: 1;
+  padding: var(--space-3);
+  background-color: var(--color-gray-50);
+}
+
+/* Content Area */
+.main-content {
+  background-color: var(--color-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  height: 100%;
+  padding: var(--space-3);
+}
+
+/* Main Content Layout */
+.mc-container {
+    padding: var(--space-3);
+    background-color: var(--color-white);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    height: 100%;
+}
+
+/* Card Styles */
+.mc-card {
+    margin-bottom: var(--space-3);
+}
+
+/* Title Styles */
+.mc-title {
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-2);
+}
+
+.mc-subtitle {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-3);
+}
+
+/* Charts Section */
+.mc-charts {
+    margin-bottom: var(--space-3);
+    padding: var(--space-3);
+    background-color: var(--color-bg-secondary);
+    border-radius: var(--radius-md);
+}
+
+/* Tree Container */
+.mc-tree {
+    margin-bottom: var(--space-3);
+}

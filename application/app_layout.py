@@ -91,7 +91,7 @@ def create_component(component_type, id=None, **kwargs):
             multi=False,
             placeholder=translate(config.get("placeholder", "")),
             clearable=config.get("clearable", True),
-            className="dash-dropdown"
+            className="dd-control"  # Update className
         )
 
     elif component_type == "button":
@@ -326,32 +326,37 @@ def create_app_layout(initial_quarter_options=None):
         # Main content area
         main_content = html.Div(
             id="main-content",
-            className="main-content p-3",
+            className="mc-container", # Changed from "main-content p-3"
             children=[
                 dbc.Card([
                     dbc.CardBody([
-                        html.H4(id="table-title", className="table-title"),
-                        html.H4(id="table-subtitle", className="table-subtitle mb-3"),
+                        html.H4(
+                            id="table-title", 
+                            className="mc-title" # Changed from "table-title"
+                        ),
+                        html.H4(
+                            id="table-subtitle", 
+                            className="mc-subtitle" # Changed from "table-subtitle mb-3"
+                        ),
                         dcc.Loading(
                             id="loading-data-table",
                             type="default",
                             children=[
-                                # Add data-table-wrapper class to ensure styles are properly scoped
                                 html.Div(
                                     id="data-table",
-                                    className="data-table-wrapper"
+                                    className="dt-container" # Changed from "data-table-wrapper"
                                 )
                             ]
                         )
                     ])
-                ], className="mb-3"),
+                ], className="mc-card"), # Changed from "mb-3"
                 html.Div(
                     "Chart(s) / Additional Visuals Go Here", 
-                    className="placeholder-charts mb-3"
+                    className="mc-charts" # Changed from "placeholder-charts mb-3"
                 ),
                 html.Div(
                     id="tree-container", 
-                    className="tree-container"
+                    className="mc-tree" # Changed from "tree-container"
                 ),
                 hierarchy_buttons
             ]

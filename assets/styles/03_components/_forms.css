@@ -1,0 +1,61 @@
+
+/* Base Form Control */
+.form-control-custom {
+  height: var(--input-height);
+  padding: var(--input-padding);
+  font-size: var(--input-font-size);
+  border: 1px solid var(--input-border-color);
+  border-radius: var(--input-border-radius);
+  width: 100%;
+  transition: border-color var(--transition-fast);
+}
+
+/* Short Number Input */
+.input-short {
+  width: var(--input-width-short);
+  text-align: center;
+  padding: var(--space-1);
+}
+
+/* Form Label */
+.filter-label {
+  font-size: var(--input-font-size);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Filter Row */
+.filter-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-1);
+}
+
+.filter-row .filter-label {
+  margin-bottom: 0;
+  margin-right: var(--space-2);
+}
+
+/* Vertical Filter Layout */
+.filter-row--vertical {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.filter-row--vertical .filter-label {
+  margin-bottom: var(--space-2);
+  margin-right: 0;
+}
+
+/* Checklist Styles */
+.checklist-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-1);
+}
+
+.checklist-row-content {
+  display: flex;
+  gap: var(--space-2);
+}

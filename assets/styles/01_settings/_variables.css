@@ -1,0 +1,243 @@
+:root {
+  /*=============================================
+  =                Design Tokens               =
+  =============================================*/
+
+  /*----------  1. Colors  ----------*/
+  
+  /* Base Colors */
+  --color-white: #ffffff;
+  --color-white-rgb: 255, 255, 255;
+  --color-black: #000000;
+  --color-black-rgb: 0, 0, 0;
+
+  /* Gray Scale */
+  --color-gray-50: #f8f9fa;
+  --color-gray-50-rgb: 248, 249, 250;
+  --color-gray-100: #f1f3f5;
+  --color-gray-100-rgb: 241, 243, 245;
+  --color-gray-200: #e9ecef;
+  --color-gray-200-rgb: 233, 236, 239;
+  --color-gray-300: #dee2e6;
+  --color-gray-300-rgb: 222, 226, 230;
+  --color-gray-400: #ced4da;
+  --color-gray-400-rgb: 206, 212, 218;
+  --color-gray-500: #adb5bd;
+  --color-gray-500-rgb: 173, 181, 189;
+  --color-gray-600: #6c757d;
+  --color-gray-600-rgb: 108, 117, 125;
+  --color-gray-700: #495057;
+  --color-gray-700-rgb: 73, 80, 87;
+  --color-gray-800: #343a40;
+  --color-gray-800-rgb: 52, 58, 64;
+  --color-gray-900: #212529;
+  --color-gray-900-rgb: 33, 37, 41;
+
+  /* Brand Colors */
+  --color-blue-50: #f0f4fa;
+  --color-blue-50-rgb: 240, 244, 250;
+  --color-blue-100: #d9e3f5;
+  --color-blue-100-rgb: 217, 227, 245;
+  --color-blue-500: #3C5A99;
+  --color-blue-500-rgb: 60, 90, 153;
+  --color-blue-600: #2563eb;
+  --color-blue-600-rgb: 37, 99, 235;
+
+  /* Semantic Colors */
+  --color-success-50: #d4edda;
+  --color-success-50-rgb: 212, 237, 218;
+  --color-success-500: #28a745;
+  --color-success-500-rgb: 40, 167, 69;
+  --color-success-600: #059669;
+  --color-success-600-rgb: 5, 150, 105;
+
+  --color-danger-50: #f8d7da;
+  --color-danger-50-rgb: 248, 215, 218;
+  --color-danger-500: #dc3545;
+  --color-danger-500-rgb: 220, 53, 69;
+  --color-danger-600: #dc2626;
+  --color-danger-600-rgb: 220, 38, 38;
+
+  --color-warning-50: #fff3cd;
+  --color-warning-50-rgb: 255, 243, 205;
+  --color-warning-500: #ffd700;
+  --color-warning-500-rgb: 255, 215, 0;
+
+  /* Semantic Mappings */
+  --color-text-primary: var(--color-gray-900);
+  --color-text-secondary: var(--color-gray-600);
+  --color-text-muted: var(--color-gray-500);
+  --color-text-light: var(--color-white);
+  
+  --color-bg-primary: var(--color-white);
+  --color-bg-secondary: var(--color-gray-50);
+  --color-bg-muted: var(--color-gray-100);
+  
+  --color-border-light: var(--color-gray-200);
+  --color-border-medium: var(--color-gray-300);
+  --color-border-dark: var(--color-gray-400);
+
+  /* Interactive States */
+  --color-hover: rgba(var(--color-gray-500-rgb), 0.1);
+  --color-focus: rgba(var(--color-blue-500-rgb), 0.2);
+  --color-active: rgba(var(--color-gray-600-rgb), 0.2);
+
+  /*----------  2. Typography  ----------*/
+  
+  /* Font Families */
+  --font-family-base: Arial, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-family-monospace: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Font Sizes */
+  --text-xs: 0.75rem;    /* 12px */
+  --text-sm: 0.875rem;   /* 14px */
+  --text-base: 1rem;     /* 16px */
+  --text-lg: 1.125rem;   /* 18px */
+  --text-xl: 1.25rem;    /* 20px */
+  --text-2xl: 1.5rem;    /* 24px */
+
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Line Heights */
+  --line-height-none: 1;
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /*----------  3. Spacing  ----------*/
+  
+  /* Base Spacing */
+  --space-1: 0.25rem;  /*  4px */
+  --space-2: 0.5rem;   /*  8px */
+  --space-3: 1rem;     /* 16px */
+  --space-4: 1.5rem;   /* 24px */
+  --space-5: 2rem;     /* 32px */
+  --space-6: 3rem;     /* 48px */
+
+  /* Component Spacing */
+  --spacing-navbar: var(--space-4);
+  --spacing-sidebar: var(--space-3);
+  --spacing-card: var(--space-4);
+  --spacing-table-cell: var(--space-2);
+
+  /*----------  4. Layout  ----------*/
+  
+  /* Breakpoints */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+
+  /* Container Widths */
+  --layout-width-sidebar: 400px;
+  --layout-max-width: 1200px;
+
+  /* Component Heights */
+  --layout-height-navbar: 56px;
+
+  /* Z-index Scale */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-modal: 1030;
+  --z-popover: 1040;
+  --z-tooltip: 1050;
+
+  /*----------  5. Effects  ----------*/
+  
+  /* Border Radius */
+  --radius-sm: 0.125rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.5rem;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+
+  /* Transitions */
+  --transition-fast: 150ms;
+  --transition-normal: 300ms;
+  --transition-slow: 500ms;
+
+  /* Animation Curves */
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+  /*=============================================
+  =            Component Variables             =
+  =============================================*/
+
+  /*----------  Table  ----------*/
+  
+  /* Table Dimensions */
+  --table-min-width: 100%;
+  --table-max-width: 1400px;
+  --table-cell-height: 2rem;
+  --table-header-height: 2rem;
+  --table-number-col-width: 1rem;
+  --table-insurer-col-width: 10rem;
+  --table-data-col-width: 5rem;
+
+  /* Table Typography */
+  --table-font-size: var(--text-sm);
+  --table-header-font-weight: var(--font-weight-semibold);
+
+  /* Table Colors */
+  --table-header-bg: var(--color-blue-500);
+  --table-header-text: var(--color-white);
+  --table-cell-bg: var(--color-bg-primary);
+  --table-cell-text: var(--color-text-primary);
+  --table-border: var(--color-border-light);
+  --table-highlight-bg: var(--color-gray-50);
+  --table-success-bg: var(--color-success-50);
+  --table-success-text: var(--color-success-600);
+  --table-danger-text: var(--color-danger-600);
+  --table-qtoq-bg: var(--color-bg-secondary);
+
+  /* Table Scrollbar */
+  --table-scrollbar-thumb: var(--color-gray-400);
+  --table-scrollbar-track: var(--color-gray-200);
+
+  /* Table Responsive Scales */
+  --table-width-scale-sm: 0.85;
+  --table-width-scale-md: 1;
+  --table-width-scale-lg: 1.15;
+  --table-width-scale-xl: 1.25;
+
+  /*----------  Buttons  ----------*/
+  
+  /* Button Heights */
+  --btn-height-base: 32px;
+  --btn-height-sm: 26px;
+  --btn-height-xs: 22px;
+
+  /* Button Colors */
+  --btn-primary-bg: var(--color-blue-500);
+  --btn-primary-text: var(--color-white);
+  --btn-primary-border: var(--color-blue-600);
+  --btn-primary-hover-bg: var(--color-blue-600);
+
+  /*----------  Form Controls  ----------*/
+  
+  /* Dropdowns */
+  --dropdown-height: 32px;
+  --dropdown-border: var(--color-border-light);
+  --dropdown-focus-border: var(--color-blue-500);
+
+  /* Inputs */
+  --input-height: 32px;
+  --input-border: var(--color-border-light);
+  --input-focus-border: var(--color-blue-500);
+  --input-focus-shadow: 0 0 0 3px var(--color-focus);
+
+  /*----------  Sidebar  ----------*/
+  
+  --sidebar-width: 400px;
+  --sidebar-bg: var(--color-bg-primary);
+  --sidebar-border: var(--color-border-light);
+}

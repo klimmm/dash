@@ -1,0 +1,74 @@
+/* Base Button Styles */
+.btn-custom {
+  height: var(--btn-height-base);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  border-radius: var(--radius-md);
+}
+
+/* Period Type Buttons */
+.btn-period {
+  height: var(--btn-height-sm);
+  padding: 0 var(--space-2);
+  font-size: var(--text-sm);
+  min-width: var(--btn-height-sm);
+  border-radius: var(--radius-md);
+}
+
+.btn-period.active {
+  background-color: var(--color-blue-600);
+  border-color: var(--color-blue-600);
+  color: var(--color-white);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Sidebar Toggle Button */
+.btn-sidebar-toggle {
+  height: var(--btn-height-sm);
+  padding: 0 var(--space-2);
+  margin-left: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+/* Clear Filters Button */
+.btn-clear-filters {
+  width: 100%;
+  margin-top: var(--space-3);
+  margin-bottom: var(--space-2);
+  height: var(--btn-height-sm);
+}
+
+/* Data Table Tab Button */
+.btn-table-tab {
+  height: var(--btn-height-sm);
+  margin-left: var(--space-3);
+  padding: var(--space-1) var(--space-2);
+}
+
+/* Debug Toggle Button */
+.btn-debug-toggle {
+  height: var(--btn-height-sm);
+  margin-bottom: var(--space-2);
+}
+
+.btn {
+    font-size: var(--text-sm);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.btn--sm {
+    height: var(--btn-height-sm);
+    padding: var(--space-1) var(--space-2);
+}
+
+.btn--primary {
+    background-color: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+    border-color: var(--btn-primary-border);
+}

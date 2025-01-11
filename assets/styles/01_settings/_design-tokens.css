@@ -1,0 +1,248 @@
+/*=============================================
+=            Design Tokens System            =
+=============================================*/
+
+:root {
+  /*----------  1. Color System  ----------*/
+  
+  /* Core Palette - Source of Truth */
+  /* Base */
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* Gray Scale */
+  --color-gray-50: #f8f9fa;
+  --color-gray-100: #f1f3f5;
+  --color-gray-200: #e9ecef;
+  --color-gray-300: #dee2e6;
+  --color-gray-400: #ced4da;
+  --color-gray-500: #adb5bd;
+  --color-gray-600: #6c757d;
+  --color-gray-700: #495057;
+  --color-gray-800: #343a40;
+  --color-gray-900: #212529;
+
+  /* Brand Colors */
+  --color-blue-50: #f0f4fa;
+  --color-blue-100: #d9e3f5;
+  --color-blue-500: #3C5A99;
+  --color-blue-600: #2563eb;
+
+  /* Feedback Colors */
+  --color-success-50: #d4edda;
+  --color-success-500: #28a745;
+  --color-success-600: #059669;
+
+  --color-danger-50: #f8d7da;
+  --color-danger-500: #dc3545;
+  --color-danger-600: #dc2626;
+
+  --color-warning-50: #fff3cd;
+  --color-warning-500: #ffd700;
+
+  /* Semantic Color Tokens */
+  --color-background-primary: var(--color-white);
+  --color-background-secondary: var(--color-gray-50);
+  --color-background-tertiary: var(--color-gray-100);
+  --color-background-inverse: var(--color-gray-900);
+  
+  /* Surface Colors - Backgrounds and containers */
+  --color-surface-primary: var(--color-white);
+  --color-surface-secondary: var(--color-gray-50);
+  --color-surface-tertiary: var(--color-gray-100);
+  --color-surface-inverse: var(--color-gray-800);
+  --color-surface-brand: var(--color-blue-500);
+  
+  /* Text Colors - Typography and icons */
+  --color-text-primary: var(--color-gray-900);
+  --color-text-secondary: var(--color-gray-600);
+  --color-text-muted: var(--color-gray-500);
+  --color-text-inverse: var(--color-white);
+  --color-text-brand: var(--color-blue-500);
+  
+  /* Border Colors - Separators and boundaries */
+  --color-border-weak: var(--color-gray-200);
+  --color-border-default: var(--color-gray-300);
+  --color-border-strong: var(--color-gray-400);
+  --color-border-inverse: var(--color-gray-700);
+  
+  /* Action Colors - Interactive elements */
+  --color-action-primary: var(--color-blue-500);
+  --color-action-primary-hover: var(--color-blue-600);
+  --color-action-secondary: var(--color-gray-500);
+  --color-action-secondary-hover: var(--color-gray-600);
+  
+  /* Status Colors - Feedback and states */
+  --color-status-success: var(--color-success-600);
+  --color-status-success-subtle: var(--color-success-50);
+  --color-status-danger: var(--color-danger-600);
+  --color-status-danger-subtle: var(--color-danger-50);
+  --color-status-warning: var(--color-warning-500);
+  --color-status-warning-subtle: var(--color-warning-50);
+  
+  /* Interactive State Colors */
+  --color-state-hover: rgba(var(--color-gray-500-rgb), 0.1);
+  --color-state-focus: rgba(var(--color-blue-500-rgb), 0.2);
+  --color-state-active: rgba(var(--color-gray-600-rgb), 0.2);
+  --color-state-selected: var(--color-blue-50);
+
+  /*----------  3. Component Color Tokens  ----------*/
+
+  --table-surface-header: var(--color-surface-brand);
+  --table-surface-cell: var(--color-surface-primary);
+  --table-surface-highlight: var(--color-surface-secondary);
+  --table-surface-alternate: var(--color-surface-tertiary);
+  
+  --table-text-header: var(--color-text-inverse);
+  --table-text-cell: var(--color-text-primary);
+  --table-text-secondary: var(--color-text-secondary);
+  
+  --table-border: var(--color-border-weak);
+  
+  --table-state-hover: var(--color-state-hover);
+  --table-state-selected: var(--color-state-selected);
+
+  --table-header-bg: var(--color-surface-brand);
+  --table-header-text: var(--color-text-inverse);
+  --table-cell-bg: var(--color-surface-primary);
+  --table-cell-text: var(--color-text-primary);
+  --table-border: var(--color-border-weak);
+  --table-highlight-bg: var(--color-surface-secondary);
+  --table-qtoq-bg: var(--color-surface-secondary);
+    
+  /* Navbar Colors */
+  --navbar-surface: var(--color-surface-inverse);
+  --navbar-text: var(--color-text-inverse);
+  --navbar-border: var(--color-border-inverse);
+  
+  /* Sidebar Colors */
+  --sidebar-surface: var(--color-surface-primary);
+  --sidebar-text: var(--color-text-primary);
+  --sidebar-border: var(--color-border-weak);
+  
+  /* Form Control Colors */
+  --input-border: var(--color-border-weak);
+  --input-border-focus: var(--color-action-primary);
+  --input-surface: var(--color-surface-primary);
+  --input-surface-disabled: var(--color-surface-secondary);
+  
+  /* Button Colors */
+  --button-primary-surface: var(--color-action-primary);
+  --button-primary-text: var(--color-text-inverse);
+  --button-primary-hover: var(--color-action-primary-hover);
+  
+  --button-secondary-surface: var(--color-surface-secondary);
+  --button-secondary-text: var(--color-text-primary);
+  --button-secondary-hover: var(--color-surface-tertiary);
+
+
+  /*----------  2. Typography System  ----------*/
+  
+  /* Font Families */
+  --font-family-sans: Arial, -apple-system, system-ui, sans-serif;
+  --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  
+  /* Font Scale (Following 1.25 Type Scale) */
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-base: 1rem;     /* 16px */
+  --font-size-md: 1.125rem;   /* 18px */
+  --font-size-lg: 1.25rem;    /* 20px */
+  --font-size-xl: 1.5rem;     /* 24px */
+  
+  /* Font Weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Line Heights */
+  --line-height-tight: 1.25;
+  --line-height-base: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /*----------  3. Spacing System  ----------*/
+  
+  /* Base Scale (4px Grid) */
+  --space-1: 0.25rem;  /*  4px */
+  --space-2: 0.5rem;   /*  8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.5rem;   /* 24px */
+  --space-6: 2rem;     /* 32px */
+  --space-8: 3rem;     /* 48px */
+  
+  /* Component Spacing */
+  --spacing-inset-sm: var(--space-2);
+  --spacing-inset-md: var(--space-4);
+  --spacing-inset-lg: var(--space-6);
+  
+  --spacing-stack-sm: var(--space-2);
+  --spacing-stack-md: var(--space-4);
+  --spacing-stack-lg: var(--space-6);
+  
+  --spacing-inline-sm: var(--space-2);
+  --spacing-inline-md: var(--space-4);
+  --spacing-inline-lg: var(--space-6);
+
+  /*----------  4. Layout System  ----------*/
+  
+  /* Breakpoints */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  
+  /* Container Widths */
+  --container-sm: 100%;
+  --container-md: 720px;
+  --container-lg: 960px;
+  --container-xl: 1140px;
+  
+  /* Z-index Scale */
+  --z-index-dropdown: 1000;
+  --z-index-sticky: 1020;
+  --z-index-modal: 1030;
+  --z-index-popover: 1040;
+  --z-index-tooltip: 1050;
+
+  /*----------  5. Effects System  ----------*/
+  
+  /* Border Radius */
+  --radius-sm: 0.125rem;  /* 2px */
+  --radius-md: 0.25rem;   /* 4px */
+  --radius-lg: 0.5rem;    /* 8px */
+  --radius-full: 9999px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  
+  /* Transitions */
+  --transition-duration-fast: 150ms;
+  --transition-duration-base: 300ms;
+  --transition-duration-slow: 500ms;
+  --transition-timing-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-timing-in: cubic-bezier(0.4, 0, 1, 1);
+  --transition-timing-out: cubic-bezier(0, 0, 0.2, 1);
+
+  /*----------  6. Component Tokens  ----------*/
+  
+  /* Data Table */
+  --table-cell-height: 2rem;
+  --table-header-height: 2.5rem;
+  --table-number-col-width: 4rem;
+  --table-insurer-col-width: 12rem;
+  --table-data-col-width: 5rem;
+
+
+    
+  --table-font-size: var(--font-size-sm);
+  --table-header-font-weight: var(--font-weight-semibold);
+  
+
+  
+  --table-cell-padding-x: var(--spacing-inset-sm);
+  --table-cell-padding-y: var(--spacing-inset-sm);
+}
