@@ -71,32 +71,36 @@ app.index_string = '''
 # Right after this server initialization
 server = app.server
 
-# Add debug route here, before any callbacks
 @server.route('/debug-info')
 def debug_info():
     import os
-    import json  # Add this import at the top of your file
+    import json
     
     # Get list of all CSS files
-    styles_path = Path(app.assets_folder) / 'styles'
+    styles_path = ASSETS_PATH / 'styles'
     css_files = []
     if styles_path.exists():
         for root, dirs, files in os.walk(styles_path):
             for file in files:
-                rel_path = Path(root).relative_to(app.assets_folder)
+                rel_path = Path(root).relative_to(ASSETS_PATH)
                 css_files.append(str(rel_path / file))
     
     info = {
-        "assets_folder": str(app.assets_folder),
-        "assets_url_path": app.assets_url_path,
-        "static_folder": app.server.static_folder if hasattr(app.server, 'static_folder') else None,
+        "assets_path": str(ASSETS_PATH),
+        "static_folder": str(app.server.static_folder) if hasattr(app.server, 'static_folder') else None,
         "static_url_path": app.server.static_url_path if hasattr(app.server, 'static_url_path') else None,
         "current_dir": os.getcwd(),
-        "files_in_assets": os.listdir(app.assets_folder) if os.path.exists(app.assets_folder) else [],
+        "files_in_assets": os.listdir(ASSETS_PATH) if os.path.exists(ASSETS_PATH) else [],
         "css_files": css_files,
-        "main_css_path": str(Path(app.assets_folder) / 'styles' / 'main.css'),
-        "main_css_exists": (Path(app.assets_folder) / 'styles' / 'main.css').exists(),
-        "asset_url_main_css": app.get_asset_url('styles/main.css')
+        "main_css_path": str(ASSETS_PATH / 'styles' / 'main.css'),
+        "main_css_exists": (ASSETS_PATH / 'styles' / 'main.css').exists(),
+        "dash_config": {
+            "routes_pathname_prefix": app.config.get('routes_pathname_prefix'),
+            "requests_pathname_prefix": app.config.get('requests_pathname_prefix'),
+            "assets_external_path": app.config.get('assets_external_path')
+        },
+        "app_config": {k: str(v) for k, v in app.config.items()},
+        "server_config": {k: str(v) for k, v in app.server.config.items() if isinstance(k, str)}
     }
     return json.dumps(info, indent=2)
 
