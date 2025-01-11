@@ -1,34 +1,33 @@
-/* Base dropdown styles */
+/* _dropdowns.css */
 .dd-control {
-  height: var(--dropdown-height);
-  border: 1px solid var(--dropdown-border);
+  height: var(--input-height);
+  border: 1px solid var(--color-border-weak);
   border-radius: var(--radius-md);
-  background-color: var(--color-white);
-  transition: border-color var(--transition-fast);
+  background-color: var(--color-surface-primary);
+  transition: border-color var(--transition-duration-fast);
 }
 
 .dd-input {
-  height: calc(var(--dropdown-height) - 2px);
+  height: calc(var(--input-height) - 2px);
 }
 
 .dd-value,
 .dd-placeholder {
-  line-height: calc(var(--dropdown-height) - 2px);
+  line-height: calc(var(--input-height) - 2px);
   padding: 0 var(--space-2);
-  font-size: var(--text-sm);
+  font-size: var(--font-size-sm);
 }
 
 .dd-placeholder {
-  color: var(--color-gray-600);
+  color: var(--color-text-secondary);
 }
 
-/* States */
 .dd-control[data-state="focused"] {
   border-color: var(--color-blue-500);
-  box-shadow: var(--input-focus-shadow);
+  box-shadow: 0 0 0 3px var(--color-state-focus);
 }
 
 .dd-control[data-state="disabled"] {
-  background-color: var(--color-gray-50);
+  background-color: var(--color-surface-secondary);
   cursor: not-allowed;
 }

@@ -1,42 +1,14 @@
-/* Navbar Container */
+/* _navbar.css */
 .main-navbar {
-  background-color: var(--color-gray-800);
-  border-bottom: 1px solid var(--color-gray-700);
-  height: var(--layout-height-navbar);
+  background-color: var(--navbar-surface);
+  border-bottom: 1px solid var(--navbar-border);
+  height: var(--navbar-height);
   padding: 0 var(--space-3);
 }
 
-/* Navbar Content */
-.navbar-container {
-  display: flex;
-  align-items: center;
-  height: 100%;
-}
-
-/* Navbar Brand */
 .navbar-brand {
   display: flex;
   align-items: center;
-  color: var(--color-white);
+  color: var(--color-text-inverse);
   font-weight: var(--font-weight-semibold);
-}
-
-/* Navbar Controls */
-.navbar-controls {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin-left: auto;
-}
-
-.app-navbar {
-  background-color: var(--navbar-surface);
-  border-bottom: 1px solid var(--navbar-border);
-  padding: var(--space-2) var(--space-3);
-}
-
-.app-navbar__content {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
 }

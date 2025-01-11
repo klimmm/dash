@@ -131,8 +131,7 @@ def create_component(component_type, id=None, **kwargs):
             max=config.get("max"),
             step=config.get("step"),
             value=config.get("value"),
-            className="form-control input-short",  # see CSS below
-            style={"fontSize": "0.85rem"}
+            className="form-control input-short"  # see CSS below
         )
 
     elif component_type == "label":
@@ -149,12 +148,6 @@ def create_component(component_type, id=None, **kwargs):
             color=kwargs.get("color", "primary"),
         )
 
-    elif component_type == "input":
-        return dcc.Input(
-            id=id,
-            className="form-control-custom input-short",
-            **{k: v for k, v in kwargs.items() if k not in ["className"]}
-        )
 
 ###############################################################################
 # 3) HELPER FUNCTION: CREATE_FILTER_ROW
@@ -190,7 +183,7 @@ def create_filter_row(label_text, component_id, component_type="dropdown", verti
         label_width = kwargs.get("label_width", 6)
         component_width = kwargs.get("component_width", 6)
 
-        extra_class = "checklist-row" if component_type == "checklist" else ""
+        extra_class = "cl-row" if component_type == "checklist" else ""
         
         return dbc.Row(
             [

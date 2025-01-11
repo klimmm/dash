@@ -1,7 +1,7 @@
 
 /* Settings */
-@import url('01_settings/_design-tokens.css');
-@import url('01_settings/_variables.css');
+@import url('01_settings/_tokens.css');
+@import url('01_settings/_utilities.css');
 @import url('01_settings/_mixins.css');
 
 /* Base */
@@ -9,20 +9,10 @@
 
 /* Components */
 @import url('03_components/_layout.css');
+@import url('03_components/_data-table.css');
 @import url('03_components/_navbar.css');
 @import url('03_components/_sidebar.css');
 @import url('03_components/_buttons.css');
 @import url('03_components/_forms.css');
-@import url('03_components/_data-table.css');
-@import url('03_components/_debug.css');
-@import url('03_components/_checklist.css');
 @import url('03_components/_dropdowns.css');
-
-
-
-/* Test Style */
-.test-style {
-    border: 5px solid red !important;
-    background-color: yellow !important;
-    padding: 10px !important;
-}
+@import url('03_components/_debug.css');

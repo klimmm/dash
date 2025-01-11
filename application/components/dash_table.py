@@ -11,40 +11,61 @@ from application.components.resolve_variables import load_css_file, resolve_them
 logger = get_logger(__name__)
 
 # Load theme configuration
-CSS_PATH = Path(__file__).parent.parent.parent / "assets" / "styles" / "03_components" / "_data-table.css"
+CSS_PATH = Path(__file__).parent.parent.parent / "assets" / "styles" / "01_settings" / "_tokens.css"
 css_content = load_css_file(str(CSS_PATH))
 
 # Define base theme structure
 THEME = {
     'colors': {
-        'header_bg': 'var(--table-header-bg)',
-        'header_text': 'var(--table-header-text)',
-        'cell_bg': 'var(--table-cell-bg)',
-        'cell_text': 'var(--table-cell-text)',
-        'border': 'var(--table-border)',
-        'highlight': 'var(--table-highlight-bg)',
-        'success': 'var(--color-status-success)',
-        'danger': 'var(--color-status-danger)',
-        'qtoq_bg': 'var(--table-qtoq-bg)',
+        'header_bg': 'var(--table-surface-header)',      # Replaced --table-header-bg
+        'header_text': 'var(--table-text-header)',       # Replaced --table-header-text
+        'cell_bg': 'var(--table-surface-cell)',          # Replaced --table-cell-bg
+        'cell_text': 'var(--table-text-cell)',          # Replaced --table-cell-text
+        'border': 'var(--table-border)',                # This one stayed the same
+        'highlight': 'var(--table-surface-highlight)',   # Replaced --table-highlight-bg
+        'success': 'var(--color-success-600)',       # This one stayed the same
+        'danger': 'var(--color-danger-600)',         # This one stayed the same
+        'qtoq_bg': 'var(--table-surface-alternate)'     # Replaced --table-qtoq-bg
+
     },
     'typography': {
-        'font_family': 'var(--font-family-base)',
+        'font_family': 'var(--font-family-sans)',
         'font_size': 'var(--table-font-size)',
         'header_weight': 'var(--font-weight-semibold)',
         'bold_weight': 'bold',
         'normal_weight': 'normal'
     },
     'spacing': {
-        'cell_padding': 'var(--table-cell-padding-x)',
-        'header_padding': 'var(--table-header-padding)',
+        'cell_padding': 'var(--space-2)',
+        'header_padding': 'var(--space-2) var(--space-3)',
     },
     'layout': {
         'white_space': 'normal',
         'min_width': '100%',
         'overflow_x': 'auto',
-        'text_align': {'left': 'left', 'center': 'center'},
-        'vertical_align': {'top': 'top', 'bottom': 'bottom'},
-        'border': {'width': '1px', 'style': 'solid', 'none': 'none'}
+        'text_align': {
+            'left': 'left',
+            'center': 'center'
+        },
+        'vertical_align': {
+            'top': 'top',
+            'bottom': 'bottom'
+        },
+        'border': {
+            'width': '1px',
+            'style': 'solid',
+            'none': 'none'
+        }
+    },
+    'special_rows': {
+        'top': {
+            'backgroundColor': "var(--table-surface-highlight)",
+            'fontWeight': 'normal'
+        },
+        'market': {
+            'backgroundColor': "var(--table-surface-highlight)",
+            'fontWeight': 'bold'
+        }
     }
 }
 

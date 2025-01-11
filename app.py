@@ -34,30 +34,6 @@ from constants.filter_options import (
 from memory_profiler import profile
 
 
-def add_test_style():
-    """Add test style to main.css"""
-    css_path = Path(__file__).parent / "assets" / "styles" / "main.css"
-    test_style = """
-
-/* Test Style */
-.test-style {
-    border: 5px solid red !important;
-    background-color: yellow !important;
-    padding: 10px !important;
-}
-"""
-    # Check if test style already exists
-    if css_path.exists():
-        with open(css_path, 'r') as f:
-            content = f.read()
-            if '.test-style' not in content:
-                with open(css_path, 'a') as f:
-                    f.write(test_style)
-    else:
-        logger.error(f"main.css not found at {css_path}")
-
-
-
 # Initialize the Dash app
 app = dash.Dash(
     __name__,
@@ -111,8 +87,6 @@ try:
 except Exception as e:
     logger.error(f"Failed to load data: {str(e)}")
     raise
-
-add_test_style()
 
 # Create application and initialize filters
 quarter_options_162 = create_year_quarter_options(insurance_df_162)
@@ -431,7 +405,7 @@ def process_ui(
 # Add after your callbacks
 @app.server.route('/debug-assets')
 def debug_assets():
-    """Debug endpoint to check asset paths"""
+    """Debug endpoint to check assetestt paths"""
     asset_folder = app.server.static_folder
     css_file = Path(asset_folder) / "styles" / "main.css"
     

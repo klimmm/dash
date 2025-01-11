@@ -1,180 +1,336 @@
-/* _data-table.css */
-
-
 /*=============================================
 =            Data Table Component            =
 =============================================*/
 
 /*----------  1. Container & Wrapper  ----------*/
 .data-table-wrapper {
-  min-width: 100%;
+  width: 100%;
   max-width: var(--table-max-width);
   margin: 0 auto;
-  background-color: var(--data-table-surface);
+  background-color: var(--table-surface-cell);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
+  position: relative;
+  -webkit-overflow-scrolling: touch;
   overflow-x: auto;
 }
 
 .data-table {
-  font-family: var(--font-family-base);
+  width: 100%;
+  font-family: var(--font-family-sans);
   font-size: var(--table-font-size);
   border-collapse: collapse;
-  width: 100%;
-}
-
-.data-table-wrapper {
-  width: 100%;
-  max-width: var(--table-max-width);
-  margin: 0 auto;
-  overflow-x: auto;
-  position: relative;
-  -webkit-overflow-scrolling: touch;
+  table-layout: fixed;
 }
 
 /*----------  2. Scrollbar Styling  ----------*/
-.data-table-wrapper,
-.dash-table-container {
+.data-table-wrapper {
   scrollbar-width: thin;
   scrollbar-color: var(--table-scrollbar-thumb) var(--table-scrollbar-track);
 }
 
-.data-table-wrapper::-webkit-scrollbar,
-.dash-table-container::-webkit-scrollbar {
+.data-table-wrapper::-webkit-scrollbar {
   height: 6px;
   width: 6px;
 }
 
-.data-table-wrapper::-webkit-scrollbar-track,
-.dash-table-container::-webkit-scrollbar-track {
+.data-table-wrapper::-webkit-scrollbar-track {
   background: var(--table-scrollbar-track);
   border-radius: 3px;
 }
 
-.data-table-wrapper::-webkit-scrollbar-thumb,
-.dash-table-container::-webkit-scrollbar-thumb {
+.data-table-wrapper::-webkit-scrollbar-thumb {
   background-color: var(--table-scrollbar-thumb);
   border-radius: 3px;
 }
 
-/*----------  3. Dash Table Base  ----------*/
-.dash-table {
-  width: 100%;
-  background-color: var(--data-table-cell-surface);
-  border-collapse: collapse;
-  box-shadow: var(--shadow-sm);
-  border-radius: var(--radius-md);
-}
-
-/*----------  4. Header Styles  ----------*/
-.dt-header,
-.dash-header {
+/*----------  3. Header Styles  ----------*/
+.table-header {
   height: var(--table-header-height);
-  background-color: var(--data-table-header-surface);
-  color: var(--data-table-header-text);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--table-surface-header);
+  color: var(--table-text-header);
   font-weight: var(--font-weight-semibold);
   text-align: center;
-  padding: var(--spacing-inset-sm) var(--spacing-inset-md);
-  border-bottom: 2px solid var(--data-table-border);
+  border-bottom: 2px solid var(--table-border);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-index-sticky);
+  white-space: nowrap;
 }
 
-/*----------  5. Cell Styles  ----------*/
-.dt-cell,
-.dash-cell {
+.table-header--sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.table-header--sortable:hover {
+  background-color: var(--table-state-hover);
+}
+
+.table-header__content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.table-header__sort-icon {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--transition-duration-fast);
+}
+
+.table-header--sorted-desc .table-header__sort-icon {
+  transform: rotate(180deg);
+}
+
+/*----------  4. Cell Styles  ----------*/
+.table-cell {
   height: var(--table-cell-height);
-  padding: var(--spacing-inset-sm);
-  font-size: var(--table-font-size);
-  font-family: var(--font-family-sans);
-  background-color: var(--data-table-cell-surface);
-  color: var(--data-table-cell-text);
-  border: 1px solid var(--data-table-border);
-  white-space: normal;
+  padding: var(--space-2);
+  background-color: var(--table-surface-cell);
+  color: var(--table-text-cell);
+  border: 1px solid var(--table-border);
+  transition: background-color var(--transition-duration-fast) var(--transition-timing-default);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/*----------  6. Column Types  ----------*/
-/* Number Column */
-.dt-cell[data-type="numeric"],
-.dash-cell[data-dash-column="N"],
-.dash-header[data-dash-column="N"] {
+/*----------  5. Column Types  ----------*/
+.table-cell--numeric {
   text-align: center;
-  width: var(--table-number-col-width) !important;
-  min-width: var(--table-number-col-width) !important;
-  max-width: var(--table-number-col-width) !important;
+  width: var(--table-number-col-width);
+  min-width: var(--table-number-col-width);
+  max-width: var(--table-number-col-width);
 }
 
-/* Text Column */
-.dt-cell[data-type="text"],
-.dash-cell[data-dash-column="insurer"],
-.dash-header[data-dash-column="insurer"] {
+.table-cell--text {
   text-align: left;
-  width: var(--table-insurer-col-width) !important;
-  min-width: var(--table-insurer-col-width) !important;
-  max-width: var(--table-insurer-col-width) !important;
+  width: var(--table-insurer-col-width);
+  min-width: var(--table-insurer-col-width);
+  max-width: var(--table-insurer-col-width);
 }
 
-/* Data Columns */
-.dash-cell:not([data-dash-column="N"]):not([data-dash-column="insurer"]) {
-  width: var(--table-data-col-width) !important;
-  min-width: var(--table-data-col-width) !important;
-  max-width: var(--table-data-col-width) !important;
-  text-align: center !important;
+.table-cell--data {
+  width: var(--table-data-col-width);
+  min-width: var(--table-data-col-width);
+  max-width: var(--table-data-col-width);
+  text-align: center;
 }
 
-/*----------  7. Row Variants  ----------*/
-.dt-row--market,
-.dash-cell[data-dash-column="market"] {
-  background-color: var(--data-table-highlight-surface);
+/*----------  6. Row Variants  ----------*/
+.table-row--highlight {
+  background-color: var(--table-surface-highlight);
+}
+
+.table-row--alternate:nth-child(even) {
+  background-color: var(--table-surface-alternate);
+}
+
+.table-row--market {
+  font-weight: var(--font-weight-bold);
+  background-color: var(--table-surface-highlight);
+}
+
+/*----------  7. Cell States  ----------*/
+.table-cell--success {
+  color: var(--color-success-600);
   font-weight: var(--font-weight-bold);
 }
 
-.dt-row--highlight,
-.dash-cell--highlight {
-  background-color: var(--data-table-highlight-surface);
-}
-
-/*----------  8. State Styles  ----------*/
-.dt-cell--success,
-.dash-cell--change-positive {
-  color: var(--color-status-success) !important;
+.table-cell--danger {
+  color: var(--color-danger-600);
   font-weight: var(--font-weight-bold);
 }
 
-.dt-cell--danger,
-.dash-cell--change-negative {
-  color: var(--color-status-danger) !important;
-  font-weight: var(--font-weight-bold);
+.table-cell--highlight {
+  background-color: var(--table-surface-highlight);
 }
 
-.dt-cell--qtoq,
-.dash-cell--qtoq {
-  background-color: var(--data-table-highlight-surface);
+.table-cell--qtoq {
+  background-color: var(--table-surface-alternate);
 }
 
-
-.dt-cell--highlight {
-  background-color: var(--table-highlight-bg);
+/*----------  8. Interactive States  ----------*/
+.table-row:hover .table-cell {
+  background-color: var(--table-state-hover);
 }
 
-.dt-cell--highlight-bold {
-  background-color: var(--table-highlight-bg);
-  font-weight: var(--font-weight-bold);
+.table-row--selected .table-cell {
+  background-color: var(--table-state-selected);
 }
 
-.dt-cell--success {
-  color: var(--color-status-success);
-  font-weight: var(--font-weight-bold);
+.table-row--interactive {
+  cursor: pointer;
 }
 
-.dt-cell--danger {
-  color: var(--color-status-danger);
-  font-weight: var(--font-weight-bold);
+/*----------  9. Scroll Indicators  ----------*/
+.data-table-wrapper::after,
+.data-table-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-duration-base);
 }
 
-.dt-cell--qtoq {
-  background-color: var(--table-qtoq-bg);
+.data-table-wrapper::before {
+  left: 0;
+  background: linear-gradient(to right, 
+    rgba(var(--color-white-rgb), 0.9), 
+    rgba(var(--color-white-rgb), 0));
 }
 
-/*----------  10. Table Control Visibility  ----------*/
+.data-table-wrapper::after {
+  right: 0;
+  background: linear-gradient(to left, 
+    rgba(var(--color-white-rgb), 0.9), 
+    rgba(var(--color-white-rgb), 0));
+}
+
+.data-table-wrapper.scroll-start::before {
+  opacity: 1;
+}
+
+.data-table-wrapper.scroll-end::after {
+  opacity: 1;
+}
+
+/*----------  10. Loading State  ----------*/
+.data-table-wrapper--loading {
+  position: relative;
+  min-height: 200px;
+}
+
+.data-table-wrapper--loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: rgba(var(--color-white-rgb), 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/*----------  11. Empty State  ----------*/
+.table-empty-state {
+  padding: var(--space-8);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.table-empty-state__message {
+  font-size: var(--font-size-md);
+  margin-bottom: var(--space-2);
+}
+
+.table-empty-state__description {
+  font-size: var(--font-size-sm);
+}
+
+/*----------  12. Responsive Styles  ----------*/
+@media (--viewport-sm-max) {
+  .table-cell,
+  .table-header {
+    font-size: var(--font-size-xs);
+    padding: calc(var(--space-2) * 0.75);
+  }
+  
+  .table-cell--text {
+    max-width: 150px;
+  }
+}
+
+@media (--viewport-md) {
+  .table-cell,
+  .table-header {
+    font-size: var(--font-size-sm);
+  }
+}
+
+@media (--viewport-lg) {
+  .table-cell,
+  .table-header {
+    font-size: var(--table-font-size);
+  }
+}
+
+/*----------  13. Accessibility  ----------*/
+/* Hide visual sort indicators from screen readers */
+.table-header__sort-icon {
+  aria-hidden: true;
+}
+
+/* Ensure proper focus indicators */
+.table-row--interactive:focus-within {
+  outline: 2px solid var(--color-state-focus);
+  outline-offset: -2px;
+}
+
+/* Screen reader only text for sort status */
+.table-header__sort-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/*----------  14. Print Styles  ----------*/
+@media print {
+  .data-table-wrapper {
+    overflow: visible;
+    box-shadow: none;
+  }
+
+  .table-header,
+  .table-cell {
+    background-color: transparent !important;
+    color: black !important;
+  }
+
+  .table-header {
+    border-bottom: 2px solid black;
+  }
+
+  .table-cell {
+    border: 1px solid black;
+  }
+
+  .data-table-wrapper::before,
+  .data-table-wrapper::after {
+    display: none;
+  }
+}
+
+/*----------  15. Utility Classes  ----------*/
+.table-cell-nowrap {
+  white-space: nowrap;
+}
+
+.table-cell-truncate {
+  max-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.table-row-expandable {
+  cursor: pointer;
+}
+
+.table-row-expandable[aria-expanded="true"] {
+  background-color: var(--table-surface-highlight);
+}
 
 /* Hide table controls in dash-table */
 .dash-table .dash-table-menu__toggle,
@@ -308,76 +464,3 @@ th .column-header--toggle {
     tabindex: -1;
 }
 
-
-/*----------  10. Scroll Indicators  ----------*/
-.data-table-wrapper::after,
-.data-table-wrapper::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 20px;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity var(--transition-duration-base);
-}
-
-.data-table-wrapper::before {
-  left: 0;
-  background: linear-gradient(to right, 
-    rgba(var(--color-white-rgb), 0.9), 
-    rgba(var(--color-white-rgb), 0));
-}
-
-.data-table-wrapper::after {
-  right: 0;
-  background: linear-gradient(to left, 
-    rgba(var(--color-white-rgb), 0.9), 
-    rgba(var(--color-white-rgb), 0));
-}
-
-.data-table-wrapper.scroll-start::before {
-  opacity: 1;
-}
-
-.data-table-wrapper.scroll-end::after {
-  opacity: 1;
-}
-
-/*----------  11. Responsive Styles  ----------*/
-@media (max-width: 640px) {
-  .dt-cell,
-  .dt-header,
-  .dash-cell,
-  .dash-header {
-    font-size: calc(var(--table-font-size) * var(--table-width-scale-sm));
-    padding: calc(var(--spacing-inset-sm) * 0.75);
-  }
-}
-
-@media (min-width: 641px) and (max-width: 1024px) {
-  .dt-cell,
-  .dt-header,
-  .dash-cell,
-  .dash-header {
-    font-size: calc(var(--table-font-size) * var(--table-width-scale-md));
-  }
-}
-
-@media (min-width: 1025px) and (max-width: 1280px) {
-  .dt-cell,
-  .dt-header,
-  .dash-cell,
-  .dash-header {
-    font-size: calc(var(--table-font-size) * var(--table-width-scale-lg));
-  }
-}
-
-@media (min-width: 1281px) {
-  .dt-cell,
-  .dt-header,
-  .dash-cell,
-  .dash-header {
-    font-size: calc(var(--table-font-size) * var(--table-width-scale-xl));
-  }
-}

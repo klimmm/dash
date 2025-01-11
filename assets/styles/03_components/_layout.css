@@ -1,63 +1,51 @@
-/* Main Layout Container */
+/* _layout.css */
 .app-container {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Layout Grid */
 .layout-wrapper {
-    flex: 1;
-    padding: var(--space-3);
-    background-color: var(--color-gray-50);
+  flex: 1;
+  padding: var(--space-4);
+  background-color: var(--color-background-secondary);
 }
 
-/* Content Area */
 .main-container {
-    background-color: var(--color-white);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
-    height: 100%;
-    padding: var(--space-3);
+  background-color: var(--color-surface-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  height: 100%;
+  padding: var(--space-4);
 }
 
-/* Main Content Layout */
-.main-container {
-    padding: var(--space-3);
-    background-color: var(--color-white);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
-    height: 100%;
+.content-grid {
+  display: grid;
+  gap: var(--space-4);
 }
 
-/* Card Styles */
-.mc-card {
-    margin-bottom: var(--space-3);
+@media (--viewport-lg) {
+  .content-grid {
+    grid-template-columns: repeat(12, 1fr);
+  }
+  
+  .content-grid--sidebar {
+    grid-template-columns: var(--sidebar-width) 1fr;
+  }
 }
 
-/* Title Styles */
-.table-title {
-    font-size: var(--text-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
-    margin-bottom: var(--space-2);
+.content-header {
+  margin-bottom: var(--space-4);
 }
 
-.table-subtitle {
-    font-size: var(--text-sm);
-    color: var(--color-text-secondary);
-    margin-bottom: var(--space-3);
+.content-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-default);
+  margin-bottom: var(--space-2);
 }
 
-/* Charts Section */
-.mc-charts {
-    margin-bottom: var(--space-3);
-    padding: var(--space-3);
-    background-color: var(--color-bg-secondary);
-    border-radius: var(--radius-md);
-}
-
-/* Tree Container */
-.mc-tree {
-    margin-bottom: var(--space-3);
+.content-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
 }
