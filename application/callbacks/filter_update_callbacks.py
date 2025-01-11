@@ -173,15 +173,14 @@ def setup_filter_update_callbacks(app: Dash, quarter_options_162, quarter_option
         [Output('filter-state-store', 'data'),
          Output('primary-y-metric', 'value'),
          Output('secondary-y-metric', 'value')],
-        [Input('clear-filters-button', 'n_clicks'),
-         Input('primary-y-metric', 'value'),
+        [Input('primary-y-metric', 'value'),
          Input('secondary-y-metric', 'value'),
          Input('reporting-form', 'value'),
          Input('insurance-lines-state', 'data'),
          Input('premium-loss-checklist', 'value')],
         [State('show-data-table', 'data')]
     )
-    def update_values(clear_btn, primary_metric, secondary_metric, 
+    def update_values(primary_metric, secondary_metric, 
                      reporting_form, lines, premium_loss, show_table):
         ctx = dash.callback_context
         start_time = track_callback('app.callbacks.filter_update_callbacks', 'update_values', ctx)
@@ -207,15 +206,9 @@ def setup_filter_update_callbacks(app: Dash, quarter_options_162, quarter_option
                 premium_loss_checklist=FilterState.normalize(premium_loss),
                 selected_lines=FilterState.normalize(lines),
                 show_data_table=bool(show_table),
-                clear_filters_btn=clear_btn or 0,
+                # clear_filters_btn=clear_btn or 0,
                 reporting_form=reporting_form
             )
-
-            # Update state based on trigger
-            if trigger_id == 'clear-filters-button':
-                state.primary_y_metric = DEFAULT_PRIMARY_METRICS
-                state.secondary_y_metric = []
-                state.premium_loss_checklist = DEFAULT_PREMIUM_LOSS_TYPES
 
             if state.secondary_y_metric:
                 allowed_secondary = PRIMARY_TO_SECONDARY_METRICS_MAP.get(state.primary_y_metric[0], set())

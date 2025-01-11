@@ -6,8 +6,7 @@ from data_process.data_utils import category_structure_162, category_structure_1
 from constants.filter_options import VALUE_METRICS_OPTIONS, REPORTING_FORM_OPTIONS, PREMIUM_LOSS_OPTIONS
 from config.default_values import (
     DEFAULT_PRIMARY_METRICS, DEFAULT_CHECKED_LINES, DEFAULT_END_QUARTER,
-    DEFAULT_REPORTING_FORM, DEFAULT_PREMIUM_LOSS_TYPES, DEFAULT_PERIOD_TYPE,
-    button_period_main
+    DEFAULT_REPORTING_FORM, DEFAULT_PREMIUM_LOSS_TYPES, DEFAULT_PERIOD_TYPE
 )
 from config.logging_config import get_logger
 
@@ -272,9 +271,7 @@ def create_app_layout(initial_quarter_options=None):
                     dbc.Button(
                         label,
                         id=f"btn-{value}",
-                        size="sm",
-                        className=button_period_main,
-                        style={"height": "28px"}
+                        className="btn-custom btn-period"
                     )
                     for label, value in [
                         ("YTD", "ytd"),
@@ -307,10 +304,10 @@ def create_app_layout(initial_quarter_options=None):
                 create_filter_row("Показать динамику:", "toggle-selected-qtoq", component_type="checklist", label_width=10, component_width=2),
                 create_filter_row("Кол-во страховщиков:", "number-of-insurers", component_type="input", label_width=9, component_width=3),                
                 dbc.Button(
-                    "Clear Filters",
-                    id="clear-filters-button",
-                    className="btn-custom btn-clear-filters",
-                    color="warning"
+                    "Hide Filters",
+                    id="toggle-sidebar-button-sidebar",
+                    color="warning",
+                    className="btn-custom btn-period active"
                 )
             ]
         )
@@ -318,17 +315,17 @@ def create_app_layout(initial_quarter_options=None):
         # Main content area
         main_content = html.Div(
             id="main-container",
-            className="main-container",  # Add test-style here
+            className="main-container",
             children=[
                 dbc.Card([
                     dbc.CardBody([
                         html.H4(
                             id="table-title", 
-                            className="table-title" # Changed from "table-title"
+                            className="table-title"
                         ),
                         html.H4(
                             id="table-subtitle", 
-                            className="table-title" # Changed from "table-subtitle mb-3"
+                            className="table-title mb-3"
                         ),
                         dcc.Loading(
                             id="loading-data-table",
@@ -336,19 +333,19 @@ def create_app_layout(initial_quarter_options=None):
                             children=[
                                 html.Div(
                                     id="data-table",
-                                    className="data-table-wrapper" # Changed from "data-table-wrapper"
+                                    className="data-table-wrapper"
                                 )
                             ]
                         )
                     ])
-                ], className="mc-card"), # Changed from "mb-3"
+                ], className="mb-3"),
                 html.Div(
                     "Chart(s) / Additional Visuals Go Here", 
-                    className="mc-charts" # Changed from "placeholder-charts mb-3"
+                    className="placeholder-charts mb-3"
                 ),
                 html.Div(
                     id="tree-container", 
-                    className="mc-tree" # Changed from "tree-container"
+                    className="tree-container"
                 ),
                 hierarchy_buttons
             ]
@@ -400,7 +397,7 @@ def create_app_layout(initial_quarter_options=None):
                                 dbc.Col(
                                     main_content,
                                     id="main-content-col",
-                                    className="main-col",
+                                    className="main-content-col",
                                     width=True
                                 )
                             ],

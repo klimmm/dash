@@ -20,7 +20,7 @@ def setup_insurance_lines_callbacks(app: dash.Dash, insurance_lines_tree):
             Input({'type': 'insurance-line-checkbox', 'index': ALL}, 'value'),
             Input('insurance-line-dropdown', 'value'),
             Input('detailize-button', 'n_clicks'),
-            Input('clear-filters-button', 'n_clicks'),
+            # Input('clear-filters-button', 'n_clicks'),
         ],
         [
             State({'type': 'insurance-line-checkbox', 'index': ALL}, 'id'),
@@ -32,7 +32,7 @@ def setup_insurance_lines_callbacks(app: dash.Dash, insurance_lines_tree):
             checkbox_values,
             dropdown_value,
             detailize_clicks,
-            clear_filters_btn,
+            # clear_filters_btn,
             checkbox_ids,
             current_state):
         ctx = dash.callback_context
@@ -58,10 +58,10 @@ def setup_insurance_lines_callbacks(app: dash.Dash, insurance_lines_tree):
         if current_state is None:
             current_state = DEFAULT_CHECKED_LINES
 
-        if trigger_id == 'clear-filters-button':
-            final_selected = DEFAULT_CHECKED_LINES
+        '''if trigger_id == 'clear-filters-button':
+            final_selected = DEFAULT_CHECKED_LINES'''
 
-        elif 'detailize-button' in trigger['prop_id']:  # detailize button
+        if 'detailize-button' in trigger['prop_id']:  # detailize button
             logger.debug("Source: Detailize button")
             new_selected = current_state if current_state else DEFAULT_CHECKED_LINES
             final_selected = insurance_lines_tree.handle_parent_child_selections(

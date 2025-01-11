@@ -1,0 +1,335 @@
+/*=============================================
+=            Data Table Component            =
+=============================================*/
+
+/*----------  1. Core Utilities  ----------*/
+.visually-hidden {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  position: absolute !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  opacity: 0 !important;
+}
+
+/*----------  2. Container & Wrapper  ----------*/
+.data-table-wrapper {
+  width: 100%;
+  max-width: var(--table-max-width);
+  margin: 0 auto;
+  background-color: var(--table-surface-cell);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  -webkit-overflow-scrolling: touch;
+  overflow-x: auto;
+  
+  /* Scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: var(--table-scrollbar-thumb) var(--table-scrollbar-track);
+  
+  &::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: var(--table-scrollbar-track);
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--table-scrollbar-thumb);
+    border-radius: 3px;
+  }
+  
+  /* Scroll indicators */
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 20px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--transition-duration-base);
+  }
+  
+  &::before {
+    left: 0;
+    background: linear-gradient(to right, 
+      rgba(var(--color-white-rgb), 0.9), 
+      rgba(var(--color-white-rgb), 0));
+  }
+  
+  &::after {
+    right: 0;
+    background: linear-gradient(to left, 
+      rgba(var(--color-white-rgb), 0.9), 
+      rgba(var(--color-white-rgb), 0));
+  }
+  
+  &.scroll-start::before {
+    opacity: 1;
+  }
+  
+  &.scroll-end::after {
+    opacity: 1;
+  }
+}
+
+.data-table {
+  width: 100%;
+  font-family: var(--font-family-sans);
+  font-size: var(--table-font-size);
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/*----------  3. Header Styles  ----------*/
+.table-header {
+  height: var(--table-header-height);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--table-surface-header);
+  color: var(--table-text-header);
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  border-bottom: 2px solid var(--table-border);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-index-sticky);
+  white-space: nowrap;
+  
+  &--sortable {
+    cursor: pointer;
+    user-select: none;
+    
+    &:hover {
+      background-color: var(--table-state-hover);
+    }
+  }
+}
+
+.table-header__content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.table-header__sort-icon {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--transition-duration-fast);
+}
+
+.table-header--sorted-desc .table-header__sort-icon {
+  transform: rotate(180deg);
+}
+
+/*----------  4. Cell & Row Styles  ----------*/
+.table-cell {
+  height: var(--table-cell-height);
+  padding: var(--space-2);
+  background-color: var(--table-surface-cell);
+  color: var(--table-text-cell);
+  border: 1px solid var(--table-border);
+  transition: background-color var(--transition-duration-fast) var(--transition-timing-default);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  
+  &--numeric {
+    text-align: center;
+    width: var(--table-number-col-width);
+    min-width: var(--table-number-col-width);
+    max-width: var(--table-number-col-width);
+  }
+  
+  &--text {
+    text-align: left;
+    width: var(--table-insurer-col-width);
+    min-width: var(--table-insurer-col-width);
+    max-width: var(--table-insurer-col-width);
+  }
+  
+  &--data {
+    width: var(--table-data-col-width);
+    min-width: var(--table-data-col-width);
+    max-width: var(--table-data-col-width);
+    text-align: center;
+  }
+  
+  &--success {
+    color: var(--color-success-600);
+    font-weight: var(--font-weight-bold);
+  }
+  
+  &--danger {
+    color: var(--color-danger-600);
+    font-weight: var(--font-weight-bold);
+  }
+  
+  &--highlight {
+    background-color: var(--table-surface-highlight);
+  }
+  
+  &--qtoq {
+    background-color: var(--table-surface-alternate);
+  }
+}
+
+/*----------  5. Row Variants  ----------*/
+.table-row {
+  &--highlight {
+    background-color: var(--table-surface-highlight);
+  }
+  
+  &--alternate:nth-child(even) {
+    background-color: var(--table-surface-alternate);
+  }
+  
+  &--market {
+    font-weight: var(--font-weight-bold);
+    background-color: var(--table-surface-highlight);
+  }
+  
+  &:hover .table-cell {
+    background-color: var(--table-state-hover);
+  }
+  
+  &--selected .table-cell {
+    background-color: var(--table-state-selected);
+  }
+  
+  &--interactive {
+    cursor: pointer;
+  }
+}
+
+/*----------  6. States & Loading  ----------*/
+.data-table-wrapper--loading {
+  position: relative;
+  min-height: 200px;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: rgba(var(--color-white-rgb), 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/*----------  7. Empty State  ----------*/
+.table-empty-state {
+  padding: var(--space-8);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.table-empty-state__message {
+  font-size: var(--font-size-md);
+  margin-bottom: var(--space-2);
+}
+
+.table-empty-state__description {
+  font-size: var(--font-size-sm);
+}
+
+/*----------  8. Control Visibility  ----------*/
+
+/* Hide all descendants within dash-spreadsheet-menu */
+.dash-spreadsheet-menu *,
+.dash-spreadsheet-menu *::before,
+.dash-spreadsheet-menu *::after {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    visibility: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+}
+
+/*----------  9. Accessibility  ----------*/
+.table-header__sort-icon {
+  aria-hidden: true;
+}
+
+.table-row--interactive:focus-within {
+  outline: 2px solid var(--color-state-focus);
+  outline-offset: -2px;
+}
+
+.table-header__sort-status {
+  @extend .visually-hidden;
+}
+
+/*----------  10. Responsive Styles  ----------*/
+@media (--viewport-sm-max) {
+  .table-cell,
+  .table-header {
+    font-size: var(--font-size-xs);
+    padding: calc(var(--space-2) * 0.75);
+  }
+  
+  .table-cell--text {
+    max-width: 150px;
+  }
+}
+
+@media (--viewport-md) {
+  .table-cell,
+  .table-header {
+    font-size: var(--font-size-sm);
+  }
+}
+
+@media (--viewport-lg) {
+  .table-cell,
+  .table-header {
+    font-size: var(--table-font-size);
+  }
+}
+
+/*----------  11. Print Styles  ----------*/
+@media print {
+  .data-table-wrapper {
+    overflow: visible;
+    box-shadow: none;
+    
+    &::before,
+    &::after {
+      display: none;
+    }
+  }
+
+  .table-header,
+  .table-cell {
+    background-color: transparent !important;
+    color: black !important;
+  }
+
+  .table-header {
+    border-bottom: 2px solid black;
+  }
+
+  .table-cell {
+    border: 1px solid black;
+  }
+}

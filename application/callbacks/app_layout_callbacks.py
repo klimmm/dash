@@ -83,12 +83,13 @@ def setup_sidebar_callbacks(app: dash.Dash) -> None:
             Output("main-content-col", "className"),
             Output("toggle-sidebar-button", "children")
         ],
-        [Input("toggle-sidebar-button", "n_clicks")],
+        [Input("toggle-sidebar-button", "n_clicks"),
+         Input("toggle-sidebar-button-sidebar", "n_clicks")],
         [State("sidebar-filters", "className")]
     )
-    def toggle_sidebar(n_clicks, current_class):
+    def toggle_sidebar(n_clicks, n_clicks_sidebar, current_class):
         """Toggle sidebar visibility and update button text."""
-        if not n_clicks:
+        if not n_clicks and not n_clicks_sidebar:
             # Initial state - now expanded
             return (
                 "sidebar-filters expanded",  # Changed from 'collapsed' to 'expanded'
@@ -96,7 +97,7 @@ def setup_sidebar_callbacks(app: dash.Dash) -> None:
                 "main-col shifted",          # Added 'shifted'
                 "Hide Filters"               # Changed from 'Show Filters' to 'Hide Filters'
             )
-            
+
         # Toggle based on current state
         if "collapsed" in (current_class or ""):
             return (
@@ -123,14 +124,14 @@ def setup_sidebar_callbacks(app: dash.Dash) -> None:
         if not n_clicks:
             # Initial state for mobile - visible
             return {"display": "block"}
-            
+
         current_style = current_style or {}
         new_style = current_style.copy()
-        
+
         # Toggle display on mobile
         if new_style.get("display") == "none":
             new_style["display"] = "block"
         else:
             new_style["display"] = "none"
-            
+
         return new_style

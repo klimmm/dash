@@ -1,35 +1,77 @@
 /* _mixins.css */
-@custom-media --viewport-sm (min-width: 640px);
-@custom-media --viewport-md (min-width: 768px);
-@custom-media --viewport-lg (min-width: 1024px);
-@custom-media --viewport-xl (min-width: 1280px);
 
-@custom-media --viewport-sm-max (max-width: 639px);
-@custom-media --viewport-md-max (max-width: 767px);
-@custom-media --viewport-lg-max (max-width: 1023px);
-@custom-media --viewport-xl-max (max-width: 1279px);
+/*=============================================
+=            Media Query Tokens              =
+=============================================*/
+
+/* 
+  Using min-width queries as our standard approach
+  This provides a mobile-first responsive design pattern
+*/
+
+/* Mobile First (min-width) Breakpoints */
+@custom-media --mobile (min-width: 0px);
+@custom-media --sm-and-up (min-width: 640px);
+@custom-media --md-and-up (min-width: 768px);
+@custom-media --lg-and-up (min-width: 1024px);
+@custom-media --xl-and-up (min-width: 1280px);
+@custom-media --2xl-and-up (min-width: 1536px);
+
+/* Screen Range Queries */
+@custom-media --mobile-only (width < 640px);
+@custom-media --sm-only (640px <= width < 768px);
+@custom-media --md-only (768px <= width < 1024px);
+@custom-media --lg-only (1024px <= width < 1280px);
+@custom-media --xl-only (1280px <= width < 1536px);
+
+/* Print */
+@custom-media --print print;
+
+/*=============================================
+=            Container Mixins                =
+=============================================*/
 
 /* Container max-widths */
-@media (--viewport-sm) {
+@media (--sm-and-up) {
   .container {
     max-width: var(--container-max-width-sm);
   }
 }
 
-@media (--viewport-md) {
+@media (--md-and-up) {
   .container {
     max-width: var(--container-max-width-md);
   }
 }
 
-@media (--viewport-lg) {
+@media (--lg-and-up) {
   .container {
     max-width: var(--container-max-width-lg);
   }
 }
 
-@media (--viewport-xl) {
+@media (--xl-and-up) {
   .container {
     max-width: var(--container-max-width-xl);
   }
 }
+
+/*=============================================
+=            Grid Mixins                     =
+=============================================*/
+
+@media (--lg-and-up) {
+  .content-grid {
+    grid-template-columns: repeat(12, 1fr);
+  }
+  
+  .content-grid--sidebar {
+    grid-template-columns: var(--sidebar-width) 1fr;
+  }
+}
+
+/*=============================================
+=            Other Mixins                    =
+=============================================*/
+
+/* Add any additional mixins here */

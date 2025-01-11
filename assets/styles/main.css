@@ -1,18 +1,11 @@
-
-/* Settings */
-@import url('01_settings/_tokens.css');
-@import url('01_settings/_utilities.css');
-@import url('01_settings/_mixins.css');
-
-/* Base */
-@import url('02_base/_reset.css');
-
-/* Components */
-@import url('03_components/_layout.css');
-@import url('03_components/_data-table.css');
-@import url('03_components/_navbar.css');
-@import url('03_components/_sidebar.css');
-@import url('03_components/_buttons.css');
-@import url('03_components/_forms.css');
-@import url('03_components/_dropdowns.css');
-@import url('03_components/_debug.css');
+@import url('/assets/styles/01_settings/_tokens.css');
+@import url('/assets/styles/01_settings/_utilities.css');
+@import url('/assets/styles/01_settings/_mixins.css');
+@import url('/assets/styles/01_settings/_reset.css');
+@import url('/assets/styles/02_components/_layout.css');
+@import url('/assets/styles/02_components/_data-table.css');
+@import url('/assets/styles/02_components/_navbar.css');
+@import url('/assets/styles/02_components/_sidebar.css');
+@import url('/assets/styles/02_components/_buttons.css');
+@import url('/assets/styles/02_components/_forms.css');
+@import url('/assets/styles/02_components/_dropdowns.css');
