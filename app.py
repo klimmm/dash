@@ -32,17 +32,39 @@ from constants.filter_options import (
     BASE_METRICS, CALCULATED_METRICS, CALCULATED_RATIOS
 )
 from memory_profiler import profile
-# Get absolute path to assets folder
+import hashlib
+import time
+
+
+from flask import Flask
+
+# First define ASSETS_PATH
 ASSETS_PATH = Path(__file__).parent / "assets"
 
-# Initialize the Dash app with proper asset configuration
+# Then create Flask app
+def create_flask_app():
+    flask_app = Flask(__name__)
+    flask_app.config.update(
+        SEND_FILE_MAX_AGE_DEFAULT=0,
+        TEMPLATES_AUTO_RELOAD=True
+    )
+    # Set static folder and URL path
+    flask_app.static_folder = str(ASSETS_PATH)
+    flask_app.static_url_path = '/assets'
+    return flask_app
+
+server = create_flask_app()
+
+
 app = dash.Dash(
-    __name__,
+    __name__,  # Remove asterisks
+    server=server,
     assets_folder=str(ASSETS_PATH),
-    assets_url_path='/assets',  # Explicitly set the URL path
+    assets_url_path='/assets',
+    serve_locally=True,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
     suppress_callback_exceptions=True,
-    serve_locally=True  # Ensure assets are served locally
+    update_title=None
 )
 
 app.title = APP_TITLE
@@ -68,13 +90,22 @@ app.index_string = '''
 </html>
 '''
 
-# Right after this server initialization
-server = app.server
+# Add the versioning code RIGHT HERE, after app initialization but before server setup
+def get_asset_version():
+    return hashlib.md5(str(time.time()).encode()).hexdigest()[:8]
+
+ASSET_VERSION = get_asset_version()
+
+def custom_get_asset_url(path):
+    return f"/assets/{path}?v={ASSET_VERSION}"
+
+app.get_asset_url = custom_get_asset_url
 
 @server.route('/debug-info')
 def debug_info():
     import os
     import json
+    from flask import has_request_context, request
     
     # Get list of all CSS files
     styles_path = ASSETS_PATH / 'styles'
@@ -82,27 +113,51 @@ def debug_info():
     if styles_path.exists():
         for root, dirs, files in os.walk(styles_path):
             for file in files:
-                rel_path = Path(root).relative_to(ASSETS_PATH)
-                css_files.append(str(rel_path / file))
+                if file.endswith('.css'):  # Only include CSS files
+                    rel_path = Path(root).relative_to(ASSETS_PATH)
+                    css_files.append(str(rel_path / file))
+    
+    # Get request info if available
+    request_info = {}
+    if has_request_context():
+        request_info = {
+            "base_url": request.base_url,
+            "host_url": request.host_url,
+            "path": request.path,
+            "full_path": request.full_path,
+            "script_root": request.script_root,
+            "url_root": request.url_root,
+            "headers": dict(request.headers)
+        }
     
     info = {
-        "assets_path": str(ASSETS_PATH),
-        "static_folder": str(app.server.static_folder) if hasattr(app.server, 'static_folder') else None,
-        "static_url_path": app.server.static_url_path if hasattr(app.server, 'static_url_path') else None,
-        "current_dir": os.getcwd(),
-        "files_in_assets": os.listdir(ASSETS_PATH) if os.path.exists(ASSETS_PATH) else [],
-        "css_files": css_files,
-        "main_css_path": str(ASSETS_PATH / 'styles' / 'main.css'),
-        "main_css_exists": (ASSETS_PATH / 'styles' / 'main.css').exists(),
-        "dash_config": {
-            "routes_pathname_prefix": app.config.get('routes_pathname_prefix'),
-            "requests_pathname_prefix": app.config.get('requests_pathname_prefix'),
-            "assets_external_path": app.config.get('assets_external_path')
+        "environment": {
+            "current_dir": os.getcwd(),
+            "python_path": os.getenv('PYTHONPATH'),
+            "app_root": app.config.get('APPLICATION_ROOT'),
         },
-        "app_config": {k: str(v) for k, v in app.config.items()},
-        "server_config": {k: str(v) for k, v in app.server.config.items() if isinstance(k, str)}
+        "paths": {
+            "assets_path": str(ASSETS_PATH),
+            "static_folder": str(server.static_folder),
+            "static_url_path": server.static_url_path,
+        },
+        "files": {
+            "css_files": css_files,
+            "main_css_path": str(ASSETS_PATH / 'styles' / 'main.css'),
+            "main_css_exists": (ASSETS_PATH / 'styles' / 'main.css').exists(),
+            "files_in_assets": [f for f in os.listdir(ASSETS_PATH) if os.path.isfile(ASSETS_PATH / f)] if os.path.exists(ASSETS_PATH) else [],
+        },
+        "configuration": {
+            "asset_version": ASSET_VERSION,
+            "dash_config": app.config,
+            "flask_config": {k: str(v) for k, v in server.config.items() if isinstance(k, str)}
+        },
+        "request": request_info
     }
-    return json.dumps(info, indent=2)
+    
+    response = app.server.make_response(json.dumps(info, indent=2))
+    response.headers['Content-Type'] = 'application/json'
+    return response
 
 # Initialize logging and debug level
 setup_logging(console_level=logging.INFO, file_level=logging.DEBUG)
