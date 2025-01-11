@@ -1,28 +1,28 @@
 /* Main Layout Container */
 .app-container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Layout Grid */
 .layout-wrapper {
-  flex: 1;
-  padding: var(--space-3);
-  background-color: var(--color-gray-50);
+    flex: 1;
+    padding: var(--space-3);
+    background-color: var(--color-gray-50);
 }
 
 /* Content Area */
-.main-content {
-  background-color: var(--color-white);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  height: 100%;
-  padding: var(--space-3);
+.main-container {
+    background-color: var(--color-white);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    height: 100%;
+    padding: var(--space-3);
 }
 
 /* Main Content Layout */
-.mc-container {
+.main-container {
     padding: var(--space-3);
     background-color: var(--color-white);
     border-radius: var(--radius-md);
@@ -36,14 +36,14 @@
 }
 
 /* Title Styles */
-.mc-title {
+.table-title {
     font-size: var(--text-lg);
     font-weight: var(--font-weight-semibold);
     color: var(--color-text-primary);
     margin-bottom: var(--space-2);
 }
 
-.mc-subtitle {
+.table-subtitle {
     font-size: var(--text-sm);
     color: var(--color-text-secondary);
     margin-bottom: var(--space-3);

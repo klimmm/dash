@@ -1,3 +1,4 @@
+
 /* Sidebar Container */
 .sidebar-col {
   flex: 0 0 auto;
@@ -49,8 +50,8 @@
   opacity: 1;
 }
 
-/* Period Type Text */
-.period-type-text {
+/* Period Type Component */
+.period-type__text {
   font-size: var(--text-sm);
   color: var(--color-gray-600);
   margin-bottom: var(--space-3);

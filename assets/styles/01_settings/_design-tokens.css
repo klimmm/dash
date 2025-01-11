@@ -245,6 +245,14 @@
   --table-cell-padding-x: var(--spacing-inset-sm);
   --table-cell-padding-y: var(--spacing-inset-sm);
 
+  /* Component-specific tokens */
+  --sidebar-width: 400px;
+  --navbar-height: 56px;
+  --btn-height-base: 36px;
+  --btn-height-sm: 28px;
+  --input-height: 32px;
+
+    
   /*----------  7. Typography  ----------*/
 
   --font-family-base: Arial, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;

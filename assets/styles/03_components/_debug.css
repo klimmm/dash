@@ -1,0 +1,44 @@
+/* 03_components/_debug.css */
+.app-debug {
+  padding: var(--space-3);
+  background-color: var(--color-surface-secondary);
+}
+
+.app-debug__content {
+  background-color: var(--color-surface-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+
+.app-debug__title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--space-3);
+}
+
+.app-debug__output {
+  font-family: var(--font-family-mono);
+  font-size: var(--text-sm);
+  padding: var(--space-3);
+  background-color: var(--color-surface-secondary);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+}
+
+/* Components specific to the main content area */
+.app-charts {
+  padding: var(--space-3);
+  background-color: var(--color-surface-secondary);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-3);
+}
+
+.app-tree {
+  margin-bottom: var(--space-3);
+}
+
+.app-table {
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+}

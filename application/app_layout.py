@@ -254,7 +254,7 @@ def create_app_layout(initial_quarter_options=None):
             ],
             color="dark",
             dark=True,
-            className="main-navbar test-style"
+            className="main-navbar"
         )
         
 
@@ -298,13 +298,13 @@ def create_app_layout(initial_quarter_options=None):
         # Sidebar content
         sidebar = dbc.CardBody(
             id="sidebar-filters",
-            className="sidebar-filters p-3 test-style",  # Add here to compare
+            className="sidebar-filters p-3",  # Add here to compare
             children=[
                 create_filter_row("Форма отчетности:", "reporting-form"),
                 create_filter_row("Отчетный квартал:", "end-quarter"),
                 html.Label("Тип данных:", className="filter-label mb-2"),
                 period_type_buttonsgroup,
-                html.Div(id="period-type-text", className="period-type-text mb-3"),
+                html.Div(id="period-type-text", className="period-type__text mb-3"),
                 create_filter_row("Кол-во периодов для сравнения:", "number-of-periods-data-table", component_type="input", label_width=9, component_width=3),
                 create_filter_row("Линия:", "insurance-line-dropdown", vertical=True),
                 create_filter_row("Основной показатель:", "primary-y-metric", vertical=True),
@@ -324,18 +324,18 @@ def create_app_layout(initial_quarter_options=None):
 
         # Main content area
         main_content = html.Div(
-            id="main-content",
-            className="mc-container test-style",  # Add test-style here
+            id="main-container",
+            className="main-container",  # Add test-style here
             children=[
                 dbc.Card([
                     dbc.CardBody([
                         html.H4(
                             id="table-title", 
-                            className="mc-title" # Changed from "table-title"
+                            className="table-title" # Changed from "table-title"
                         ),
                         html.H4(
                             id="table-subtitle", 
-                            className="mc-subtitle" # Changed from "table-subtitle mb-3"
+                            className="table-title" # Changed from "table-subtitle mb-3"
                         ),
                         dcc.Loading(
                             id="loading-data-table",
@@ -343,7 +343,7 @@ def create_app_layout(initial_quarter_options=None):
                             children=[
                                 html.Div(
                                     id="data-table",
-                                    className="dt-container" # Changed from "data-table-wrapper"
+                                    className="data-table-wrapper" # Changed from "data-table-wrapper"
                                 )
                             ]
                         )

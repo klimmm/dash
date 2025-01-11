@@ -6,7 +6,7 @@
 =============================================*/
 
 /*----------  1. Container & Wrapper  ----------*/
-.dt-container {
+.data-table-wrapper {
   min-width: 100%;
   max-width: var(--table-max-width);
   margin: 0 auto;
@@ -16,7 +16,7 @@
   overflow-x: auto;
 }
 
-.dt-table {
+.data-table {
   font-family: var(--font-family-base);
   font-size: var(--table-font-size);
   border-collapse: collapse;
