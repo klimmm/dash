@@ -34,34 +34,32 @@ from constants.filter_options import (
 from memory_profiler import profile
 import hashlib
 import time
-
-
 from flask import Flask
 
-# First define ASSETS_PATH
+# Assets are in root, not in application folder
 ASSETS_PATH = Path(__file__).parent / "assets"
 
-# Then create Flask app
+# Create Flask app with correct static path
 def create_flask_app():
     flask_app = Flask(__name__)
     flask_app.config.update(
         SEND_FILE_MAX_AGE_DEFAULT=0,
         TEMPLATES_AUTO_RELOAD=True
     )
-    # Set static folder and URL path
+    # Set static folder and URL path without application prefix
     flask_app.static_folder = str(ASSETS_PATH)
     flask_app.static_url_path = '/assets'
     return flask_app
 
 server = create_flask_app()
 
-
+# Initialize Dash app with correct paths
 app = dash.Dash(
     __name__,
     server=server,
-    assets_folder=str(ASSETS_PATH),  # Only convert ASSETS_PATH to string
-    url_base_pathname="/application/",  # Separate parameter
-    assets_url_path='/assets',
+    assets_folder=str(ASSETS_PATH),
+    url_base_pathname="/application/",
+    assets_url_path='/assets',  # Keep this simple
     serve_locally=True,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
     suppress_callback_exceptions=True,
@@ -69,6 +67,18 @@ app = dash.Dash(
 )
 
 app.title = APP_TITLE
+
+# Versioning without application prefix
+def get_asset_version():
+    return hashlib.md5(str(time.time()).encode()).hexdigest()[:8]
+
+ASSET_VERSION = get_asset_version()
+
+def custom_get_asset_url(path):
+    # Remove application prefix since assets are served from root
+    return f"/assets/{path}?v={ASSET_VERSION}"
+
+app.get_asset_url = custom_get_asset_url
 
 # Remove manual CSS injection from index_string
 app.index_string = '''
@@ -90,17 +100,19 @@ app.index_string = '''
     </body>
 </html>
 '''
-
-# Add the versioning code RIGHT HERE, after app initialization but before server setup
-def get_asset_version():
-    return hashlib.md5(str(time.time()).encode()).hexdigest()[:8]
-
-ASSET_VERSION = get_asset_version()
-
-def custom_get_asset_url(path):
-    return f"/assets/{path}?v={ASSET_VERSION}"
-
-app.get_asset_url = custom_get_asset_url
+@server.route('/asset-check')
+def asset_check():
+    """Verify asset loading and paths"""
+    main_css = Path(ASSETS_PATH) / 'styles' / 'main.css'
+    
+    info = {
+        "assets_exists": ASSETS_PATH.exists(),
+        "main_css_exists": main_css.exists(),
+        "asset_files": [str(p) for p in ASSETS_PATH.rglob('*.css')],
+        "asset_version": ASSET_VERSION,
+        "asset_url_example": app.get_asset_url('styles/main.css')
+    }
+    return jsonify(info)
 
 @server.route('/debug-info')
 def debug_info():
