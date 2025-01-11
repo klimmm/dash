@@ -57,9 +57,10 @@ server = create_flask_app()
 
 
 app = dash.Dash(
-    __name__,  # Remove asterisks
+    __name__,
     server=server,
-    assets_folder=str(ASSETS_PATH),
+    assets_folder=str(ASSETS_PATH),  # Only convert ASSETS_PATH to string
+    url_base_pathname="/application/",  # Separate parameter
     assets_url_path='/assets',
     serve_locally=True,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
