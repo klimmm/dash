@@ -1,3 +1,9 @@
+.test-style {
+    border: 5px solid red !important;
+    background-color: yellow !important;
+    padding: 10px !important;
+}
+
 /* Settings */
 @import './01_settings/_design-tokens.css';
 @import './01_settings/_variables.css';

@@ -299,7 +299,7 @@ def create_app_layout(initial_quarter_options=None):
         # Sidebar content
         sidebar = dbc.CardBody(
             id="sidebar-filters",
-            className="sidebar-filters p-3",
+            className="sidebar-filters p-3 test-style",  # Add here to compare
             children=[
                 create_filter_row("Форма отчетности:", "reporting-form"),
                 create_filter_row("Отчетный квартал:", "end-quarter"),
@@ -326,7 +326,7 @@ def create_app_layout(initial_quarter_options=None):
         # Main content area
         main_content = html.Div(
             id="main-content",
-            className="mc-container", # Changed from "main-content p-3"
+            className="mc-container test-style",  # Add test-style here
             children=[
                 dbc.Card([
                     dbc.CardBody([
