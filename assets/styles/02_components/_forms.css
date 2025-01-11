@@ -1,23 +1,87 @@
 /* _forms.css */
 .form-control-custom {
-  height: var(--input-height);
-  padding: var(--space-2);
-  font-size: var(--font-size-sm);
-  border: 1px solid var(--color-border-weak);
-  border-radius: var(--radius-md);
-  width: 100%;
-  transition: border-color var(--transition-duration-fast);
+    height: var(--input-height);
+    padding: var(--space-2);
+    font-size: var(--font-size-sm);
+    border: 1px solid var(--color-border-weak);
+    border-radius: var(--radius-md);
+    width: 100%;
+    transition: border-color var(--transition-duration-fast);
 }
 
 .input-short {
-  width: 80px;
-  text-align: center;
-  padding: var(--space-1);
+    width: 80px;
+    text-align: center;
+    padding: var(--space-1);
 }
 
+/*=============================================
+=            Filter Components                =
+=============================================*/
+
+/* Filter Section */
+.filter-section {
+    margin-bottom: var(--space-4);
+}
+
+/* Filter Label */
 .filter-label {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-default);
-  margin-bottom: var(--space-2);
-  font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-default);
+    margin-bottom: var(--space-2);
+    font-weight: var(--font-weight-medium);
+}
+
+/*----------  Period Filter  ----------*/
+
+.period-type__text {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-3);
+}
+
+.period-buttons-group {
+    display: flex;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+}
+
+/* Period Type Description */
+.period-type__description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-top: var(--space-1);
+}
+
+/*----------  Filter Row  ----------*/
+
+.filter-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--space-3);
+}
+
+.filter-row--vertical {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.filter-row--vertical .filter-label {
+    margin-bottom: var(--space-2);
+}
+
+.filter-row--vertical .filter-content {
+    width: 100%;
+}
+
+/*----------  Checklist Filters  ----------*/
+
+.filter-checklist {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.filter-checklist .form-check {
+    margin: 0;
 }

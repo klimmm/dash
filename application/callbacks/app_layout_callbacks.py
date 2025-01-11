@@ -75,63 +75,67 @@ def setup_tab_state_callbacks(app: dash.Dash) -> None:
 
 def setup_sidebar_callbacks(app: dash.Dash) -> None:
     """Setup callbacks for sidebar toggle functionality."""
-    
+        
     @app.callback(
         [
             Output("sidebar-filters", "className"),
             Output("sidebar-col", "className"),
             Output("main-content-col", "className"),
-            Output("toggle-sidebar-button", "children")
+            Output("toggle-sidebar-button", "children"),
+            Output("toggle-sidebar-button", "className"),
+            Output("toggle-sidebar-button-sidebar", "className")
         ],
-        [Input("toggle-sidebar-button", "n_clicks"),
-         Input("toggle-sidebar-button-sidebar", "n_clicks")],
-        [State("sidebar-filters", "className")]
+        [
+            Input("toggle-sidebar-button", "n_clicks"),
+            Input("toggle-sidebar-button-sidebar", "n_clicks")
+        ],
+        [
+            State("sidebar-filters", "className")
+        ]
     )
     def toggle_sidebar(n_clicks, n_clicks_sidebar, current_class):
-        """Toggle sidebar visibility and update button text."""
-        if not n_clicks and not n_clicks_sidebar:
-            # Initial state - now expanded
+        """Toggle sidebar visibility and update all related elements."""
+        
+        # Determine if we're in collapsed state
+        is_collapsed = current_class and "collapsed" in current_class
+        
+        # Default expanded state classes
+        expanded_classes = {
+            "sidebar": "sidebar-filters expanded",
+            "sidebar_col": "sidebar-col expanded",
+            "main_col": "main-col shifted",
+            "nav_button": "btn-custom btn-sidebar-toggle",
+            "nav_text": "Hide Filters",
+            "sidebar_button": "btn-custom btn-period active"
+        }
+        
+        # Default collapsed state classes
+        collapsed_classes = {
+            "sidebar": "sidebar-filters collapsed",
+            "sidebar_col": "sidebar-col",
+            "main_col": "main-col",
+            "nav_button": "btn-custom btn-sidebar-toggle",
+            "nav_text": "Show Filters",
+            "sidebar_button": "btn-custom btn-period"
+        }
+        
+        # On first load or when toggling to expanded
+        if not n_clicks and not n_clicks_sidebar or is_collapsed:
             return (
-                "sidebar-filters expanded",  # Changed from 'collapsed' to 'expanded'
-                "sidebar-col expanded",      # Added 'expanded'
-                "main-col shifted",          # Added 'shifted'
-                "Hide Filters"               # Changed from 'Show Filters' to 'Hide Filters'
+                expanded_classes["sidebar"],
+                expanded_classes["sidebar_col"],
+                expanded_classes["main_col"],
+                expanded_classes["nav_text"],
+                expanded_classes["nav_button"],
+                expanded_classes["sidebar_button"]
             )
-
-        # Toggle based on current state
-        if "collapsed" in (current_class or ""):
-            return (
-                "sidebar-filters expanded",
-                "sidebar-col expanded",
-                "main-col shifted",
-                "Hide Filters"
-            )
-        else:
-            return (
-                "sidebar-filters collapsed",
-                "sidebar-col",
-                "main-col",
-                "Show Filters"
-            )
-
-    @app.callback(
-        Output("sidebar-filters", "style"),
-        [Input("navbar-toggler", "n_clicks")],
-        [State("sidebar-filters", "style")]
-    )
-    def handle_mobile_sidebar(n_clicks, current_style):
-        """Handle sidebar visibility on mobile."""
-        if not n_clicks:
-            # Initial state for mobile - visible
-            return {"display": "block"}
-
-        current_style = current_style or {}
-        new_style = current_style.copy()
-
-        # Toggle display on mobile
-        if new_style.get("display") == "none":
-            new_style["display"] = "block"
-        else:
-            new_style["display"] = "none"
-
-        return new_style
+        
+        # When toggling to collapsed
+        return (
+            collapsed_classes["sidebar"],
+            collapsed_classes["sidebar_col"],
+            collapsed_classes["main_col"],
+            collapsed_classes["nav_text"],
+            collapsed_classes["nav_button"],
+            collapsed_classes["sidebar_button"]
+        )

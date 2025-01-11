@@ -1,19 +1,85 @@
 /* _sidebar.css */
+
 .sidebar-filters {
-  width: var(--sidebar-width);
-  height: 100%;
-  background-color: var(--sidebar-surface);
-  border: 1px solid var(--sidebar-border);
-  border-radius: var(--radius-md);
-  transition: width var(--transition-duration-base);
-  padding: var(--space-3);
-  margin-top: var(--space-3);
-  display: flex;
-  flex-direction: column;
+    width: var(--sidebar-width);
+    height: 100%;
+    background-color: var(--color-surface-primary);
+    border: 1px solid var(--color-border-weak);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-duration-base) var(--transition-timing-default);
+    padding: var(--space-3);
+    margin-top: var(--space-3);
+    display: flex;
+    flex-direction: column;
 }
 
-.period-type__text {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  margin-bottom: var(--space-3);
+/* Collapsed State */
+.sidebar-filters.collapsed {
+    width: 0;
+    padding: 0;
+    margin: 0;
+    border: none;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Expanded State */
+.sidebar-filters.expanded {
+    width: var(--sidebar-width);
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Column States */
+.sidebar-col {
+    transition: width var(--transition-duration-base) var(--transition-timing-default);
+    width: 0;
+}
+
+.sidebar-col.expanded {
+    width: var(--sidebar-width);
+}
+
+/* Main Content Adjustment */
+.main-col {
+    transition: margin-left var(--transition-duration-base) var(--transition-timing-default);
+    margin-left: 0;
+}
+
+.main-col.shifted {
+    margin-left: var(--space-4);
+}
+
+/* Responsive Behavior */
+@media (max-width: 768px) {
+    .sidebar-filters.expanded {
+        position: fixed;
+        top: var(--navbar-height);
+        left: 0;
+        bottom: 0;
+        z-index: var(--z-index-modal);
+        margin: 0;
+        border-radius: 0;
+    }
+
+    .main-col.shifted {
+        margin-left: 0;
+    }
+}
+
+/* Button States */
+.btn-sidebar-toggle,
+.btn-period {
+    transition: all var(--transition-duration-fast);
+}
+
+.btn-sidebar-toggle:hover,
+.btn-period:hover {
+    opacity: 0.9;
+}
+
+.btn-period.active {
+    background-color: var(--color-blue-600);
+    color: var(--color-text-inverse);
 }
