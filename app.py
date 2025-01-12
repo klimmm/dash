@@ -35,6 +35,7 @@ from memory_profiler import profile
 import hashlib
 import time
 from flask import Flask
+from flask import jsonify
 
 # Assets are in root, not in application folder
 ASSETS_PATH = Path(__file__).parent / "assets"
@@ -58,7 +59,7 @@ app = dash.Dash(
     __name__,
     server=server,
     assets_folder=str(ASSETS_PATH),
-    url_base_pathname="/application/",
+    url_base_pathname="/",
     assets_url_path='/assets',  # Keep this simple
     serve_locally=True,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
