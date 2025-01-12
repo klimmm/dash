@@ -325,7 +325,7 @@ def create_app_layout(initial_quarter_options=None):
                         ),
                         html.H4(
                             id="table-subtitle", 
-                            className="table-title mb-3"
+                            className="table-subtitle mb-3"
                         ),
                         dcc.Loading(
                             id="loading-data-table",
