@@ -170,13 +170,22 @@
   =            Component Tokens                =
   =============================================*/
 
+  /* Dropdown specific tokens */
+  --dropdown-menu-max-height: calc(var(--input-height-sm) * 5);
+  --dropdown-option-height: var(--input-height-xxs);
+  --dropdown-padding-y: var(--space-1);
+  --dropdown-padding-x: var(--space-2);
+  --dropdown-line-height: var(--line-height-tight);
+    
   /* Form Inputs */
+  --input-height-xxs: 1.25rem;    /* Add this new smallest size */
   --input-height-xs: 1.5rem;     
   --input-height-sm: 2rem;     /* 32px */
   --input-height-md: 2.5rem;   /* 40px */
   --input-height-lg: 3rem;     /* 48px */
   
   /* Buttons */
+  --button-height-xxs: 1.25rem;   /* Add this new smallest size */
   --button-height-sm: 2rem;    /* 32px */
   --button-height-md: 2.5rem;  /* 40px */
   --button-height-lg: 3rem;    /* 48px */
@@ -199,6 +208,4 @@
   --sidebar-width: 400px;
   --navbar-height: 56px;
 
-
-    
 }

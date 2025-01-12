@@ -9,7 +9,6 @@
     font-size: var(--font-size-sm);
     height: var(--input-height-xs);
     padding: var(--space-2);
-    font-size: var(--font-size-sm);
     border: 1px solid var(--color-border-weak);
     border-radius: var(--radius-md);
     width: 100%;
@@ -22,6 +21,7 @@
     width: 80px;
     text-align: center;
     padding: var(--space-1);
+    height: var(--input-height-xs);
 }
 
 /*=============================================
@@ -36,16 +36,15 @@
 .filter-label {
     font-size: var(--font-size-sm);
     color: var(--color-text-default);
-    margin-bottom: var(--space-2);
     font-weight: var(--font-weight-semibold);
-    display: block;
-}
-
-/* Filter Layout */
-.filter-row {
     display: flex;
     align-items: center;
-    margin-bottom: var(--space-3);
+}
+
+.filter-row {
+    @extend .flex-between;
+    margin-bottom: var(--space-1);
+    align-items: center;  /* Add this line */
 }
 
 .filter-row--vertical {

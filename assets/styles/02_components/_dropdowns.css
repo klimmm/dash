@@ -1,34 +1,68 @@
-/* _dropdowns.css */
+/* Reset core Dash dropdown styles */
+.dash-dropdown {
+    /* Remove default Dash styles */
+    all: unset;
+    /* Ensure the container takes full width */
+    display: block;
+    width: 100%;
+    margin-bottom: 0; /* Ensure no bottom margin */
+}
+
+/* Main dropdown container */
 .dd-control {
-  font-size: var(--font-size-sm);
-  height: var(--input-height-sm);
-  border: 1px solid var(--color-border-weak);
-  border-radius: var(--radius-md);
-  background-color: var(--color-surface-primary);
-  transition: border-color var(--transition-duration-fast);
+    position: relative;
+    height: var(--input-height-sm);
+    width: 100%;
+    font-size: var(--font-size-sm);
+    margin-bottom: 0; /* Ensure no bottom margin */
+    display: block; /* Change from potential flex */
+    line-height: 1; /* Reset line height */
+}
+/* Reset Select container */
+.dd-control .Select {
+    height: var(--input-height-xs);
 }
 
-.dd-input {
-  height: calc(var(--input-height) - 2px);
+/* Main control element */
+.dd-control .Select-control {
+    height: var(--input-height-xs);
+    align-items: center;  /* Vertically center content */
+    padding: 0;  /* Remove padding */
+    margin: 0;  /* Remove margin */
 }
 
-.dd-value,
-.dd-placeholder {
-  line-height: calc(var(--input-height) - 2px);
-  padding: 0 var(--space-2);
-  font-size: var(--font-size-sm);
+
+/* Value and placeholder */
+.dd-control .Select-value,
+.dd-control .Select-placeholder {
+    height: 100%;
+    display: flex;
+    align-items: center;  /* Vertically center text */
+    padding: 0 var(--space-2);
+    margin: 0;  /* Remove margin */
+    font-size: var(--font-size-sm);
+    line-height: 1;  /* Reset line height */
 }
 
-.dd-placeholder {
-  color: var(--color-text-secondary);
+
+.dd-control .Select-input {
+    height: calc(var(--input-height-sm) - 7px);
+    padding: 0;  /* Remove padding */
+    margin: 0;  /* Remove margin */
 }
 
-.dd-control[data-state="focused"] {
-  border-color: var(--color-blue-500);
-  box-shadow: 0 0 0 3px var(--color-state-focus);
+/* Dropdown menu */
+.dd-control .Select-menu-outer {
+    margin: 0;  /* Keep only top margin */
+    border: 1px solid var(--color-border-weak);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-primary);
 }
 
-.dd-control[data-state="disabled"] {
-  background-color: var(--color-surface-secondary);
-  cursor: not-allowed;
+/* Menu options */
+.dd-control .Select-option {
+    padding: 4px var(--space-2);  /* Minimal padding */
+    display: flex;
+    align-items: center;  /* Vertically center text */
+    min-height: var(--input-height-xs);
 }

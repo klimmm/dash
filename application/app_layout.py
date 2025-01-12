@@ -136,7 +136,7 @@ def create_component(component_type, id=None, **kwargs):
     elif component_type == "label":
         return html.Label(
             component_kwargs.get("text", ""),
-            className="filter-label"
+            className="filter-label mb-0"
         )
 
     elif component_type == "button":
@@ -188,7 +188,8 @@ def create_filter_row(label_text, component_id, component_type="dropdown", verti
             [
                 dbc.Col(
                     html.Label(label_text, className="filter-label"),
-                    width=label_width
+                    width=label_width,
+                    
                 ),
                 dbc.Col(comp, width=component_width, className=f"{extra_class}-content")
             ],
