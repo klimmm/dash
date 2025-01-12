@@ -185,3 +185,5 @@ outputs/
 .ipynb_checkpoints/
 .DS_Store
 .DS_Store
+constants/mappings/insurance_lines_162_rev-or.json
+constants/mappings/modified_insurance.json
