@@ -4,6 +4,8 @@ import dash_bootstrap_components as dbc
 import dash
 import os 
 import gc
+from dash import dcc, html
+
 from functools import lru_cache
 from pandas.tseries.offsets import DateOffset
 from dash import Input, Output, State
@@ -20,6 +22,7 @@ from config.logging_config import (
         setup_logging, DebugLevels, get_logger,
         track_callback, track_callback_end
 )
+from charting.chart import create_chart
 from data_process.data_utils import create_year_quarter_options, load_and_preprocess_data
 from data_process.process_filters import MetricsProcessor
 from data_process.table_data import get_data_table
@@ -448,7 +451,8 @@ def process_data(
 @app.callback(
     [Output('data-table', 'children'),
      Output('table-title', 'children'),
-     Output('table-subtitle', 'children')],
+     Output('table-subtitle', 'children'),
+     Output('working-chart-container', 'children')],
     [Input('processed-data-store', 'data'),
      Input('toggle-selected-market-share', 'value'),
      Input('toggle-selected-qtoq', 'value')],
@@ -475,7 +479,6 @@ def process_ui(
     try:
         df = pd.DataFrame.from_records(processed_data['df'])
         df['year_quarter'] = pd.to_datetime(df['year_quarter'])
-
         table_data = get_data_table(
             df=df,
             table_selected_metric=filter_state['selected_metrics'],
@@ -486,9 +489,47 @@ def process_ui(
             toggle_selected_qtoq=toggle_selected_qtoq,
             prev_ranks=processed_data['prev_ranks']
         )
+
+        unique_insurers = df['insurer'].unique().tolist()
+        
+        # Get main insurer (first one)
+        main_insurer = unique_insurers[:1][0]  # or simply unique_insurers[0]
+        
+        # Get next 4 insurers (excluding main insurer)
+        compare_insurers = unique_insurers[1:5]
+        
+        # Filter dataframe to keep only these insurers
+        df = df[df['insurer'].isin([main_insurer] + compare_insurers)]
+        
+        #logger.warning(f"compare_insurers {compare_insurers}")
+        logger.warning(f"primary_y_metric {filter_state['primary_y_metric']}")
+        logger.warning(f"secondary_y_metric {filter_state['secondary_y_metric']}")
+        df = df[df['metric'] == filter_state['primary_y_metric'][0]]
+        chart_figure, _ = create_chart(
+            # Data parameters
+            chart_data=df,
+            # premium_loss_selection=filter_state['premium_loss_checklist'],
+            selected_linemains=filter_state['selected_lines'],
+            main_insurer=main_insurer,
+            compare_insurers=compare_insurers,
+            # Metric parameters
+            primary_y_metric=filter_state['primary_y_metric'],
+            secondary_y_metric=filter_state['secondary_y_metric'],
+
+            # Time period parameters
+            period_type=period_type,
+            start_quarter='2018Q1' if filter_state['reporting_form'] == '0420162' else '2022Q1',
+            end_quarter=end_quarter
+)
+
+        working_chart = dcc.Graph(
+            id={'type': 'dynamic-chart', 'index': f'working-chart'},
+            figure=chart_figure
+        )
+
         # logger.debug(f"table_data {table_data}")
         # logger.debug("Returning table data")
-        return table_data[0], table_data[1], table_data[2]
+        return table_data[0], table_data[1], table_data[2], working_chart
 
     except Exception as e:
         logger.error(f"Error in process_ui: {str(e)}", exc_info=True)

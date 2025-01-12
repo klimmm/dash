@@ -318,6 +318,18 @@ def create_app_layout(initial_quarter_options=None):
             id="main-container",
             className="main-container",
             children=[
+                html.Div(
+                    id='working-chart-container',
+                    className="data-table-wrapper",
+                    style={
+                        'width': '100%',
+                        'height': '40vh',
+                        'maxHeight': '40vh',
+                        'margin': '0',
+                        'padding': '5'
+                    }
+                ),
+                
                 dbc.Card([
                     dbc.CardBody([
                         html.H4(
@@ -340,10 +352,7 @@ def create_app_layout(initial_quarter_options=None):
                         )
                     ])
                 ], className="mb-3"),
-                html.Div(
-                    "Chart(s) / Additional Visuals Go Here", 
-                    className="placeholder-charts mb-3"
-                ),
+
                 html.Div(
                     id="tree-container", 
                     className="tree-container"
