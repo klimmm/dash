@@ -25,7 +25,7 @@ THEME = {
         'highlight': 'var(--table-surface-highlight)',
         'success': 'var(--color-success-600)',
         'danger': 'var(--color-danger-600)',
-        'qtoq_bg': 'var(--table-surface-alternate)'
+        'qtoq_bg': 'var(--table-surface-highlight)'
     },
     'typography': {
         'font_family': 'var(--font-family-sans)',
