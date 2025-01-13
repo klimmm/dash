@@ -30,7 +30,7 @@ from application.app_layout import create_app_layout
 from application.components.insurance_lines_tree import InsuranceLinesTree
 from application.components.dash_table import generate_dash_table_config
 from application.callbacks.period_filter import setup_period_type_callbacks
-from application.callbacks.app_layout_callbacks import setup_tab_state_callbacks
+from application.app_layout import setup_debug_callbacks
 from application.callbacks.insurance_lines_callbacks import setup_insurance_lines_callbacks
 from application.callbacks.filter_update_callbacks import setup_filter_update_callbacks
 

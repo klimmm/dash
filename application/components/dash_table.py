@@ -17,16 +17,15 @@ css_content = load_css_file(str(CSS_PATH))
 # Define base theme structure
 THEME = {
     'colors': {
-        'header_bg': 'var(--table-surface-header)',      # Replaced --table-header-bg
-        'header_text': 'var(--table-text-header)',       # Replaced --table-header-text
-        'cell_bg': 'var(--table-surface-cell)',          # Replaced --table-cell-bg
-        'cell_text': 'var(--table-text-cell)',          # Replaced --table-cell-text
-        'border': 'var(--table-border)',                # This one stayed the same
-        'highlight': 'var(--table-surface-highlight)',   # Replaced --table-highlight-bg
-        'success': 'var(--color-success-600)',       # This one stayed the same
-        'danger': 'var(--color-danger-600)',         # This one stayed the same
-        'qtoq_bg': 'var(--table-surface-alternate)'     # Replaced --table-qtoq-bg
-
+        'header_bg': 'var(--table-surface-header)',
+        'header_text': 'var(--table-text-header)',
+        'cell_bg': 'var(--table-surface-cell)',
+        'cell_text': 'var(--table-text-cell)',
+        'border': 'var(--table-border)', 
+        'highlight': 'var(--table-surface-highlight)',
+        'success': 'var(--color-success-600)',
+        'danger': 'var(--color-danger-600)',
+        'qtoq_bg': 'var(--table-surface-alternate)'
     },
     'typography': {
         'font_family': 'var(--font-family-sans)',
@@ -45,7 +44,8 @@ THEME = {
         'overflow_x': 'auto',
         'text_align': {
             'left': 'left',
-            'center': 'center'
+            'center': 'center',
+            'right': 'right'
         },
         'vertical_align': {
             'top': 'top',
@@ -66,9 +66,40 @@ THEME = {
             'backgroundColor': "var(--table-surface-highlight)",
             'fontWeight': 'bold'
         }
+    },
+    'columns': {
+        'rank': {
+            'width': 'var(--table-col-width-rank)',
+            'min_width': 'var(--table-col-min-width-rank)',
+            'max_width': 'var(--table-col-max-width-rank)',
+            'text_align': 'center'
+        },
+        'insurer': {
+            'width': 'var(--table-col-width-insurer)',
+            'min_width': 'var(--table-col-width-insurer)',
+            'max_width': 'var(--table-col-width-insurer)',
+            'text_align': 'left'
+        },
+        'value': {
+            'width': 'var(--table-col-width-value)',
+            'min_width': 'var(--table-col-min-width-value)',
+            'max_width': 'var(--table-col-max-width-value)',
+            'text_align': 'right'
+        },
+        'change': {
+            'width': 'var(--table-col-width-change)',
+            'min_width': 'var(--table-col-min-width-change)',
+            'max_width': 'var(--table-col-max-width-change)',
+            'text_align': 'right'
+        },
+        'market_share': {
+            'width': 'var(--table-col-width-market-share)',
+            'min_width': 'var(--table-col-min-width-market-share)',
+            'max_width': 'var(--table-col-max-width-market-share)',
+            'text_align': 'right'
+        }
     }
 }
-
 # Resolve theme variables
 TABLE_THEME = resolve_theme_variables(THEME, css_content)
 
@@ -94,6 +125,60 @@ def generate_dash_table_config(
     show_market_share = toggle_selected_market_share and "show" in toggle_selected_market_share
     show_qtoq = toggle_selected_qtoq and "show" in toggle_selected_qtoq
     
+    # Initialize style lists
+    style_data_conditional = []
+    style_cell_conditional = [
+        # Rank column (N)
+        {
+            'if': {'column_id': 'N'},
+            'width': TABLE_THEME['columns']['rank']['width'],
+            'min-width': TABLE_THEME['columns']['rank']['min_width'],
+            'max-width': TABLE_THEME['columns']['rank']['max_width'],
+            'textAlign': TABLE_THEME['columns']['rank']['text_align']
+        },
+        # Insurer column
+        {
+            'if': {'column_id': 'insurer'},
+            'width': TABLE_THEME['columns']['insurer']['width'],
+            'min-width': TABLE_THEME['columns']['insurer']['min_width'],
+            'max-width': TABLE_THEME['columns']['insurer']['max_width'],
+            'textAlign': TABLE_THEME['columns']['insurer']['text_align']
+        }
+    ]
+    
+    # Value columns (premiums)
+    value_columns = [col for col in df.columns if 'total_premiums' in col and 'market_share' not in col and 'q_to_q' not in col]
+    for col in value_columns:
+        style_cell_conditional.append({
+            'if': {'column_id': col},
+            'width': TABLE_THEME['columns']['value']['width'],
+            'min-width': TABLE_THEME['columns']['value']['min_width'],
+            'max-width': TABLE_THEME['columns']['value']['max_width'],
+            'textAlign': TABLE_THEME['columns']['value']['text_align']
+        })
+    
+    # Change columns (q_to_q)
+    change_columns = [col for col in df.columns if 'q_to_q_change' in col]
+    for col in change_columns:
+        style_cell_conditional.append({
+            'if': {'column_id': col},
+            'width': TABLE_THEME['columns']['change']['width'],
+            'min-width': TABLE_THEME['columns']['change']['min_width'],
+            'max-width': TABLE_THEME['columns']['change']['max_width'],
+            'textAlign': TABLE_THEME['columns']['change']['text_align']
+        })
+    
+    # Market share columns
+    market_share_columns = [col for col in df.columns if 'market_share' in col and 'q_to_q' not in col]
+    for col in market_share_columns:
+        style_cell_conditional.append({
+            'if': {'column_id': col},
+            'width': TABLE_THEME['columns']['market_share']['width'],
+            'min-width': TABLE_THEME['columns']['market_share']['min_width'],
+            'max-width': TABLE_THEME['columns']['market_share']['max_width'],
+            'textAlign': TABLE_THEME['columns']['market_share']['text_align']
+        })
+    
     # Format columns and prepare data
     columns = []
     for col in df.columns:
@@ -112,7 +197,6 @@ def generate_dash_table_config(
             quarter = parts[0] if parts else ""
             suffix = '_'.join(parts[1:]) if len(parts) > 1 else ""
             
-            # Format column name
             metric_label = translate(METRICS.get(metric, {}).get('label', metric))
             if 'market_share' in suffix:
                 base = f"{metric_label}, {translate('market_share')}"
@@ -139,19 +223,7 @@ def generate_dash_table_config(
         
         columns.append(column_config)
     
-    # Hidden columns
-    hidden_columns = [
-        col["id"] for col in columns
-        if col["id"] not in IDENTIFIER_COLS and (
-            ('market_share' in col["id"] and not show_market_share) or
-            ('q_to_q_change' in col["id"] and not show_qtoq)
-        )
-    ]
-    
-    # Style configuration
-    style_data_conditional = []
-    
-    # Special insurer styles
+    # Add special insurer styles
     for insurer, style in SPECIAL_INSURERS.items():
         style_data_conditional.append({
             'if': {'filter_query': f'{{insurer}} contains "{insurer}"'},
@@ -184,12 +256,20 @@ def generate_dash_table_config(
                 'textAlign': TABLE_THEME['layout']['text_align']['left'] if col == INSURER_COL 
                             else TABLE_THEME['layout']['text_align']['center']
             })
-    
+
+    # Hidden columns
+    hidden_columns = [
+        col["id"] for col in columns
+        if col["id"] not in IDENTIFIER_COLS and (
+            ('market_share' in col["id"] and not show_market_share) or
+            ('q_to_q_change' in col["id"] and not show_qtoq)
+        )
+    ]
+
     return {
-        # Base styles
         'style_table': {
             'overflowX': TABLE_THEME['layout']['overflow_x'],
-            'minWidth': TABLE_THEME['layout']['min_width']
+             'width': 'fit-content',  # This makes table take its natural width
         },
         'style_cell': {
             'fontFamily': TABLE_THEME['typography']['font_family'],
@@ -200,6 +280,7 @@ def generate_dash_table_config(
                      f"{TABLE_THEME['layout']['border']['style']} "
                      f"{TABLE_THEME['colors']['border']}"
         },
+        'style_cell_conditional': style_cell_conditional,
         'style_header': {
             'backgroundColor': TABLE_THEME['colors']['header_bg'],
             'color': TABLE_THEME['colors']['header_text'],
@@ -212,14 +293,6 @@ def generate_dash_table_config(
             'backgroundColor': TABLE_THEME['colors']['cell_bg'],
             'color': TABLE_THEME['colors']['cell_text']
         },
-        
-        # Data and columns
-        'columns': [{**col, "hideable": False, "selectable": False, 
-                    "deletable": False, "renamable": False} for col in columns],
-        'data': df.assign(insurer=lambda x: x['insurer'].map(map_insurer)).to_dict('records'),
-        'hidden_columns': hidden_columns,
-        
-        # Conditional styles
         'style_data_conditional': style_data_conditional,
         'style_header_conditional': [
             {
@@ -235,8 +308,10 @@ def generate_dash_table_config(
             for col in IDENTIFIER_COLS
             for idx in [0, 1]
         ],
-        
-        # Table behavior
+        'columns': [{**col, "hideable": False, "selectable": False, 
+                    "deletable": False, "renamable": False} for col in columns],
+        'data': df.assign(insurer=lambda x: x['insurer'].map(map_insurer)).to_dict('records'),
+        'hidden_columns': hidden_columns,
         'sort_action': 'none',
         'sort_mode': None,
         'filter_action': 'none',
@@ -247,8 +322,6 @@ def generate_dash_table_config(
         'cell_selectable': False,
         'page_action': 'none',
         'editable': False,
-        
-        # Additional settings
         'dropdown': {},
         'tooltip_conditional': [],
         'tooltip_data': [],

@@ -31,7 +31,6 @@
     margin: 0;  /* Remove margin */
 }
 
-
 /* Value and placeholder */
 .dd-control .Select-value,
 .dd-control .Select-placeholder {
@@ -43,7 +42,6 @@
     font-size: var(--font-size-sm);
     line-height: 1;  /* Reset line height */
 }
-
 
 .dd-control .Select-input {
     height: calc(var(--input-height-sm) - 7px);

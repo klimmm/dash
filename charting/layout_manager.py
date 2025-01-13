@@ -125,21 +125,21 @@ class ChartLayoutManager:
             "autosize": True,
             "title": {
                 'text': title,
-                'font': self._font_config['title'],
+                # 'font': self._font_config['title'],
                 'x': self.config.layout.title['x_position'],
                 'y': self.config.layout.title['y_position'],
                 'xanchor': self.config.layout.title['x_anchor'],
                 'yanchor': self.config.layout.title['y_anchor']
             },
-            "font": self._font_config['axis'],
+            # "font": self._font_config['axis'],
             "plot_bgcolor": self.config.colors.background["plot"],
             "paper_bgcolor": self.config.colors.background["paper"],
             "margin": self.config.layout.margin,
             "hovermode": self.config.behavior.hover["mode"],
             "showlegend": True,
             "legend": {
-                'font': self._font_config['legend'],
-                'grouptitlefont': self._font_config['legend_group_title'],
+                # 'font': self._font_config['legend'],
+                # 'grouptitlefont': self._font_config['legend_group_title'],
                 'orientation': self.config.layout.legend['orientation'],
                 'y': self.config.layout.legend['y_position'],
                 'x': self.config.layout.legend['x_position'],
@@ -199,8 +199,8 @@ class ChartLayoutManager:
             "zerolinecolor": self.config.axes.colors["zero_line"],
             "showline": self.config.axes.features["show_line"],
             "mirror": self.config.axes.features["mirror"],
-            "title_font": self._font_config['axis_title'],
-            "tickfont": self._font_config['axis_tick']
+            # "title_font": self._font_config['axis_title'],
+            # "tickfont": self._font_config['axis_tick']
         }
 
         # X-axis optimization

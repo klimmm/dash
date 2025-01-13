@@ -40,8 +40,53 @@ def get_data_table(
     lines_str = ', '.join(mapped_lines) if isinstance(mapped_lines, list) else mapped_lines
     table_title = f"Топ-{number_of_insurers} страховщиков"
     table_subtitle = f"{translate(table_selected_metric[0])}: {lines_str}"
+    
+    def calculate_datatable_width(datatable, default_width=100):
+        """
+        Calculate the total width of a Dash DataTable based on visible columns.
+    
+        Parameters:
+        - datatable (dash_table.DataTable): The DataTable object.
+        - default_width (int, optional): Default width for columns without specified widths in pixels. Defaults to 100.
+    
+        Returns:
+        - int: Total width in pixels.
+        """
+        total_width = 0
+        hidden_columns = datatable.hidden_columns or []
+        columns = datatable.columns or []
+        style_cell_conditional = datatable.style_cell_conditional or []
+    
+        for column in columns:
+            column_id = column.get('id')
+    
+            # Skip hidden columns
+            if column_id in hidden_columns:
+                continue
+    
+            # Initialize width with default
+            width = default_width
+    
+            # Search for specific width in style_cell_conditional
+            for condition in style_cell_conditional:
+                if condition.get('if', {}).get('column_id') == column_id:
+                    width_str = condition.get('width')
+                    if width_str:
+                        try:
+                            # Extract numeric value from width string (e.g., '150px' -> 150)
+                            width = int(width_str.replace('px', '').strip())
+                        except (ValueError, AttributeError):
+                            pass  # Keep default if conversion fails
+                    break  # Stop searching once the column is found
+    
+            total_width += width
+    
+        return total_width
 
-    return data_table, table_title, table_subtitle
+    total_width = calculate_datatable_width(data_table)
+
+    
+    return data_table, table_title, table_subtitle, total_width
 
 
 def table_data_pivot(

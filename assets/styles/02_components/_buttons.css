@@ -1,8 +1,28 @@
-/* _buttons.css */
+:root {
+  --button-height-xxs: 1.25rem;   /* Add this new smallest size */
+  --button-height-xs: 1.5rem;  
+  --button-height-sm: 2rem;    /* 32px */
+  --button-height-md: 2.5rem;  /* 40px */
+  --button-height-lg: 3rem;    /* 48px */
+  --space-2: 0.5rem;   /*  8px */
+  --space-3: 0.75rem;  /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --line-height-tight: 1.25;
+  --radius-md: 0.25rem; 
+  --color-surface-secondary: var(--color-gray-50);
+  --color-gray-50: #f8f9fa;
+  --color-text-default: var(--color-gray-900);
+  --color-gray-900: #212529;
+  --color-warning-50: #fff3cd;
+  --color-warning-500: #ffd700;
+  --color-border-weak: var(--color-gray-200);
+  --color-gray-200: #e9ecef;
+  --color-text-inverse: var(--color-white);
+  --color-white: #ffffff;
+  --color-blue-600: #2563eb;
 
-/*=============================================
-=            Button Base Styles               =
-=============================================*/
+}
+
 
 .btn-custom {
     height: var(--button-height-xs);
@@ -14,39 +34,24 @@
     align-items: center;
     justify-content: center;
     border: 1px solid transparent;
+    color: var(--color-text-default);
 }
 
-
-/*=============================================
-=            Sidebar Toggle Buttons           =
-=============================================*/
-
-/* Specific button styles */
-.btn-sidebar-toggle {
-    /* Remove composes, copy needed styles from btn-custom */
-    font-size: var(--font-size-sm);
+.btn-sidebar-toggle-nav {
     background-color: var(--color-surface-secondary);
-    color: var(--color-text-default);
 }
 
 .btn-sidebar-toggle-inner {
-    /* Remove composes, copy needed styles from btn-custom */
-    font-size: var(--font-size-sm);
     width: 100%;
     margin-top: auto;
     background-color: var(--color-warning-500);
-    color: var(--color-text-default);
 }
-
-/*=============================================
-=            Period Filter Buttons            =
-=============================================*/
 
 .btn-period {
     height: var(--button-height-xs);
     padding: 0 var(--space-2);
     font-size: var(--font-size-sm);
-    min-width: var(--button-height-sm);
+    min-width: var(--button-height-xs);
     border-radius: var(--radius-md);
     background-color: var(--color-surface-secondary);
     color: var(--color-text-default);
@@ -55,7 +60,6 @@
 
 .btn-period.active {
     background-color: var(--color-blue-600);
-    font-size: var(--font-size-sm);
     color: var(--color-text-inverse);
     border-color: var(--color-blue-600);
 }

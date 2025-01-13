@@ -13,7 +13,7 @@ from typing import Dict, List, Tuple, Any
 from dash.exceptions import PreventUpdate
 from pathlib import Path
 from application.components.insurance_lines_tree import insurance_lines_tree
-from application.callbacks.app_layout_callbacks import setup_tab_state_callbacks, setup_sidebar_callbacks
+from application.app_layout import setup_debug_callbacks, setup_sidebar_callbacks
 from application.callbacks.insurance_lines_callbacks import setup_insurance_lines_callbacks
 from application.callbacks.filter_update_callbacks import setup_filter_update_callbacks
 from config.main_config import APP_TITLE, DEBUG_MODE, PORT, DATA_FILE_162, DATA_FILE_158
@@ -334,7 +334,7 @@ def calculate_start_quarter(
 
 # Setup basic callbacks
 setup_period_type_callbacks(app)
-setup_tab_state_callbacks(app)
+setup_debug_callbacks(app)
 setup_insurance_lines_callbacks(app, insurance_lines_tree)
 setup_filter_update_callbacks(app, quarter_options_162, quarter_options_158)
 setup_sidebar_callbacks(app)
@@ -413,7 +413,7 @@ def process_data(
             df = grouped_df.copy()
 
         processor = MetricsProcessor()
-        # logger.debug(f"Process data - processing with parameters: {filter_state}, period_type: {period_type}, end_quarter: {end_quarter}, num_periods_table: {num_periods_table}, number_of_insurers: {number_of_insurers} ")
+        logger.warning(f"Process data - processing with parameters: {filter_state}, period_type: {period_type}, end_quarter: {end_quarter}, num_periods_table: {num_periods_table}, number_of_insurers: {number_of_insurers} ")
         # logger.debug(f"reporting_form: {filter_state['reporting_form']}")
 
         df, insurer_options, compare_options, selected_insurers, prev_ranks, number_of_periods_options, number_of_insurer_options = (
@@ -452,7 +452,10 @@ def process_data(
     [Output('data-table', 'children'),
      Output('table-title', 'children'),
      Output('table-subtitle', 'children'),
-     Output('working-chart-container', 'children')],
+     Output('table-title-chart', 'children'),
+     Output('table-subtitle-chart', 'children'),
+     Output('chart-container', 'style'),
+     Output('graph', 'figure')],
     [Input('processed-data-store', 'data'),
      Input('toggle-selected-market-share', 'value'),
      Input('toggle-selected-qtoq', 'value')],
@@ -490,6 +493,7 @@ def process_ui(
             prev_ranks=processed_data['prev_ranks']
         )
 
+        logger.warning(f"total_width {table_data[3]}")
         unique_insurers = df['insurer'].unique().tolist()
         
         # Get main insurer (first one)
@@ -497,10 +501,10 @@ def process_ui(
         
         # Get next 4 insurers (excluding main insurer)
         compare_insurers = unique_insurers[1:5]
-        
+
         # Filter dataframe to keep only these insurers
         df = df[df['insurer'].isin([main_insurer] + compare_insurers)]
-        
+
         #logger.warning(f"compare_insurers {compare_insurers}")
         logger.warning(f"primary_y_metric {filter_state['primary_y_metric']}")
         logger.warning(f"secondary_y_metric {filter_state['secondary_y_metric']}")
@@ -520,16 +524,16 @@ def process_ui(
             period_type=period_type,
             start_quarter='2018Q1' if filter_state['reporting_form'] == '0420162' else '2022Q1',
             end_quarter=end_quarter
-)
-
-        working_chart = dcc.Graph(
-            id={'type': 'dynamic-chart', 'index': f'working-chart'},
-            figure=chart_figure
         )
-
+        logger.warning(f"table_data {table_data}")
+        logger.warning(f"chart_figure {chart_figure}")
         # logger.debug(f"table_data {table_data}")
         # logger.debug("Returning table data")
-        return table_data[0], table_data[1], table_data[2], working_chart
+
+        # style = {'width': f'{table_data[3]}px'}
+        style = {'display': 'none'}
+        
+        return table_data[0], table_data[1], table_data[2], table_data[1], table_data[2], style, chart_figure
 
     except Exception as e:
         logger.error(f"Error in process_ui: {str(e)}", exc_info=True)

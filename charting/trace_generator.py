@@ -365,15 +365,16 @@ class ChartTraceGenerator:
                 "texttemplate": text_template,
                 "textposition": self.config.chart_types.bar["text_position"],
                 "textfont": dict(
-                    size=self.layout_manager._font_config['data_label']['size'],
+                    # size=self.layout_manager._font_config['data_label']['size'],
                     color=self.config.chart_types.bar["inside_text_color"])}
 
             # Merge data label config with bar-specific styling
             trace.update(
                 marker=dict(
                     color=color,
-                    line=dict(
-                        width=self.config.chart_types.bar["marker_line_width"])),
+                    # line=dict(
+                        # width=self.config.chart_types.bar["marker_line_width"])
+                ),
                 opacity=self.config.chart_types.bar["opacity"],
                 base=base,
                 offsetgroup=offsetgroup,
@@ -401,7 +402,7 @@ class ChartTraceGenerator:
             else:
                 line_config = {
                     "color": color,
-                    "width": self.config.chart_types.line["width"]
+                    # "width": self.config.chart_types.line["width"]
                 }
                 if chart_type == "smoothed_line":
                     line_config["shape"] = "spline"

@@ -24,9 +24,6 @@
     height: var(--input-height-xs);
 }
 
-/*=============================================
-=            Filter Components                =
-=============================================*/
 
 /* Base Filter Styles */
 .filter-section {
@@ -42,9 +39,15 @@
 }
 
 .filter-row {
-    @extend .flex-between;
+    display: flex;
+    width: 100%;
     margin-bottom: var(--space-1);
-    align-items: center;  /* Add this line */
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+.filter-row.row {
+    --bs-gutter-x: 0;
 }
 
 .filter-row--vertical {
@@ -59,6 +62,9 @@
 .filter-row--vertical .filter-content {
     width: 100%;
 }
+
+
+
 
 /* Period Filter Specific */
 .period-type__text {
@@ -90,10 +96,3 @@
     margin: 0;
 }
 
-.table-subtitle {
-    font-size: var(--font-size-base);
-}
-
-.table-title {
-    font-size: var(--font-size-md);
-}

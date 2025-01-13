@@ -73,11 +73,11 @@ class LayoutConfig:
     })
 
     legend: Dict[str, Any] = field(default_factory=lambda: {
-        "orientation": "h",
-        "y_position": 1.15,
-        "x_position": 0.02,
+        "orientation": "v",
+        "y_position": 1,
+        "x_position": 0,
         "y_anchor": "top",
-        "x_anchor": "left"
+        "x_anchor": "right"
     })
 
     title: Dict[str, Any] = field(default_factory=lambda: {
@@ -90,8 +90,8 @@ class LayoutConfig:
     legend_toggle: Dict[str, Any] = field(default_factory=lambda: {
         "pad_right": 10,
         "pad_top": 5,
-        "x_position": 0.9,
-        "y_position": 1.4,
+        "x_position": 0.8,
+        "y_position": 1,
         "x_anchor": "left",
         "y_anchor": "top",
         "border_width": 1
@@ -296,11 +296,11 @@ class FontConfig:
         "title": 14,
         "subtitle": 12,
         "axis_title": 12,
-        "axis": 12,
-        "axis_tick": 12,
-        "legend": 12,
-        "legend_group_title": 12,
-        "data_label": 12
+        "axis": 20,
+        "axis_tick": 20,
+        "legend": 14,
+        "legend_group_title": 20,
+        "data_label": 20
     })
     colors: Dict[str, str] = field(default_factory=lambda: {
         "title": "#000000",

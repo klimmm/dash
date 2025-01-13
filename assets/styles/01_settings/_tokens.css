@@ -44,7 +44,7 @@
   --table-text-cell: var(--color-text-default);
   --table-border: var(--color-border-weak);
   --table-surface-alternate: var(--color-surface-secondary);
-    
+  --table-surface-highlight: var(--color-surface-secondary);  
 
   /*=============================================
   =            Semantic Colors                 =
@@ -185,10 +185,7 @@
   --input-height-lg: 3rem;     /* 48px */
   
   /* Buttons */
-  --button-height-xxs: 1.25rem;   /* Add this new smallest size */
-  --button-height-sm: 2rem;    /* 32px */
-  --button-height-md: 2.5rem;  /* 40px */
-  --button-height-lg: 3rem;    /* 48px */
+
   
   /* Table */
   --table-font-size: var(--font-size-sm);
@@ -203,9 +200,38 @@
   --table-hover-opacity: 0.1;
   --table-selected-opacity: 0.2;
 
-    
   /* Layout Components */
-  --sidebar-width: 400px;
   --navbar-height: 56px;
 
-}
+
+
+  
+  /* Insurer column */
+  --table-col-width-insurer: 400px;
+  --table-col-min-width-insurer: 400px;
+  --table-col-max-width-insurer: 400px;
+
+
+  /* Rank column (N) */
+  --table-col-width-rank: 100px;
+  --table-col-min-width-rank: 100px;
+  --table-col-max-width-rank: 100px;
+  
+  /* Insurer column */
+
+  
+  /* Value columns (amounts) */
+  --table-col-width-value: 150px;
+  --table-col-min-width-value: 120px;
+  --table-col-max-width-value: 180px;
+  
+  /* Change columns (q_to_q) */
+  --table-col-width-change: 180px;
+  --table-col-min-width-change: 180px;
+  --table-col-max-width-change: 180px;
+  
+  /* Market share columns */
+  --table-col-width-market-share: 140px;
+  --table-col-min-width-market-share: 120px;
+  --table-col-max-width-market-share: 160px;
+}    

@@ -32,8 +32,8 @@ def create_chart(
     group_column: str = 'insurer',
     random_color: bool = False,
     selected_linemains: Union[List[str], str] = None,
-    container_width: Optional[int] = 800,
-    container_height: Optional[int] = 600
+    container_width: Optional[int] = 1200,
+    container_height: Optional[int] = 900
 ) -> Tuple[go.Figure, Optional[str]]:
     """Create a chart with the given parameters"""
 
@@ -78,7 +78,7 @@ def create_chart(
         for trace in traces:
             fig.add_trace(trace, secondary_y=getattr(trace, 'yaxis', 'y') == 'y2')
 
-        layout_manager.set_dimensions(
+        '''layout_manager.set_dimensions(
             width=container_width,
             height=container_height,
             chart_data=chart_data,
@@ -86,7 +86,7 @@ def create_chart(
             traces=traces,
             series_column=series_column,
             is_grouped_by_series=is_grouped_by_series
-        )
+        )'''
 
         y_range, y2_range = get_axis_ranges(
             traces,
@@ -99,7 +99,7 @@ def create_chart(
             show_100_percent_bars
         )
 
-        title, subtitle = layout_manager.generate_chart_title(
+        '''title, subtitle = layout_manager.generate_chart_title(
             x_column=x_column,
             selected_linemains=selected_linemains,
             selected_metrics=selected_metrics,
@@ -108,7 +108,9 @@ def create_chart(
             period_type=period_type,
             series_column=series_column,
             group_column=group_column
-        )
+        )'''
+
+        title, subtitle = None, None
 
         layout_manager.apply_base_layout(
             fig=fig, 
@@ -130,6 +132,7 @@ def create_chart(
 
         return fig, None
 
+    
     except Exception as e:
         logger.warning(f"Error generating chart: {str(e)}", exc_info=True)
         return go.Figure(), f"An error occurred: {str(e)}"
