@@ -57,16 +57,6 @@ THEME = {
             'none': 'none'
         }
     },
-    'special_rows': {
-        'top': {
-            'backgroundColor': "var(--table-surface-highlight)",
-            'fontWeight': 'normal'
-        },
-        'market': {
-            'backgroundColor': "var(--table-surface-highlight)",
-            'fontWeight': 'bold'
-        }
-    },
     'columns': {
         'rank': {
             'width': 'var(--table-col-width-rank)',
@@ -81,21 +71,21 @@ THEME = {
             'text_align': 'left'
         },
         'value': {
-            'width': 'var(--table-col-width-value)',
-            'min_width': 'var(--table-col-min-width-value)',
-            'max_width': 'var(--table-col-max-width-value)',
+            'width': '120px',
+            'min_width': '110px',
+            'max_width': '120px',
             'text_align': 'right'
         },
         'change': {
-            'width': 'var(--table-col-width-change)',
-            'min_width': 'var(--table-col-min-width-change)',
-            'max_width': 'var(--table-col-max-width-change)',
-            'text_align': 'right'
+            'width': '120px',
+            'min_width': '110px',
+            'max_width': '120px',
+            'text_align': 'center'
         },
         'market_share': {
-            'width': 'var(--table-col-width-market-share)',
-            'min_width': 'var(--table-col-min-width-market-share)',
-            'max_width': 'var(--table-col-max-width-market-share)',
+            'width': '120px',
+            'min_width': '110px',
+            'max_width': '120px',
             'text_align': 'right'
         }
     }
@@ -207,6 +197,8 @@ def generate_dash_table_config(
                 header = translate('q_to_q_change') if 'q_to_q_change' in suffix else \
                         (quarter and f"{quarter.split('Q')[1]} кв. {quarter.split('Q')[0]}")
             
+            is_qtoq = 'q_to_q_change' in col
+            
             column_config.update({
                 "name": [base, header],
                 "type": "numeric",
@@ -217,45 +209,121 @@ def generate_dash_table_config(
                     else Scheme.fixed,
                     group=Group.yes,
                     groups=3,
-                    group_delimiter=','
+                    group_delimiter=',',
+                    sign='+' if is_qtoq else ''  # Only valid signs are '', '-', '+', '(', ' '
                 )
             })
         
         columns.append(column_config)
+
+    success_bg = 'rgba(0, 200, 81, 0.15)'  # Полупрозрачный зеленый
+    danger_bg = 'rgba(255, 71, 87, 0.15)'  # Полупрозрачный красный
+    
+
+    
+    # First, add the base background color for all cells
+    style_data_conditional.append({
+        'if': {'column_id': col for col in df.columns},
+        'backgroundColor': TABLE_THEME['colors']['cell_bg'],
+    })
+
+
+    style_data_conditional.append({
+        'if': {
+            'column_id': 'N',
+            'filter_query': '{N} contains "(+"'
+        },
+        'background': (
+            f'linear-gradient(90deg, '
+            f'transparent 0%, '
+            f'transparent calc(50% - 2ch), '
+            f'{success_bg} calc(50% + 1.5ch), '
+            f'{success_bg} calc(50% + 2.5ch), '
+            f'transparent calc(50% + 3ch), '
+            f'transparent 100%)'
+        )
+    })
+    
+    # Negative changes - look for (-1 through (-9
+    for i in range(1, 10):
+        style_data_conditional.append({
+            'if': {
+                'column_id': 'N',
+                'filter_query': f'{{N}} contains "(-{i}"'
+            },
+            'background': (
+                f'linear-gradient(90deg, '
+                f'transparent 0%, '
+                f'transparent calc(50% - 1ch), '
+                f'{danger_bg} calc(50% + 1.5ch), '
+                f'{danger_bg} calc(50% + 2.5ch), '
+                f'transparent calc(50% + 3ch), '
+                f'transparent 100%)'
+            )
+        })
     
     # Add special insurer styles
     for insurer, style in SPECIAL_INSURERS.items():
         style_data_conditional.append({
             'if': {'filter_query': f'{{insurer}} contains "{insurer}"'},
-            **style
+            'backgroundColor': style['backgroundColor'],
+            'fontWeight': style['fontWeight']
+        })
+
+
+    
+    # Add special insurer styles (now these will take precedence)
+    for insurer, style in SPECIAL_INSURERS.items():
+        style_data_conditional.append({
+            'if': {'filter_query': f'{{insurer}} contains "{insurer}"'},
+            'backgroundColor': style['backgroundColor'],
+            'fontWeight': style['fontWeight']
         })
     
-    # Column-specific styles
+    # Add text alignment for identifier columns without background color
+    for col in IDENTIFIER_COLS:
+        style_data_conditional.append({
+            'if': {'column_id': col},
+            'textAlign': TABLE_THEME['layout']['text_align']['left'] if col == INSURER_COL 
+                        else TABLE_THEME['layout']['text_align']['center']
+        })
+
     for col in df.columns:
         if '_q_to_q_change' in col:
             style_data_conditional.extend([
+                # Positive values
                 {
-                    'if': {'column_id': col, 'filter_query': f'{{{col}}} > 0'},
+                    'if': {
+                        'column_id': col,
+                        'filter_query': f'{{{col}}} > 0'
+                    },
                     'color': TABLE_THEME['colors']['success'],
                     'fontWeight': TABLE_THEME['typography']['normal_weight']
                 },
+                # Negative values
                 {
-                    'if': {'column_id': col, 'filter_query': f'{{{col}}} < 0'},
+                    'if': {
+                        'column_id': col,
+                        'filter_query': f'{{{col}}} < 0'
+                    },
                     'color': TABLE_THEME['colors']['danger'],
                     'fontWeight': TABLE_THEME['typography']['normal_weight']
                 },
+                # Zero values - no special formatting needed
+                {
+                    'if': {
+                        'column_id': col,
+                        'filter_query': f'{{{col}}} = 0'
+                    },
+                    'color': TABLE_THEME['colors']['cell_text'],
+                    'fontWeight': TABLE_THEME['typography']['normal_weight']
+                },
+                # Background for the entire column
                 {
                     'if': {'column_id': col},
                     'backgroundColor': TABLE_THEME['colors']['qtoq_bg']
                 }
             ])
-        elif col in IDENTIFIER_COLS:
-            style_data_conditional.append({
-                'if': {'column_id': col},
-                'backgroundColor': TABLE_THEME['colors']['cell_bg'],
-                'textAlign': TABLE_THEME['layout']['text_align']['left'] if col == INSURER_COL 
-                            else TABLE_THEME['layout']['text_align']['center']
-            })
 
     # Hidden columns
     hidden_columns = [
@@ -269,7 +337,7 @@ def generate_dash_table_config(
     return {
         'style_table': {
             'overflowX': TABLE_THEME['layout']['overflow_x'],
-             'width': 'fit-content',  # This makes table take its natural width
+            'width': 'fit-content',  # This makes table take its natural width
         },
         'style_cell': {
             'fontFamily': TABLE_THEME['typography']['font_family'],

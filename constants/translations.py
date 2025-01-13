@@ -131,7 +131,8 @@ TRANSLATIONS: Dict[str, str] = {
     "total_losses_market_share": "Доля рынка по общей сумме выплат",
     "total_premiums_market_share": "Доля рынка по общей сумме премий",
     "market_share": "доля рынка, %",
-    "q_to_q_change": "Динамика, %",
+    # "market_share": "MS, %",
+    "q_to_q_change": "Δ%",
 
 
     # Ratio Metrics and Changes

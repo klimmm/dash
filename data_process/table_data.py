@@ -40,15 +40,15 @@ def get_data_table(
     lines_str = ', '.join(mapped_lines) if isinstance(mapped_lines, list) else mapped_lines
     table_title = f"Топ-{number_of_insurers} страховщиков"
     table_subtitle = f"{translate(table_selected_metric[0])}: {lines_str}"
-    
+
     def calculate_datatable_width(datatable, default_width=100):
         """
         Calculate the total width of a Dash DataTable based on visible columns.
-    
+
         Parameters:
         - datatable (dash_table.DataTable): The DataTable object.
         - default_width (int, optional): Default width for columns without specified widths in pixels. Defaults to 100.
-    
+
         Returns:
         - int: Total width in pixels.
         """
@@ -56,17 +56,17 @@ def get_data_table(
         hidden_columns = datatable.hidden_columns or []
         columns = datatable.columns or []
         style_cell_conditional = datatable.style_cell_conditional or []
-    
+
         for column in columns:
             column_id = column.get('id')
-    
+
             # Skip hidden columns
             if column_id in hidden_columns:
                 continue
-    
+
             # Initialize width with default
             width = default_width
-    
+
             # Search for specific width in style_cell_conditional
             for condition in style_cell_conditional:
                 if condition.get('if', {}).get('column_id') == column_id:
@@ -78,14 +78,13 @@ def get_data_table(
                         except (ValueError, AttributeError):
                             pass  # Keep default if conversion fails
                     break  # Stop searching once the column is found
-    
+
             total_width += width
-    
+
         return total_width
 
     total_width = calculate_datatable_width(data_table)
 
-    
     return data_table, table_title, table_subtitle, total_width
 
 
@@ -197,33 +196,71 @@ def table_data_pivot(
             mask = ~((df[value_cols] == 0) | df[value_cols].isna()).all()
             keep_cols = ['insurer'] + list(value_cols[mask])
             df = df[keep_cols]
-
+            
             # Separate regular and summary rows
             summary_mask = df['insurer'].str.lower().str.startswith(('top', 'total'))
             main_df = df[~summary_mask].copy()
             summary_df = df[summary_mask].copy()
-
-            # Sort by first metric column
+            
+            # Sort main data by first metric column
             sort_col = value_cols[0]
             main_df[sort_col] = pd.to_numeric(main_df[sort_col], errors='coerce')
             main_df = main_df.sort_values(by=sort_col, ascending=False)
-
-            # Add numbering with previous rank
+            
+            # Sort summary rows
+            def get_sort_key(row):
+                insurer = row['insurer'].lower()
+                if insurer.startswith('total'):
+                    return (2, 0)  # Will be placed last
+                elif insurer.startswith('top-'):
+                    try:
+                        # Extract number from "top-X" and use it for sorting
+                        num = int(insurer.split('-')[1])
+                        return (1, num)  # Will be sorted by the number
+                    except (IndexError, ValueError):
+                        return (1, float('inf'))  # Handle malformed "top-" entries
+                return (0, 0)  # Fallback case
+            
+            summary_df = summary_df.sort_values(
+                by='insurer',
+                key=lambda x: pd.Series([get_sort_key(row) for _, row in summary_df.iterrows()]),
+                ascending=True
+            )
+            
+            # Add numbering with rank change
             main_df.insert(0, 'N', range(1, len(main_df) + 1))
             if prev_ranks:
                 main_df['N'] = main_df.apply(
-                    lambda row: f"{int(row['N'])} ({prev_ranks.get(row['insurer'], 'n/a')})"
-                    if row['insurer'] in prev_ranks else str(int(row['N'])),
+                    lambda row: format_rank_with_change(
+                        current_rank=int(row['N']),
+                        previous_rank=prev_ranks.get(row['insurer']),
+                        insurer=row['insurer']
+                    ),
                     axis=1
                 )
             else:
                 main_df['N'] = main_df['N'].astype(str)
-
+            
             # Combine and finalize
             summary_df.insert(0, 'N', np.nan)
             final_df = pd.concat([main_df, summary_df], ignore_index=True)
+            return final_df.fillna('-')
 
-            return final_df.fillna('n/a')
+        def format_rank_with_change(current_rank: int, previous_rank: int | None, insurer: str) -> str:
+            """Format rank with change indicator (↑ for improvement, ↓ for decline, - for no change)"""
+            if previous_rank is None:
+                return str(current_rank)
+
+            rank_change = previous_rank - current_rank  # Positive means improvement (moved up)
+
+            if rank_change > 0:
+                change_indicator = f"+{rank_change}"
+            elif rank_change < 0:
+                change_indicator = f"-{abs(rank_change)}"
+            else:
+                change_indicator = "-"
+
+            return f"{current_rank} ({change_indicator})"
 
         final_df = _clean_and_sort_table(organized_df)
         logger.debug(f"final_df first row:\n{final_df.head(1).to_string()}")

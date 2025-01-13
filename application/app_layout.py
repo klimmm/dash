@@ -216,7 +216,7 @@ import dash
 from dash import Input, Output, State
 from dataclasses import dataclass
 from typing import Tuple, Dict
-from config.logging_config import get_logger, track_callback, track_callback_end
+from config.logging_config import get_logger
 
 logger = get_logger(__name__)
 
@@ -328,7 +328,7 @@ def create_debug_footer() -> html.Div:
                 id="debug-collapse",
                 is_open=False
             )
-        ]
+        ], style={"display": "none"},
     )
 
 

@@ -43,7 +43,7 @@
   --table-surface-cell: var(--color-surface-primary);
   --table-text-cell: var(--color-text-default);
   --table-border: var(--color-border-weak);
-  --table-surface-alternate: var(--color-surface-secondary);
+  --table-surface-alternate: var(--color-surface-tertiary);
   --table-surface-highlight: var(--color-surface-secondary);  
 
   /*=============================================
@@ -184,17 +184,10 @@
   --input-height-md: 2.5rem;   /* 40px */
   --input-height-lg: 3rem;     /* 48px */
   
-  /* Buttons */
-
-  
   /* Table */
   --table-font-size: var(--font-size-sm);
-    
   --table-cell-height: 2rem;
   --table-header-height: 2.5rem;
-  --table-col-width-number: 4rem;
-  --table-col-width-text: 12rem;
-  --table-col-width-data: 5rem;
   
   /* Table States */
   --table-hover-opacity: 0.1;
@@ -203,35 +196,28 @@
   /* Layout Components */
   --navbar-height: 56px;
 
-
-
-  
   /* Insurer column */
-  --table-col-width-insurer: 400px;
-  --table-col-min-width-insurer: 400px;
-  --table-col-max-width-insurer: 400px;
-
+  --table-col-width-insurer: 380px;
+  --table-col-min-width-insurer: 380px;
+  --table-col-max-width-insurer: 380px;
 
   /* Rank column (N) */
   --table-col-width-rank: 100px;
   --table-col-min-width-rank: 100px;
   --table-col-max-width-rank: 100px;
   
-  /* Insurer column */
-
-  
   /* Value columns (amounts) */
-  --table-col-width-value: 150px;
-  --table-col-min-width-value: 120px;
-  --table-col-max-width-value: 180px;
+  --table-col-width-value: 110px;
+  --table-col-min-width-value: 110px;
+  --table-col-max-width-value: 110px;
   
   /* Change columns (q_to_q) */
-  --table-col-width-change: 180px;
-  --table-col-min-width-change: 180px;
-  --table-col-max-width-change: 180px;
+  --table-col-width-change: 100px;
+  --table-col-min-width-change: 100px;
+  --table-col-max-width-change: 100px;
   
   /* Market share columns */
-  --table-col-width-market-share: 140px;
-  --table-col-min-width-market-share: 120px;
-  --table-col-max-width-market-share: 160px;
+  --table-col-width-market-share: 110px;
+  --table-col-min-width-market-share: 110px;
+  --table-col-max-width-market-share: 110px;
 }    

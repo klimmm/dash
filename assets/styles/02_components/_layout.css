@@ -48,6 +48,7 @@
     min-height: var( --titles-height);
     max-height: var( --titles-height);
     width: 100%;
+    overflow-y: hidden;
     overflow-x: hidden;
 }
 
@@ -96,7 +97,7 @@
 .sidebar-col {
     background: var(--color-surface-primary);  /* Explicit background */
     flex: 0 0 var(--sidebar-width);
-    height: var(--sidebar-height);
+    height: auto;
     width: var(--sidebar-width);
     min-width: var(--sidebar-width);
     transform: translateX(0);
@@ -111,11 +112,13 @@
     border: 1px solid #ccc;  
 }
 
+/* height: var(--sidebar-height); */
+
 .chart-container {
     height: auto;
     width: calc(90% - var(--sidebar-width) - 2rem);
     border-right: 1px solid var(--color-border-weak);
-    overflow: hidden;    /* Prevents overflow */
+    overflow: hidden;    
     position: relative;  /* Ensures proper rendering */
     padding: 0;
     border: 1px solid #ccc;

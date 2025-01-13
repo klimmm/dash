@@ -8,12 +8,9 @@
 
 /* Components - order matters for specificity */
 @import url('./02_components/_layout.css');
-@import url('./02_components/_buttons.css');  
-@import url('./02_components/_forms.css');   
-@import url('./02_components/_sidebar.css');
-@import url('./02_components/_navbar.css');
 @import url('./02_components/_data-table.css');
-@import url('./02_components/_dropdowns.css');
+@import url('./02_components/_forms.css');
+@import url('./02_components/_buttons.css');
 
 /* Ensure assets are loaded */
 :root {

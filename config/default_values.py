@@ -7,11 +7,11 @@ DEFAULT_REPORTING_FORM = '0420162'
 
 # default_values.py
 DEFAULT_CHECKED_LINES = ["все линии"]
-DEFAULT_PRIMARY_METRICS = ['total_premiums']
+DEFAULT_PRIMARY_METRICS = ['direct_premiums']
 DEFAULT_PRIMARY_METRICS_INWARD = ['inward_premiums']
 DEFAULT_SECONDARY_METRICS = []
 
-DEFAULT_PREMIUM_LOSS_TYPES = ['direct', 'inward']
+DEFAULT_PREMIUM_LOSS_TYPES = ['direct']
 
 # Main period selector buttons (YTD, YoY, QoQ, etc.)
 button_period_main = "py-0 period-main-btn"

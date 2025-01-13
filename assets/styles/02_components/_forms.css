@@ -24,7 +24,6 @@
     height: var(--input-height-xs);
 }
 
-
 /* Base Filter Styles */
 .filter-section {
     margin-bottom: var(--space-4);
@@ -63,9 +62,6 @@
     width: 100%;
 }
 
-
-
-
 /* Period Filter Specific */
 .period-type__text {
     font-size: var(--font-size-sm);
@@ -96,3 +92,69 @@
     margin: 0;
 }
 
+/* Reset core Dash dropdown styles */
+.dash-dropdown {
+    /* Remove default Dash styles */
+    all: unset;
+    /* Ensure the container takes full width */
+    display: block;
+    width: 100%;
+    margin-bottom: 0; /* Ensure no bottom margin */
+}
+
+/* Main dropdown container */
+.dd-control {
+    position: relative;
+    height: var(--input-height-sm);
+    width: 100%;
+    font-size: var(--font-size-sm);
+    margin-bottom: 0; /* Ensure no bottom margin */
+    display: block; /* Change from potential flex */
+    line-height: 1; /* Reset line height */
+}
+/* Reset Select container */
+.dd-control .Select {
+    height: var(--input-height-xs);
+}
+
+/* Main control element */
+.dd-control .Select-control {
+    height: var(--input-height-xs);
+    align-items: center;  /* Vertically center content */
+    padding: 0;  /* Remove padding */
+    margin: 0;  /* Remove margin */
+}
+
+/* Value and placeholder */
+.dd-control .Select-value,
+.dd-control .Select-placeholder {
+    height: 100%;
+    display: flex;
+    align-items: center;  /* Vertically center text */
+    padding: 0 var(--space-2);
+    margin: 0;  /* Remove margin */
+    font-size: var(--font-size-sm);
+    line-height: 1;  /* Reset line height */
+}
+
+.dd-control .Select-input {
+    height: calc(var(--input-height-sm) - 7px);
+    padding: 0;  /* Remove padding */
+    margin: 0;  /* Remove margin */
+}
+
+/* Dropdown menu */
+.dd-control .Select-menu-outer {
+    margin: 0;  /* Keep only top margin */
+    border: 1px solid var(--color-border-weak);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-primary);
+}
+
+/* Menu options */
+.dd-control .Select-option {
+    padding: 4px var(--space-2);  /* Minimal padding */
+    display: flex;
+    align-items: center;  /* Vertically center text */
+    min-height: var(--input-height-xs);
+}
