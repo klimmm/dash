@@ -496,7 +496,7 @@ def create_sidebar_filters() -> dbc.CardBody:
             create_filter_row("Линия:", "insurance-line-dropdown", vertical=True),
             create_filter_row("Основной показатель:", "primary-y-metric", vertical=True),
             create_filter_row("Бизнес:", "premium-loss-checklist", 
-                            component_type="checklist", label_width=5, component_width=7),
+                            component_type="checklist", label_width=4, component_width=8),
             create_filter_row("Доп. показатель:", "secondary-y-metric", vertical=True),
             create_filter_row("Показать долю рынка:", "toggle-selected-market-share",
                             component_type="checklist", label_width=10, component_width=2),
