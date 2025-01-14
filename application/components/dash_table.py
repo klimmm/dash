@@ -40,9 +40,9 @@ THEME = {
     },
     'columns': {
         'defaults': {
-            'width': '100px',
+            'width': '120px',
             'min_width': '100px',
-            'max_width': '100px',
+            'max_width': '120px',
             'text_align': 'right'
         },
         'rank': {
@@ -53,14 +53,14 @@ THEME = {
         },
         'insurer': {
             'width': 'var(--table-col-width-insurer)',
-            'min_width': 'var(--table-col-width-insurer)',
-            'max_width': 'var(--table-col-width-insurer)',
+            'min_width': 'var(--table-col-min-width-insurer)',
+            'max_width': 'var(--table-col-max-width-insurer)',
             'text_align': 'left'
         },
         'change': {
-            'width': '130px',
+            'width': '150px',
             'min_width': '130px',
-            'max_width': '130px',
+            'max_width': '150px',
             'text_align': 'center'
         }
     }

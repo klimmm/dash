@@ -39,42 +39,6 @@ class ChartLayoutManager:
             'year_quarter': self._format_quarter_label
         }
         self.color_formatter = ColorFormatter(config.colors)
-
-    def set_dimensions(
-        self,
-        width: int,
-        height: int,
-        chart_data: pd.DataFrame,
-        x_column: str,
-        traces: list,
-        series_column: Optional[str] = None,
-        is_grouped_by_series: bool = False
-    ) -> None:        
-        self._width = width
-        self._height = height
-        self._num_traces = len(traces)
-        
-        # Calculate data points
-        self._data_points = self._calculate_data_points(
-            chart_data=chart_data,
-            x_column=x_column,
-            series_column=series_column,
-            is_grouped_by_series=is_grouped_by_series
-        )
-        
-        logger.info(f"Data points for sizing: {self._data_points} (from {len(chart_data)} rows)")
-    
-    def _calculate_data_points(
-        self,
-        chart_data: pd.DataFrame,
-        x_column: str,
-        series_column: Optional[str],
-        is_grouped_by_series: bool
-    ) -> int:
-
-        if is_grouped_by_series and series_column is not None:
-            return len(chart_data.groupby([series_column, x_column]))
-        return chart_data[x_column].nunique()
     
     def _initialize_font_config(self) -> Dict:
         """Initialize font configuration with defaults"""
@@ -286,7 +250,7 @@ class ChartLayoutManager:
             }
 
             fig.update_yaxes(y2_config, secondary_y=True)
-    
+
     def _format_quarter_label(
         self,
         date: pd.Timestamp,
@@ -362,100 +326,6 @@ class ChartLayoutManager:
 
         return ticks, labels
 
-    def generate_chart_title(
-        self,
-        x_column: str,
-        selected_linemains: Union[List[str], str],
-        selected_metrics: Union[List[str], str],
-        selected_insurers: Union[List[str], str],
-        end_quarter: str,
-        period_type: str,
-        series_column: str,
-        group_column: str
-    ) -> Tuple[str, str]:
-        """
-        Generate title and subtitle for the chart based on series and group configurations.
-        Fully self-contained processing including value retrieval, counting, and formatting.
-        """
-        def get_column_value(
-                column: str) -> Union[str, List[str], pd.Timestamp, None]:
-            """Internal helper to get the value for a specific column type"""
-            if not column:
-                return None
-
-            if column == 'year_quarter':
-                return end_quarter
-
-            value_map = {
-                'metric': selected_metrics,
-                'linemain': selected_linemains,
-                'insurer': selected_insurers
-            }
-            return value_map.get(column)
-
-        def count_items(items: Union[List[str], str, None]) -> int:
-            """Internal helper to count non-empty items"""
-            if not items:
-                return 0
-            if isinstance(items, str):
-                return 1 if items.strip() else 0
-            return len([x for x in items if x and str(x).strip()])
-
-        def get_column_data(column: str) -> Tuple[int, Optional[str]]:
-            """Internal helper to get count and formatted value for a column"""
-            if not column:
-                return 0, None
-
-            value = get_column_value(column)
-            count = count_items(value)
-            formatted = self._format_text(
-                value, column, period_type=period_type) if value else ""
-            return count, formatted
-
-        def find_remaining_column() -> Optional[str]:
-            """Internal helper to find the unused column"""
-            all_columns = {'metric', 'linemain', 'insurer', 'year_quarter'}
-            used_columns = {
-                col for col in (
-                    series_column,
-                    group_column,
-                    x_column) if col}
-            remaining = all_columns - used_columns
-            return next(iter(remaining), None) if remaining else None
-
-        # Get counts and formatted values for series and groups
-        num_series, series_formatted = get_column_data(series_column)
-
-        num_groups, group_formatted = get_column_data(group_column)
-
-        # Determine first part based on counts
-        first_part = ""
-
-        if num_groups == 1 and num_series > 1:
-            first_part = group_formatted
-
-        elif num_series == 1:  # Covers both cases: multiple groups or single group
-            first_part = series_formatted
-
-        elif num_series == 1 and num_groups == 1:
-            first_part = group_formatted
-
-        # Get second part from remaining column
-        second_part = ""
-        remaining_column = find_remaining_column()
-        if remaining_column:
-            _, remaining_formatted = get_column_data(remaining_column)
-            second_part = remaining_formatted
-
-        # Construct final title
-        if first_part and second_part:
-            title = f"{first_part}{self.text_config.separator}{second_part}"
-        else:
-            title = first_part or second_part
-
-        # Generate subtitle
-        subtitle = translate(period_type) if period_type else ""
-
         return title, subtitle
 
     def generate_trace_name_and_legend(
@@ -477,7 +347,7 @@ class ChartLayoutManager:
                 value, column, period_type=period_type) if value else ""
 
         # Determine which values to use based on counts and loop type
-        
+
         use_series = False
         if num_groups == 1 and num_series > 1:
             use_series = True

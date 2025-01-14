@@ -1,235 +1,78 @@
-/* tokens.css */
 :root {
-  /*=============================================
-  =                 Colors                     =
-  =============================================*/
-  
-  /* Base Colors */
-  --color-white: #ffffff;
-  --color-black: #000000;
-  
-  /* Gray Scale */
-  --color-gray-50: #f8f9fa;
-  --color-gray-100: #f1f3f5;
-  --color-gray-200: #e9ecef;
-  --color-gray-300: #dee2e6;
-  --color-gray-400: #ced4da;
-  --color-gray-500: #adb5bd;
-  --color-gray-600: #6c757d;
-  --color-gray-700: #495057;
-  --color-gray-800: #343a40;
-  --color-gray-900: #212529;
-
-  /* Brand Colors */
-  --color-blue-50: #f0f4fa;
-  --color-blue-100: #d9e3f5;
-  --color-blue-500: #3C5A99;
-  --color-blue-600: #2563eb;
-
-  /* Feedback Colors */
-  --color-success-50: #d4edda;
-  --color-success-500: #28a745;
-  --color-success-600: #059669;
-
-  --color-danger-50: #f8d7da;
-  --color-danger-500: #dc3545;
-  --color-danger-600: #dc2626;
-
-  --color-warning-50: #fff3cd;
-  --color-warning-500: #ffd700;
-
-  --table-surface-header: var(--color-surface-brand);
-  --table-text-header: var(--color-text-default);
-  --table-surface-cell: var(--color-surface-primary);
-  --table-text-cell: var(--color-text-default);
-  --table-border: var(--color-border-weak);
-  --table-surface-alternate: var(--color-surface-tertiary);
-  --table-surface-highlight: var(--color-surface-secondary);  
-
-  /*=============================================
-  =            Semantic Colors                 =
-  =============================================*/
-
-  /* Text Colors */
-  --color-text-default: var(--color-gray-900);
-  --color-text-secondary: var(--color-gray-600);
-  --color-text-muted: var(--color-gray-500);
-  --color-text-inverse: var(--color-white);
-  --color-text-brand: var(--color-blue-500);
-  
-  /* Background Colors */
-  --color-background-primary: var(--color-white);
-  --color-background-secondary: var(--color-gray-50);
-  --color-background-tertiary: var(--color-gray-100);
-  
-  /* Border Colors */
-  --color-border-weak: var(--color-gray-200);
-  --color-border-default: var(--color-gray-300);
-  --color-border-strong: var(--color-gray-400);
-  --color-border-inverse: var(--color-gray-700);
-  
-  /* Surface Colors */
-  --color-surface-primary: var(--color-white);
-  --color-surface-secondary: var(--color-gray-50);
-  --color-surface-tertiary: var(--color-gray-100);
-  --color-surface-inverse: var(--color-gray-800);
-  --color-surface-brand: var(--color-blue-500);
-
-  /* Interactive States */
-  --color-state-hover: rgba(173, 181, 189, 0.1);   /* gray-500 with 0.1 opacity */
-  --color-state-focus: rgba(60, 90, 153, 0.2);     /* blue-500 with 0.2 opacity */
-  --color-state-active: rgba(108, 117, 125, 0.2);  /* gray-600 with 0.2 opacity */
-  --color-state-selected: var(--color-blue-50);
-
-  /*=============================================
-  =               Typography                   =
-  =============================================*/
-
-  /* Font Families */
-  --font-family-sans: Arial, -apple-system, system-ui, sans-serif;
-  --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  
-  /* Font Sizes */
-  --font-size-xs: 0.75rem;    /* 12px */
-  --font-size-sm: 0.875rem;   /* 14px */
-  --font-size-base: 1rem;     /* 16px */
-  --font-size-md: 1.125rem;   /* 18px */
-  --font-size-lg: 1.25rem;    /* 20px */
-  --font-size-xl: 1.5rem;     /* 24px */
-  
-  /* Font Weights */
-  --font-weight-regular: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-  
-  /* Line Heights */
-  --line-height-tight: 1.25;
-  --line-height-base: 1.5;
-  --line-height-relaxed: 1.75;
-
-  /*=============================================
-  =                Spacing                     =
-  =============================================*/
-
-  --space-1: 0.25rem;  /*  4px */
-  --space-2: 0.5rem;   /*  8px */
-  --space-3: 0.75rem;  /* 12px */
-  --space-4: 1rem;     /* 16px */
-  --space-5: 1.5rem;   /* 24px */
-  --space-6: 2rem;     /* 32px */
-  --space-8: 3rem;     /* 48px */
-
-  /*=============================================
-  =                Effects                     =
-  =============================================*/
-
-  /* Border Radius */
-  --radius-sm: 0.125rem;    /*  2px */
-  --radius-md: 0.25rem;     /*  4px */
-  --radius-lg: 0.5rem;      /*  8px */
-  --radius-full: 9999px;
-  
-  /* Box Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  
-  /* Transitions */
-  --transition-duration-fast: 150ms;
-  --transition-duration-base: 300ms;
-  --transition-duration-slow: 500ms;
-  --transition-timing-default: cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-timing-in: cubic-bezier(0.4, 0, 1, 1);
-  --transition-timing-out: cubic-bezier(0, 0, 0.2, 1);
-
-  /*=============================================
-  =                Layout                      =
-  =============================================*/
-
-  /* Breakpoints */
-  --breakpoint-sm: 640px;
-  --breakpoint-md: 768px;
-  --breakpoint-lg: 1024px;
-  --breakpoint-xl: 1280px;
-  
-  /* Container Widths */
-  --container-max-width-sm: 640px;
-  --container-max-width-md: 768px;
-  --container-max-width-lg: 1024px;
-  --container-max-width-xl: 1280px;
-  
-  /* Z-Index Scale */
-  --z-index-dropdown: 1000;
-  --z-index-sticky: 1020;
-  --z-index-modal: 1030;
-  --z-index-popover: 1040;
-  --z-index-tooltip: 1050;
-
-  /*=============================================
-  =            Component Tokens                =
-  =============================================*/
-
-  /* Dropdown specific tokens */
-  --dropdown-menu-max-height: calc(var(--input-height-sm) * 5);
-  --dropdown-option-height: var(--input-height-xxs);
-  --dropdown-padding-y: var(--space-1);
-  --dropdown-padding-x: var(--space-2);
-  --dropdown-line-height: var(--line-height-tight);
+    /* Layout & Sizing */
+    --breakpoint-md: 768px;
+    --bs-gutter-x: var(--bs-gutter-x);
+    --navbar-height: 56px;
+    --sidebar-height: 700px;
+    --sidebar-width: 900px;
+    --titles-height: 60px;
     
-  /* Form Inputs */
-  --input-height-xxs: 1.25rem;    /* Add this new smallest size */
-  --input-height-xs: 1.5rem;     
-  --input-height-sm: 2rem;     /* 32px */
-  --input-height-md: 2.5rem;   /* 40px */
-  --input-height-lg: 3rem;     /* 48px */
-  
-  /* Table */
-  --table-font-size: var(--font-size-sm);
-  --table-cell-height: 2rem;
-  --table-header-height: 2.5rem;
-  
-  /* Table States */
-  --table-hover-opacity: 0.1;
-  --table-selected-opacity: 0.2;
+    /* Colors: Surface */
+    --color-surface-primary: #ffffff;
+    --color-surface-secondary: #f8f9fa8
+    --color-background-primary: #ffffff;
+    
+    /* Colors: Brand & State */
+    --color-blue-600: #2563eb;
+    --color-danger-600: #dc2626;
+    --color-success-600: #059669;
+    --color-warning-500: #ffd700;
+    
+    /* Colors: Text */
+    --color-text-default: #212529;
+    --color-text-inverse: #ffffff;
+    --color-text-muted: #adb5bd;
+    --color-text-secondary: #6c757d;
+    
+    /* Colors: Borders */
+    --color-border-weak: #e9ecef;
+    
+    /* Typography */
+    --font-family-sans: Arial, -apple-system, system-ui, sans-serif;
+    --font-size-base: 1rem;
+    --font-size-md: 1.125rem;
+    --font-size-sm: 0.875rem;
+    --font-size-xs: 0.75rem;
+    --font-weight-semibold: 600;
+    --line-height-tight: 1.25;
+    --line-height-base: 1.5
+    
+    /* Spacing */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    
+    /* Component Specific */
+    --button-height-xs: 1.5rem;
+    --input-height-sm: 2rem;
+    --input-height-xs: 1.5rem;
+    --radius-md: 0.25rem;
+    
+    /* Shadows */
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    
+    /* Table Specific */
+    --table-border: #e9ecef;
+    --table-col-width-rank: 120px;
+    --table-col-max-width-rank: 130px;
+    --table-col-min-width-rank: 120px;
+    --table-col-width-insurer: 360px;
+    --table-col-min-width-insurer: 360px;
+    --table-col-max-width-insurer: 360px;
 
-  /* Layout Components */
-  --navbar-height: 56px;
-
-  /* Insurer column */
-  --table-col-width-insurer: 360px;
-  --table-col-min-width-insurer: 360px;
-  --table-col-max-width-insurer: 360px;
-
-  /* Rank column (N) */
-  --table-col-width-rank: 100px;
-  --table-col-min-width-rank: 100px;
-  --table-col-max-width-rank: 100px;
-  
-  /* Value columns (amounts) */
-  --table-col-width-value: 110px;
-  --table-col-min-width-value: 110px;
-  --table-col-max-width-value: 110px;
-  
-  /* Change columns (q_to_q) */
-  --table-col-width-change: 100px;
-  --table-col-min-width-change: 100px;
-  --table-col-max-width-change: 100px;
-  
-  /* Market share columns */
-  --table-col-width-market-share: 110px;
-  --table-col-min-width-market-share: 110px;
-  --table-col-max-width-market-share: 110px;
-
-  --button-height-xxs: 1.25rem;   /* Add this new smallest size */
-  --button-height-xs: 1.5rem;  
-  --button-height-sm: 2rem;    /* 32px */
-  --button-height-md: 2.5rem;  /* 40px */
-  --button-height-lg: 3rem;    /* 48px */
-
-  --sidebar-width: 460px;
-  --sidebar-height: 700px;
-  --navbar-height: 56px;
-  --titles-height: 60px;
-
+    --table-font-size: 0.875rem;
+    --table-surface-cell: #ffffff;
+    --table-surface-header: #3C5A99;
+    --table-surface-highlight: #f8f9fa;
+    --table-text-cell: #212529;
+    
+    /* Animation & Transitions */
+    --transition-duration-base: 300ms;
+    --transition-duration-fast: 150ms;
+    --transition-timing-default: cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Z-Index */
+    --z-index-modal: 1030;
 }

@@ -28,7 +28,9 @@
     font-size: var(--font-size-md);
 }
 
-
+.dash-cell.dash-header {
+  border: 2px solid red;
+}
 
 @media (max-width: 768px) {
   
@@ -43,32 +45,3 @@
   }
 }
 
-@media (--viewport-md) {
-  .table-cell,
-  .table-header {
-    font-size: var(--font-size-sm);
-  }
-}
-
-@media (--viewport-lg) {
-  .table-cell,
-  .table-header {
-    font-size: var(--table-font-size);
-  }
-}
-
-@media print {
-  .table-header,
-  .table-cell {
-    background-color: transparent !important;
-    color: black !important;
-  }
-
-  .table-header {
-    border-bottom: 2px solid black;
-  }
-
-  .table-cell {
-    border: 1px solid black;
-  }
-}

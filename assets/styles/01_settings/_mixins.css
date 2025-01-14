@@ -70,8 +70,24 @@
   }
 }
 
-/*=============================================
-=            Other Mixins                    =
-=============================================*/
 
-/* Add any additional mixins here */
+
+
+@media (max-width: var(--breakpoint-md)) {
+    .sidebar-col {
+        position: fixed;
+        top: var(--navbar-height);
+        left: 0;
+        bottom: 0;
+        z-index: var(--z-index-modal);
+        width: 100%;
+        box-shadow: var(--shadow-md);
+        -webkit-overflow-scrolling: touch; /* For iOS */      
+    }
+}
+
+@media print {
+    #sidebar-col {
+        height: auto;
+    }
+}

@@ -8,23 +8,7 @@ from config.default_values import (
     DEFAULT_PRIMARY_METRICS, DEFAULT_CHECKED_LINES, DEFAULT_END_QUARTER,
     DEFAULT_REPORTING_FORM, DEFAULT_PREMIUM_LOSS_TYPES, DEFAULT_PERIOD_TYPE
 )
-from config.logging_config import get_logger
 from typing import Any, Optional, List
-
-logger = get_logger(__name__)
-
-
-from dataclasses import dataclass
-from typing import Tuple, List
-import dash
-from dash import Input, Output, State
-from dash.development.base_component import Component
-from config.logging_config import get_logger, track_callback, track_callback_end
-from config.logging_config import get_logger, track_callback, track_callback_end
-from config.default_values import DEFAULT_CHECKED_LINES
-logger = get_logger(__name__)
-
-
 
 APP_CONFIG = {
     'dropdowns': {
@@ -87,20 +71,11 @@ APP_CONFIG = {
     }
 }
 
+
 def create_component(component_type: str, id: Optional[str] = None, **kwargs) -> Any:
-    """
-    Create a dashboard component based on type and configuration.
-    
-    Args:
-        component_type: Type of component to create
-        id: Component identifier
-        **kwargs: Additional component configuration
-    
-    Returns:
-        Dashboard component
-    """
+
     base_style = {"fontSize": "0.85rem"}
-    
+
     if component_type == "dropdown":
         config = APP_CONFIG["dropdowns"].get(id, {})
         return dcc.Dropdown(
@@ -112,24 +87,25 @@ def create_component(component_type: str, id: Optional[str] = None, **kwargs) ->
             clearable=config.get("clearable", True),
             className="dd-control"
         )
-    
+
     if component_type == "checklist":
         config = APP_CONFIG["checklists"].get(id, {}).copy()
         config.update({k: v for k, v in kwargs.items() if k in ["options", "value", "switch", "inline", "readonly"]})
-        
+
         style = {**base_style, "margin": 0}
         if config.get("readonly"):
             style.update({"pointerEvents": "none", "opacity": 0.5})
-            
+
         return dbc.Checklist(
             id=id,
             options=config.get("options", []),
             value=config.get("value", []),
             switch=config.get("switch", False),
             inline=config.get("inline", False),
-            style=style
+            style=style,
+            className = "checklist"
         )
-    
+
     if component_type == "input":
         config = APP_CONFIG["inputs"].get(id, {})
         return dcc.Input(
@@ -141,7 +117,7 @@ def create_component(component_type: str, id: Optional[str] = None, **kwargs) ->
             value=config.get("value"),
             className="form-control input-short"
         )
-    
+
     if component_type == "button":
         return dbc.Button(
             kwargs.get("text", ""),
@@ -151,12 +127,13 @@ def create_component(component_type: str, id: Optional[str] = None, **kwargs) ->
             color=kwargs.get("color", "primary"),
             style={**base_style, "padding": "0.3rem 0.6rem"}
         )
-    
+
     if component_type == "label":
         return html.Label(
             kwargs.get("text", ""),
             className="filter-label mb-0"
         )
+
 
 def create_filter_row(
     label_text: str,
@@ -165,19 +142,7 @@ def create_filter_row(
     vertical: bool = False,
     **kwargs
 ) -> html.Div:
-    """
-    Create a filter row with label and component.
-    
-    Args:
-        label_text: Text for the label
-        component_id: Component identifier
-        component_type: Type of component to create
-        vertical: Whether to use vertical layout
-        **kwargs: Additional component configuration
-    
-    Returns:
-        Filter row component
-    """
+
     component = create_component(component_type, id=component_id, **kwargs)
     
     if component_id == "premium-loss-checklist":
@@ -191,10 +156,10 @@ def create_filter_row(
             html.Label(label_text, className="filter-label d-block mb-2"),
             html.Div(component, className="filter-content w-100")  # Added filter-content class
         ], className="filter-row filter-row--vertical mb-3")  # Added filter-row classes
-    
+
     label_width = kwargs.get("label_width", 6)
     component_width = kwargs.get("component_width", 6)
-    
+
     return dbc.Row(
         [
             dbc.Col(
@@ -207,23 +172,11 @@ def create_filter_row(
                 className="d-flex justify-content-end"
             )
         ],
-        className="filter-row mb-1"  # Removed explicit row class since dbc.Row adds it automatically
+        className="filter-row mb-0"  # Removed explicit row class since dbc.Row adds it automatically
     )
 
 
-
-import dash
-from dash import Input, Output, State
-from dataclasses import dataclass
-from typing import Tuple, Dict
-from config.logging_config import get_logger
-
-logger = get_logger(__name__)
-
-
-
-
-def create_hierarchy_buttons() -> dbc.Row:
+def create_lines_checklist_buttons() -> dbc.Row:
     """Create hierarchy control buttons."""
     return dbc.Row(
         [
@@ -239,7 +192,8 @@ def create_hierarchy_buttons() -> dbc.Row:
         className="mb-3"
     )
 
-def create_period_buttons() -> html.Div:
+
+def create_period_type_buttons() -> html.Div:
     """Create period type selection buttons."""
     period_types = [
         ("YTD", "ytd"),
@@ -263,47 +217,105 @@ def create_period_buttons() -> html.Div:
     ])
 
 
-def setup_debug_callbacks(app: dash.Dash) -> None:
-    """Setup callbacks for debug panel functionality."""
-    
-    @app.callback(
-        Output("debug-collapse", "is_open"),
-        Input("debug-toggle", "n_clicks"),
-        State("debug-collapse", "is_open"),
+def create_stores() -> List[html.Div]:
+    """Create store components for app state management."""
+    return [
+        html.Div(id="_hidden-init-trigger", style={"display": "none"}),
+        dcc.Store(id="show-data-table", data=True),
+        dcc.Store(id="processed-data-store"),
+        dcc.Store(id="filter-state-store"),
+        dcc.Store(id='insurance-lines-state', data=initial_state),
+        dcc.Store(id='expansion-state', data={'states': {}, 'all_expanded': False}),
+        dcc.Store(id='tree-state', data={'states': {}, 'all_expanded': False}),
+        dcc.Store(id='period-type', data=DEFAULT_PERIOD_TYPE)
+    ]
+
+
+def create_navbar() -> dbc.Navbar:
+    """Create navigation bar component."""
+    return dbc.Navbar(
+        [
+            dbc.Container(
+                # fluid=True,
+                children=[
+                    dbc.NavbarToggler(id="navbar-toggler", n_clicks=0),
+                    dbc.Button(
+                        "Data Table",
+                        id="data-table-tab",
+                        color="light",
+                        className="btn-custom btn-table-tab"
+                    )
+                ]
+            )
+        ],
+        color="dark",
+        dark=True,
+        className="main-navbar"
     )
-    def toggle_debug_collapse(n_clicks: int, is_open: bool) -> bool:
-        """
-        Toggle the debug log collapse panel.
-        
-        Args:
-            n_clicks: Number of times the toggle button was clicked
-            is_open: Current state of the debug panel
-            
-        Returns:
-            bool: New state of the debug panel
-        """
-        ctx = dash.callback_context
-        start_time = track_callback('app.tab_state_callbacks', 'toggle_debug_collapse', ctx)
-        
-        try:
-            result = not is_open if n_clicks else is_open
-            track_callback_end(
-                'app.tab_state_callbacks',
-                'toggle_debug_collapse',
-                start_time,
-                result="not is_open" if n_clicks else "is_open"
-            )
-            return result
-            
-        except Exception as e:
-            logger.exception("Error in toggle_debug_collapse")
-            track_callback_end(
-                'app.tab_state_callbacks',
-                'toggle_debug_collapse',
-                start_time,
-                error=str(e)
-            )
-            raise
+
+
+def create_sidebar_filters() -> dbc.CardBody:
+    """Create sidebar filters component."""
+    return dbc.CardBody(
+        id="sidebar-filters",
+        className="sidebar-filters collapsed",
+        children=[
+            dbc.Row([
+                # Left column - 6 units wide
+                dbc.Col([
+                    create_filter_row("Форма отчетности:", "reporting-form", label_width=9, component_width=3),
+                    create_filter_row("Отчетный квартал:", "end-quarter", label_width=9, component_width=3),
+                    html.Label("Тип данных:", className="filter-label mb-2"),
+                    create_period_type_buttons(),
+                    html.Div(id="period-type-text", className="period-type__text mb-3"),
+                    create_filter_row(
+                        "Бизнес:", 
+                        "premium-loss-checklist",
+                        component_type="checklist", 
+                        label_width=3, 
+                        component_width=9
+                    ),                    
+                ]),  # Specify column width
+                
+                # Right column - 6 units wide
+                dbc.Col([
+
+                    create_filter_row(
+                        "Показать долю рынка:", 
+                        "toggle-selected-market-share",
+                        component_type="checklist", 
+                        label_width=10, 
+                        component_width=2
+                    ),
+                    create_filter_row(
+                        "Показать динамику:", 
+                        "toggle-selected-qtoq",
+                        component_type="checklist", 
+                        label_width=10, 
+                        component_width=2
+                    ),
+                    create_filter_row(
+                        "Кол-во периодов для сравнения:", 
+                        "number-of-periods-data-table",
+                        component_type="input", 
+                        label_width=9, 
+                        component_width=3
+                    ),
+                    create_filter_row(
+                        "Кол-во страховщиков:", 
+                        "number-of-insurers",
+                        component_type="input", 
+                        label_width=9, 
+                        component_width=3
+                    ),
+                    create_filter_row("Доп. показатель:", "secondary-y-metric", vertical=True),
+                ])  # Specify column width
+            ]),
+            html.Div(id="tree-container", className="tree-container"),
+            create_lines_checklist_buttons()
+        ]
+    )
+
 
 def create_debug_footer() -> html.Div:
     """Create debug footer component."""
@@ -332,210 +344,7 @@ def create_debug_footer() -> html.Div:
     )
 
 
-
-
-logger = get_logger(__name__)
-
-@dataclass
-class SidebarState:
-    """Manages sidebar-related classes and states."""
-    chart_cont_class: str
-    main_class: str
-    sidebar_col_class: str
-    nav_btn_text: str
-    nav_btn_class: str
-    inner_btn_class: str
-
-    @classmethod
-    def expanded(cls) -> 'SidebarState':
-        """Create expanded sidebar state."""
-        return cls(
-            chart_cont_class="chart-container",
-            main_class="sidebar-filters",
-            sidebar_col_class="sidebar-col",
-            nav_btn_text="Hide Filters",
-            nav_btn_class="btn-custom btn-sidebar-toggle-nav",
-            inner_btn_class="btn-custom btn-sidebar-toggle-inner"
-        )
-
-    @classmethod
-    def collapsed(cls) -> 'SidebarState':
-        """Create collapsed sidebar state."""
-        return cls(
-            chart_cont_class="chart-container collapsed",
-            main_class="sidebar-filters collapsed",
-            sidebar_col_class="sidebar-col collapsed",
-            nav_btn_text="Show Filters",
-            nav_btn_class="btn-custom btn-sidebar-toggle-nav",
-            inner_btn_class="btn-custom btn-sidebar-toggle-inner"
-        )
-
-    def to_tuple(self) -> Tuple[str, str, str, str, str]:
-        """Convert state to callback output tuple."""
-        return (
-            self.chart_cont_class,
-            self.main_class,
-            self.sidebar_col_class,
-            self.nav_btn_text,
-            self.nav_btn_class,
-            self.inner_btn_class
-        )
-
-def setup_sidebar_callbacks(app: dash.Dash) -> None:
-    """Setup callbacks for sidebar toggle functionality."""
-    
-    @app.callback(
-        [
-            Output("chart-container", "className"),
-            Output("sidebar-filters", "className"),
-            Output("sidebar-col", "className"),
-            Output("toggle-sidebar-button", "children"),
-            Output("toggle-sidebar-button", "className"),
-            Output("toggle-sidebar-button-sidebar", "className")
-        ],
-        [
-            Input("toggle-sidebar-button", "n_clicks"),
-            Input("toggle-sidebar-button-sidebar", "n_clicks")
-        ],
-        [
-            State("sidebar-col", "className")
-        ],
-        prevent_initial_call=True  # Prevent callback from firing on initial load
-    )
-    def toggle_sidebar(
-        nav_clicks: int,
-        sidebar_clicks: int,
-        current_class: str
-    ) -> Tuple[str, str, str, str, str]:
-        """
-        Toggle sidebar visibility and update related elements.
-        """
-        ctx = dash.callback_context
-        start_time = track_callback('app.sidebar_callbacks', 'toggle_sidebar', ctx)
-        
-        try:
-            # If no button was clicked (initial load), return expanded state
-            if not ctx.triggered:
-                return SidebarState.expanded().to_tuple()
-            
-            # Determine current state
-            is_expanded = current_class and "collapsed" not in current_class
-            
-            # Return opposite state
-            new_state = SidebarState.collapsed() if is_expanded else SidebarState.expanded()
-            
-            track_callback_end('app.sidebar_callbacks', 'toggle_sidebar', start_time, 
-                             result=f"toggled_to_{'collapsed' if is_expanded else 'expanded'}")
-            
-            logger.warning(f"nav_clicks{nav_clicks}, sidebar_clicks {sidebar_clicks}, current_class {current_class},trigger {ctx.triggered[0]}, new state {new_state.to_tuple()} ")
-            
-            return new_state.to_tuple()
-            
-        except Exception as e:
-            logger.exception("Error in toggle_sidebar")
-            track_callback_end('app.sidebar_callbacks', 'toggle_sidebar', start_time, error=str(e))
-            raise
-
-
-def create_stores() -> List[html.Div]:
-    """Create store components for app state management."""
-    return [
-        html.Div(id="_hidden-init-trigger", style={"display": "none"}),
-        dcc.Store(id="show-data-table", data=True),
-        dcc.Store(id="processed-data-store"),
-        dcc.Store(id="filter-state-store"),
-        dcc.Store(id='insurance-lines-state', data=initial_state),
-        dcc.Store(id='expansion-state', data={'states': {}, 'all_expanded': False}),
-        dcc.Store(id='tree-state', data={'states': {}, 'all_expanded': False}),
-        dcc.Store(id='period-type', data=DEFAULT_PERIOD_TYPE)
-    ]
-
-
-
-def create_navbar() -> dbc.Navbar:
-    """Create navigation bar component."""
-    return dbc.Navbar(
-        [
-            dbc.Container(
-                fluid=True,
-                children=[
-                    dbc.Button(
-                        "Show Filters",
-                        id="toggle-sidebar-button",
-                        color="secondary",
-                        className="btn-custom btn-sidebar-toggle"
-                    ),
-                    dbc.NavbarToggler(id="navbar-toggler", n_clicks=0),
-                    dbc.Button(
-                        "Data Table",
-                        id="data-table-tab",
-                        color="light",
-                        className="btn-custom btn-table-tab"
-                    )
-                ]
-            )
-        ],
-        color="dark",
-        dark=True,
-        className="main-navbar"
-    )
-
-def create_sidebar_filters() -> dbc.CardBody:
-    """Create sidebar filters component."""
-    return dbc.CardBody(
-        id="sidebar-filters",
-        className="sidebar-filters",
-        children=[
-            create_filter_row("Форма отчетности:", "reporting-form", label_width=9, component_width=3),
-            create_filter_row("Отчетный квартал:", "end-quarter", label_width=9, component_width=3),
-            html.Label("Тип данных:", className="filter-label mb-2"),
-            create_period_buttons(),
-            html.Div(id="period-type-text", className="period-type__text mb-3"),
-            create_filter_row("Кол-во периодов для сравнения:", "number-of-periods-data-table", 
-                            component_type="input", label_width=9, component_width=3),
-
-            create_filter_row("Бизнес:", "premium-loss-checklist", 
-                            component_type="checklist", label_width=4, component_width=8),
-            create_filter_row("Доп. показатель:", "secondary-y-metric", vertical=True),
-            create_filter_row("Показать долю рынка:", "toggle-selected-market-share",
-                            component_type="checklist", label_width=10, component_width=2),
-            create_filter_row("Показать динамику:", "toggle-selected-qtoq",
-                            component_type="checklist", label_width=10, component_width=2),
-            create_filter_row("Кол-во страховщиков:", "number-of-insurers",
-                            component_type="input", label_width=9, component_width=3),
-            dbc.Button(
-                "Hide Filters",
-                id="toggle-sidebar-button-sidebar",
-                color="warning",
-                className="btn-custom btn-period active"
-            ),
-            html.Div(id="tree-container", className="tree-container"),
-            create_hierarchy_buttons()
-        ]
-    )
-
-def create_data_table_section() -> dbc.CardBody:
-    """Create data table section component."""
-    return dbc.CardBody([
-        html.H4(id="table-title", className="table-title"),
-        html.H4(id="table-subtitle", className="table-subtitle mb-3"),
-        dcc.Loading(
-            id="loading-data-table",
-            type="default",
-            children=html.Div(id="data-table")
-        )
-    ], className="datatable-container")
-
 def create_app_layout(initial_quarter_options: Optional[List[dict]] = None) -> List:
-    """
-    Create the main application layout.
-    
-    Args:
-        initial_quarter_options: Initial options for quarter selection
-        
-    Returns:
-        List of layout components
-    """
     try:
         if initial_quarter_options:
             APP_CONFIG['dropdowns']['end-quarter']['options'] = [
@@ -545,59 +354,56 @@ def create_app_layout(initial_quarter_options: Optional[List[dict]] = None) -> L
         return dbc.Container([  # Wrap everything in Container
             *create_stores(),
             create_navbar(),
-            dbc.Row([
-                dbc.Col(
+
+            dbc.CardBody([
+                dbc.Button(
+                    "Show Additional Filters",
+                    id="toggle-sidebar-button-sidebar",
+                    className="btn-custom btn-sidebar-toggle"
+                ),
+                html.Div(
                     create_sidebar_filters(),
                     id="sidebar-col",
-                    className="sidebar-col",
-                    width=6
+                    className="sidebar-col collapsed"
                 ),
-                dbc.Col(
-                    dbc.CardBody([
-                        dbc.Row([
-                            dbc.Col([
-                                html.H4(id="table-title", className="table-title"),
-                                html.H4(id="table-subtitle", className="table-subtitle mb-3", style={"display": "none"}),
-                            ], className="titles-container"),
-                        ]),
-                        dbc.Row([
-                            dbc.Col([
-                                create_filter_row("", "insurance-line-dropdown", label_width=0, component_width=12),
-                            ], className="insurance-line-dropdown-container"),
-                            dbc.Col([
-                                create_filter_row("", "primary-y-metric", label_width=0, component_width=12)    
-                            ], className="primary-y-metric container"),
-                        ]),
-                        html.Div([
-                            dcc.Loading(
-                                id="loading-data-table",
-                                type="default",
-                                children=html.Div(id="data-table")
-                            )
-                        ], className="datatable-container"),
-                    ], className="table-wrapper"),
-                ),
-            ], className="first-row-container"),
+                dbc.Row([
+                    dbc.Col([
+                        html.H4(id="table-title", className="table-title"),
+                        html.H4(id="table-subtitle", className="table-subtitle mb-3", style={"display": "none"}),
+                    ], className="titles-container", style={"display": "none"}),
+                ]),
+                dbc.Row([
+                    dbc.Col([
+                        create_filter_row("", "insurance-line-dropdown", label_width=0, component_width=12),
+                    ], className="insurance-line-dropdown-container"),
+                    dbc.Col([
+                        create_filter_row("", "primary-y-metric", label_width=0, component_width=12)    
+                    ], className="primary-y-metric-container"),
+                ]),
+                html.Div([
+                    dcc.Loading(
+                        id="loading-data-table",
+                        type="default",
+                        children=html.Div(id="data-table")
+                    )
+                ], className="datatable-container"),
+            ], className="table-wrapper"),
+
             html.Div([
                 html.Div([
-                    html.H4(id="table-title-chart", className="table-title"),
-                    html.H4(id="table-subtitle-chart", className="table-subtitle mb-3")
-
-                ], className="titles-container-chart"),
+                    html.H4(id="table-title-chart", className="table-title", style={"display": "none"}),
+                    html.H4(id="table-subtitle-chart", className="table-subtitle mb-3", style={"display": "none"})
+                ], className="titles-container-chart", style={"display": "none"}),
                 html.Div([
                     dcc.Graph(
                         id='graph', 
                         style={'height': '100%', 'width': '100%'}
                     ),
                 ], className="graph-container")
-            ], id="chart-container",
-            className="chart-container",
-            style={"display": "none"},
-            ),    
+            ], id="chart-container", className="chart-container", style={"display": "none"}),    
             create_debug_footer()
         ], fluid=True)  # fluid=True for full width
 
-        
     except Exception as e:
         print(f"Error in create_app_layout: {str(e)}")
         raise

@@ -13,7 +13,7 @@ from typing import Dict, List, Tuple, Any
 from dash.exceptions import PreventUpdate
 from pathlib import Path
 from application.components.insurance_lines_tree import insurance_lines_tree
-from application.app_layout import setup_debug_callbacks, setup_sidebar_callbacks
+from application.app_layout_callbacks import setup_debug_callbacks, setup_sidebar_callbacks
 from application.callbacks.insurance_lines_callbacks import setup_insurance_lines_callbacks
 from application.callbacks.filter_update_callbacks import setup_filter_update_callbacks
 from config.main_config import APP_TITLE, DEBUG_MODE, PORT, DATA_FILE_162, DATA_FILE_158
@@ -528,7 +528,7 @@ def process_ui(
             end_quarter=end_quarter
         )
         # logger.warning(f"table_data {table_data}")
-        # logger.warning(f"chart_figure {chart_figure}")
+        logger.warning(f"chart_figure {chart_figure}")
         # logger.debug(f"table_data {table_data}")
         # logger.debug("Returning table data")
 
