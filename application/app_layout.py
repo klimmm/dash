@@ -70,13 +70,13 @@ APP_CONFIG = {
         },
         'toggle-selected-market-share': {
             'options': [{"label": "", "value": "show"}],
-            'value': [],
+            'value': ['show'],
             'switch': True,
             'inline': True
         },
         'toggle-selected-qtoq': {
             'options': [{"label": "", "value": "show"}],
-            'value': [],
+            'value': ['show'],
             'switch': True,
             'inline': True
         }
@@ -493,8 +493,7 @@ def create_sidebar_filters() -> dbc.CardBody:
             html.Div(id="period-type-text", className="period-type__text mb-3"),
             create_filter_row("Кол-во периодов для сравнения:", "number-of-periods-data-table", 
                             component_type="input", label_width=9, component_width=3),
-            create_filter_row("Линия:", "insurance-line-dropdown", vertical=True),
-            create_filter_row("Основной показатель:", "primary-y-metric", vertical=True),
+
             create_filter_row("Бизнес:", "premium-loss-checklist", 
                             component_type="checklist", label_width=4, component_width=8),
             create_filter_row("Доп. показатель:", "secondary-y-metric", vertical=True),
@@ -542,7 +541,7 @@ def create_app_layout(initial_quarter_options: Optional[List[dict]] = None) -> L
             APP_CONFIG['dropdowns']['end-quarter']['options'] = [
                 {'label': q, 'value': q} for q in [q['value'] for q in initial_quarter_options]
             ]
-        
+
         return dbc.Container([  # Wrap everything in Container
             *create_stores(),
             create_navbar(),
@@ -555,10 +554,20 @@ def create_app_layout(initial_quarter_options: Optional[List[dict]] = None) -> L
                 ),
                 dbc.Col(
                     dbc.CardBody([
-                        html.Div([
-                            html.H4(id="table-title", className="table-title"),
-                            html.H4(id="table-subtitle", className="table-subtitle mb-3")
-                        ], className="titles-container"),
+                        dbc.Row([
+                            dbc.Col([
+                                html.H4(id="table-title", className="table-title"),
+                                html.H4(id="table-subtitle", className="table-subtitle mb-3", style={"display": "none"}),
+                            ], className="titles-container"),
+                        ]),
+                        dbc.Row([
+                            dbc.Col([
+                                create_filter_row("", "insurance-line-dropdown", label_width=0, component_width=12),
+                            ], className="insurance-line-dropdown-container"),
+                            dbc.Col([
+                                create_filter_row("", "primary-y-metric", label_width=0, component_width=12)    
+                            ], className="primary-y-metric container"),
+                        ]),
                         html.Div([
                             dcc.Loading(
                                 id="loading-data-table",
@@ -567,13 +576,13 @@ def create_app_layout(initial_quarter_options: Optional[List[dict]] = None) -> L
                             )
                         ], className="datatable-container"),
                     ], className="table-wrapper"),
-                ),              
+                ),
             ], className="first-row-container"),
             html.Div([
                 html.Div([
                     html.H4(id="table-title-chart", className="table-title"),
                     html.H4(id="table-subtitle-chart", className="table-subtitle mb-3")
-                    
+
                 ], className="titles-container-chart"),
                 html.Div([
                     dcc.Graph(

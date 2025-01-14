@@ -320,7 +320,7 @@ def calculate_start_quarter(
     Returns:
     - pd.Timestamp: The calculated start quarter.
     """
-    start_quarter_str = '2018Q1' if reporting_form == '0420162' else '2022Q1'
+    start_quarter_str = '2019Q1' if reporting_form == '0420162' else '2022Q1'
     start_quarter = pd.Period(start_quarter_str, freq='Q').to_timestamp()
 
     if period_type == 'ytd':
@@ -382,11 +382,11 @@ def process_data(
         # Convert end_quarter to Timestamp (end of the quarter)
         end_quarter_period = pd.Period(end_quarter, freq='Q')
         end_quarter_ts = end_quarter_period.to_timestamp(how='end')
-    
+
         # Convert line_type and selected_lines to tuples for hashing
         line_type_tuple = tuple(sorted(set(line_type))) if line_type else ()
         selected_lines_tuple = tuple(sorted(set(filter_state['selected_lines']))) if filter_state.get('selected_lines') else ()
-    
+
         # Get cached, filtered, and grouped DataFrame including selected_lines
         grouped_df = get_cached_filtered_grouped_df(
             reporting_form,
@@ -395,7 +395,7 @@ def process_data(
             line_type_tuple,
             selected_lines_tuple
         )
-    
+
         # Get cached required metrics
         selected_metrics = tuple(sorted(set(filter_state['selected_metrics'])))
         premium_loss_checklist = tuple(sorted(set(filter_state['premium_loss_checklist'])))
@@ -404,13 +404,16 @@ def process_data(
             premium_loss_checklist,
             reporting_form
         )
-    
+        logger.warning(f"metrics unique grouped_df: {grouped_df['metric'].unique() }")
+        logger.warning(f"required_metrics_set: {required_metrics_set}")
+
         # Apply additional filters: 'metric'
         if 'metric' in grouped_df.columns:
             mask = grouped_df['metric'].isin(required_metrics_set)
             df = grouped_df.loc[mask].copy()
         else:
             df = grouped_df.copy()
+
 
         processor = MetricsProcessor()
         logger.warning(f"Process data - processing with parameters: {filter_state}, period_type: {period_type}, end_quarter: {end_quarter}, num_periods_table: {num_periods_table}, number_of_insurers: {number_of_insurers} ")
@@ -454,7 +457,6 @@ def process_data(
      Output('table-subtitle', 'children'),
      Output('table-title-chart', 'children'),
      Output('table-subtitle-chart', 'children'),
-     Output('chart-container', 'style'),
      Output('graph', 'figure')],
     [Input('processed-data-store', 'data'),
      Input('toggle-selected-market-share', 'value'),
@@ -493,7 +495,7 @@ def process_ui(
             prev_ranks=processed_data['prev_ranks']
         )
 
-        logger.warning(f"total_width {table_data[3]}")
+        logger.warning(f"toggle_selected_market_share {toggle_selected_market_share}")
         unique_insurers = df['insurer'].unique().tolist()
         
         # Get main insurer (first one)
@@ -522,18 +524,19 @@ def process_ui(
 
             # Time period parameters
             period_type=period_type,
-            start_quarter='2018Q1' if filter_state['reporting_form'] == '0420162' else '2022Q1',
+            start_quarter='2019Q1' if filter_state['reporting_form'] == '0420162' else '2022Q1',
             end_quarter=end_quarter
         )
-        logger.warning(f"table_data {table_data}")
-        logger.warning(f"chart_figure {chart_figure}")
+        # logger.warning(f"table_data {table_data}")
+        # logger.warning(f"chart_figure {chart_figure}")
         # logger.debug(f"table_data {table_data}")
         # logger.debug("Returning table data")
 
-        # style = {'width': f'{table_data[3]}px'}
-        style = {'display': 'none'}
+        width = table_data[3] - 25
+        style = {'width': f'{width}px'}
+        #style = {'display': 'none'}
         
-        return table_data[0], table_data[1], table_data[2], table_data[1], table_data[2], style, chart_figure
+        return table_data[0], table_data[1], table_data[2], table_data[1], table_data[2], chart_figure
 
     except Exception as e:
         logger.error(f"Error in process_ui: {str(e)}", exc_info=True)

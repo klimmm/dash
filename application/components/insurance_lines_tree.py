@@ -136,10 +136,10 @@ class InsuranceLinesTree:
             new_selected = set(selected_lines)
             for category in trigger_line:
                 descendants = self.get_descendants(category)
-                logger.info(f"descendants {descendants}")
+                logger.debug(f"descendants {descendants}")
                 new_selected.difference_update(descendants)
                 ancestors = self.get_ancestors(category)
-                logger.info(f"ancestors {ancestors}")
+                logger.debug(f"ancestors {ancestors}")
                 new_selected.difference_update(ancestors)
 
         else:

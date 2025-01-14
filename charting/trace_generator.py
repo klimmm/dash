@@ -232,8 +232,8 @@ class ChartTraceGenerator:
             num_series=num_series,
             num_groups=num_groups
         )
-        logger.warning(f"primary_chart_type {primary_chart_type}")
-        logger.warning(f"is_secondary {is_secondary}")
+        # logger.warning(f"primary_chart_type {primary_chart_type}")
+        # logger.warning(f"is_secondary {is_secondary}")
         # Determine chart type
         chart_type = (
             secondary_chart_type
@@ -247,8 +247,8 @@ class ChartTraceGenerator:
             if is_series_stacked or is_groups_stacked
             else f"{outer_idx}_{inner_idx}"
         )
-        logger.warning(f"trace_name {trace_name}")
-        logger.warning(f"is_grouped_by_series {is_grouped_by_series}")
+        # logger.warning(f"trace_name {trace_name}")
+        # logger.warning(f"is_grouped_by_series {is_grouped_by_series}")
         # Get color
         color = self.color_formatter.get_rgba_color(
             outer_idx=outer_idx,

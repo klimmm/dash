@@ -1,28 +1,14 @@
-:root {
-  --sidebar-width: 460px;
-  --sidebar-height: 700px;
-    
-  --transition-duration-base: 300ms;
-  --transition-timing-default: cubic-bezier(0.4, 0, 0.2, 1);
-  --space-4: 1rem;
-  --color-white: #ffffff;
-  --color-surface-primary: var(--color-white);
-  --radius-md: 0.25rem;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --z-index-modal: 1030;
-  --breakpoint-md: 768px;
-  --navbar-height: 56px;
-  --titles-height: 60px;
-
-  --color-border-weak: var(--color-gray-200);
-}
 
 .first-row-container {
     padding: 0;
     margin: 0;
 }
-
+.insurance-line-dropdown-container {
+    min-width: 300px;
+    max-width: 480px;
+    padding: 0;
+    margin: 0;
+}
 
 .titles-container-chart {
     height: var( --titles-height);
@@ -137,7 +123,7 @@
 .dashbio-container, /* The full app container */
 .dash-container, 
 ._dash-container {
-    width: 800px;
+    width: auto;
     margin: 0 auto;
 }
 

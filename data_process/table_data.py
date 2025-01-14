@@ -1,6 +1,7 @@
 # data_process.table_data.py
 import pandas as pd
 import numpy as np
+import re
 from dash import dash_table
 from typing import List, Tuple, Optional, Dict, OrderedDict
 from application.components.dash_table import generate_dash_table_config
@@ -23,16 +24,17 @@ def get_data_table(
 ) -> Tuple[dash_table.DataTable, str, str]:
 
     logger.debug(f"Updating data table. table_selected_metric: {table_selected_metric}")
-
+    df.to_csv("df_before_puvot.csv", index=False)
     table_data = table_data_pivot(df, table_selected_metric, prev_ranks)
-
+    table_data.to_csv("pivot_table.csv", index=False)
     table_config = generate_dash_table_config(
         df=table_data,
         period_type=period_type,
         toggle_selected_market_share=toggle_selected_market_share,
         toggle_selected_qtoq=toggle_selected_qtoq
     )
-
+    
+    # logger.warning(f"table_config {table_config}")
     data_table = dash_table.DataTable(**table_config)
 
     mapped_lines = map_line(selected_linemains)
@@ -41,49 +43,54 @@ def get_data_table(
     table_title = f"Топ-{number_of_insurers} страховщиков"
     table_subtitle = f"{translate(table_selected_metric[0])}: {lines_str}"
 
-    def calculate_datatable_width(datatable, default_width=100):
+    def calculate_datatable_width(data_table, columns_to_sum=None):
         """
-        Calculate the total width of a Dash DataTable based on visible columns.
-
+        Calculates the combined width of specified columns in a Dash DataTable.
+        If no columns are specified, it calculates the total width of all visible columns.
+    
         Parameters:
-        - datatable (dash_table.DataTable): The DataTable object.
-        - default_width (int, optional): Default width for columns without specified widths in pixels. Defaults to 100.
-
+        - data_table (dash_table.DataTable): The Dash DataTable object.
+        - columns_to_sum (list of str, optional): List of column IDs to sum their widths.
+          If None or empty, all visible columns with defined widths will be summed.
+    
         Returns:
-        - int: Total width in pixels.
+        - int: The total width in pixels.
         """
         total_width = 0
-        hidden_columns = datatable.hidden_columns or []
-        columns = datatable.columns or []
-        style_cell_conditional = datatable.style_cell_conditional or []
-
-        for column in columns:
-            column_id = column.get('id')
-
-            # Skip hidden columns
+        width_pattern = re.compile(r'^(\d+)px$')  # Pattern to extract numeric value from 'px'
+    
+        # Retrieve hidden columns; default to empty list if not defined
+        hidden_columns = data_table.hidden_columns if hasattr(data_table, 'hidden_columns') else []
+        
+        # Determine if specific columns are to be summed
+        sum_all = not columns_to_sum  # True if columns_to_sum is None or empty
+    
+        # Iterate through the style_cell_conditional list
+        for style in data_table.style_cell_conditional:
+            column_id = style.get('if', {}).get('column_id')
+    
+            # Skip if the column is hidden
             if column_id in hidden_columns:
+                logger.debug(f"Column '{column_id}' is hidden. Skipping.")
                 continue
-
-            # Initialize width with default
-            width = default_width
-
-            # Search for specific width in style_cell_conditional
-            for condition in style_cell_conditional:
-                if condition.get('if', {}).get('column_id') == column_id:
-                    width_str = condition.get('width')
-                    if width_str:
-                        try:
-                            # Extract numeric value from width string (e.g., '150px' -> 150)
-                            width = int(width_str.replace('px', '').strip())
-                        except (ValueError, AttributeError):
-                            pass  # Keep default if conversion fails
-                    break  # Stop searching once the column is found
-
-            total_width += width
-
+    
+            # Decide whether to include this column in the sum
+            if sum_all or (column_id in columns_to_sum):
+                width_str = style.get('width')
+                if width_str:
+                    match = width_pattern.match(width_str)
+                    if match:
+                        width_value = int(match.group(1))
+                        logger.debug(f"Width of column '{column_id}': {width_value}px")
+                        total_width += width_value
+                    else:
+                        logger.debug(f"Width for column '{column_id}' is not in 'px' format: '{width_str}'. Skipping.")
+                else:
+                    logger.debug(f"No width defined for column '{column_id}'. Skipping.")
+    
         return total_width
 
-    total_width = calculate_datatable_width(data_table)
+    total_width = calculate_datatable_width(data_table, columns_to_sum=['N', 'insurer'])
 
     return data_table, table_title, table_subtitle, total_width
 

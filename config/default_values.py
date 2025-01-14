@@ -8,6 +8,8 @@ DEFAULT_REPORTING_FORM = '0420162'
 # default_values.py
 DEFAULT_CHECKED_LINES = ["все линии"]
 DEFAULT_PRIMARY_METRICS = ['direct_premiums']
+DEFAULT_PRIMARY_METRICS_158 = ['total_premiums']
+
 DEFAULT_PRIMARY_METRICS_INWARD = ['inward_premiums']
 DEFAULT_SECONDARY_METRICS = []
 

@@ -39,7 +39,7 @@
   --color-warning-500: #ffd700;
 
   --table-surface-header: var(--color-surface-brand);
-  --table-text-header: var(--color-text-inverse);
+  --table-text-header: var(--color-text-default);
   --table-surface-cell: var(--color-surface-primary);
   --table-text-cell: var(--color-text-default);
   --table-border: var(--color-border-weak);
@@ -197,9 +197,9 @@
   --navbar-height: 56px;
 
   /* Insurer column */
-  --table-col-width-insurer: 380px;
-  --table-col-min-width-insurer: 380px;
-  --table-col-max-width-insurer: 380px;
+  --table-col-width-insurer: 360px;
+  --table-col-min-width-insurer: 360px;
+  --table-col-max-width-insurer: 360px;
 
   /* Rank column (N) */
   --table-col-width-rank: 100px;
@@ -220,4 +220,16 @@
   --table-col-width-market-share: 110px;
   --table-col-min-width-market-share: 110px;
   --table-col-max-width-market-share: 110px;
-}    
+
+  --button-height-xxs: 1.25rem;   /* Add this new smallest size */
+  --button-height-xs: 1.5rem;  
+  --button-height-sm: 2rem;    /* 32px */
+  --button-height-md: 2.5rem;  /* 40px */
+  --button-height-lg: 3rem;    /* 48px */
+
+  --sidebar-width: 460px;
+  --sidebar-height: 700px;
+  --navbar-height: 56px;
+  --titles-height: 60px;
+
+}

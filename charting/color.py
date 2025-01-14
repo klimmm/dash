@@ -89,7 +89,7 @@ class ColorFormatter:
 
         '''elif is_grouped_by_series:
             color = self.config.chart_colors[outer_idx % len(self.config.chart_colors)]'''        
-        logger.warning(f"color {color}")
+        logger.debug(f"color {color}")
         # Calculate number of items in inner loop
         if (num_inner == 1 or num_outer == 1):
             
@@ -114,7 +114,7 @@ class ColorFormatter:
 
             opacity = 1.0 - (inner_idx * (0.7 / (num_inner - 1)))
 
-        logger.warning(f"opacity {opacity}")
+        logger.debug(f"opacity {opacity}")
         return self.adjust_color_opacity(color, opacity)
 
     def get_color(

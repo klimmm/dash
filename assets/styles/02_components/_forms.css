@@ -1,9 +1,5 @@
 /* _forms.css */
 
-/*=============================================
-=            Base Form Controls               =
-=============================================*/
-
 /* Form Control */
 .form-control-custom {
     font-size: var(--font-size-sm);

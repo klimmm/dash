@@ -553,6 +553,59 @@ def format_log_message(
 
     return "\n".join(lines)
 
+def format_period(quarter_str: str, period_type: str = '', comparison: bool = False) -> str:
+    """Format quarter string into readable period format"""
+    if not quarter_str or len(quarter_str) != 6:
+        raise ValueError("Quarter string must be in format 'YYYYQ1', e.g. '2024Q1'")
+
+    year_short = quarter_str[2:4]
+    quarter = quarter_str[5]
+
+    period_formats = {
+        'ytd': {
+            True: lambda q, y: f'{y}',
+            False: lambda q, y: {
+                '1': f'3 мес. {y}',
+                '2': f'1 пол. {y}',
+                '3': f'9 мес. {y}',
+                '4': f'12 мес. {y}'
+            }[q]
+        },
+        '': {
+            True: lambda q, y: f'{y}' if period_type in ['yoy_y', 'yoy_q'] else f'{q}кв.',
+            False: lambda q, y: f'{q} кв. {y}'
+        }
+    }
+
+    format_func = period_formats.get(period_type, period_formats[''])[comparison]
+    return format_func(quarter, year_short)
+
+
+def get_comparison_quarters(columns: List[str]) -> Dict[str, str]:
+
+    """Get mapping of quarters to their comparison quarters"""
+    quarter_pairs = {}
+    for col in columns:
+        if 'q_to_q_change' not in col:
+            continue
+
+        current_quarter = next((part for part in col.split('_') if 'Q' in part and len(part) >= 5), None)
+        if not current_quarter:
+            continue
+
+        year = current_quarter[:4]
+        q_num = current_quarter[5]
+
+        year_ago = f"{int(year)-1}Q{q_num}"
+        prev_q = f"{year}Q{int(q_num)-1}" if q_num != '1' else f"{int(year)-1}Q4"
+
+        quarter_pairs[current_quarter] = (
+            year_ago if any(year_ago in c for c in columns if '_q_to_q_change' not in c)
+            else prev_q if any(prev_q in c for c in columns if '_q_to_q_change' not in c)
+            else None
+        )
+
+    return {k: v for k, v in quarter_pairs.items() if v}
 
 def log_chart_structure(
     figure: Union[dict, go.Figure, dcc.Graph],

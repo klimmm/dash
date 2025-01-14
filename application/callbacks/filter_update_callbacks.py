@@ -7,7 +7,7 @@ from dash.exceptions import PreventUpdate
 from data_process.data_utils import category_structure_162, category_structure_158, get_categories_by_level
 from config.logging_config import get_logger, track_callback, track_callback_end
 from constants.filter_options import METRICS_OPTIONS
-from config.default_values import DEFAULT_PRIMARY_METRICS, DEFAULT_PREMIUM_LOSS_TYPES
+from config.default_values import DEFAULT_PRIMARY_METRICS, DEFAULT_PRIMARY_METRICS_158, DEFAULT_PREMIUM_LOSS_TYPES
 from application.app_layout import create_component
 
 logger = get_logger(__name__)
@@ -161,7 +161,7 @@ def setup_filter_update_callbacks(app: Dash, quarter_options_162, quarter_option
 
             track_callback_end('app.callbacks.filter_update_callbacks', 'update_options', start_time, result=output)
             # logger.debug(f"secondary_y_metric_options {metric_options['secondary_y_metric_options']}")
-
+            logger.warning(f"result update options {output}")
             return output
 
         except Exception as e:
@@ -216,12 +216,27 @@ def setup_filter_update_callbacks(app: Dash, quarter_options_162, quarter_option
                     state.secondary_y_metric = []
                     state.selected_metrics = state.primary_y_metric
 
+            logger.warning(f"state ptimary {state.primary_y_metric}")
+
             # Validate form 158 metrics
             if reporting_form == '0420158' and state.primary_y_metric:
                 if state.primary_y_metric[0] not in FORM_METRICS['0420158']:
-                    state.primary_y_metric = DEFAULT_PRIMARY_METRICS
+                    state.primary_y_metric = DEFAULT_PRIMARY_METRICS_158
                     state.secondary_y_metric = []
-                    state.selected_metrics = DEFAULT_PRIMARY_METRICS
+                    state.selected_metrics = DEFAULT_PRIMARY_METRICS_158
+
+            if not state.primary_y_metric:
+                if reporting_form == '0420158':
+                    state.primary_y_metric = DEFAULT_PRIMARY_METRICS_158
+                else:
+                    state.primary_y_metric = DEFAULT_PRIMARY_METRICS
+                
+
+            metric = primary_metric[0] if isinstance(primary_metric, list) and primary_metric else primary_metric
+            _ , enforced_values = get_premium_loss_state(metric, reporting_form)
+            if enforced_values is not None:
+                state.premium_loss_checklist = enforced_values
+
 
             result = (
                 vars(state),
@@ -229,6 +244,7 @@ def setup_filter_update_callbacks(app: Dash, quarter_options_162, quarter_option
                 state.secondary_y_metric[0] if state.secondary_y_metric else None
             )
 
+            logger.warning(f"result update values {result}")
             track_callback_end('app.callbacks.filter_update_callbacks', 'update_values',
                              start_time, result=result)
             return result

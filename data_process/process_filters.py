@@ -110,6 +110,7 @@ class MetricsProcessor:
             
             # logger.debug(f"df shape after remaining filters: {df.shape}")
             # logger.debug(f"metrics unique: {df['metric'].unique()}")'''
+            logger.warning(f"metrics unique process filters: {df['metric'].unique()}")
 
             df = self.filter_by_date_range_and_period_type(
                 df,
@@ -134,7 +135,7 @@ class MetricsProcessor:
             df = self.add_calculated_metrics(df, list(required_metrics))
 
 
-            # logger.debug(f"metrics unique after add_calculated_metrics: {df['metric'].unique()}")
+            logger.warning(f"metrics unique after add_calculated_metrics: {df['metric'].unique()}")
 
             # Filter by required ratio metrics
             required_ratio_metrics = set(get_required_metrics(
@@ -143,7 +144,7 @@ class MetricsProcessor:
                 premium_loss_selection,
                 BASE_METRICS
             ))
-            # logger.debug(f"required_ratio_metrics: {required_ratio_metrics}")
+            logger.warning(f"required_ratio_metrics: {required_ratio_metrics}")
             df = df[df['metric'].isin(required_ratio_metrics)]
 
             # Handle aggregation
@@ -159,8 +160,8 @@ class MetricsProcessor:
                                      for metric in selected_metrics):
                 df = self.add_market_share_rows(df, selected_insurers, selected_metrics, show_data_table)
 
-            # logger.debug(f"metrics uniqye: {df['metric'].unique() }")
-            # logger.debug(f"required_metrics : {required_ratio_metrics}")
+            logger.warning(f"metrics uniqye: {df['metric'].unique() }")
+            # logger.warning(f"required_metrics : {required_ratio_metrics}")
             # Add averages and ratios if needed
             required_metrics = get_required_metrics(selected_metrics, CALCULATED_RATIOS)
             if set(required_metrics) - BASE_METRICS:

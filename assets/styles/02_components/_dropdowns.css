@@ -1,8 +1,6 @@
 /* Reset core Dash dropdown styles */
 .dash-dropdown {
-    /* Remove default Dash styles */
     all: unset;
-    /* Ensure the container takes full width */
     display: block;
     width: 100%;
     margin-bottom: 0; /* Ensure no bottom margin */
