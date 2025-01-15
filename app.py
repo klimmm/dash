@@ -13,7 +13,7 @@ from typing import Dict, List, Tuple, Any
 from dash.exceptions import PreventUpdate
 from pathlib import Path
 from application.components.insurance_lines_tree import insurance_lines_tree
-from application.app_layout_callbacks import setup_debug_callbacks, setup_sidebar_callbacks
+from application.app_layout_callbacks import setup_debug_callbacks
 from application.callbacks.insurance_lines_callbacks import setup_insurance_lines_callbacks
 from application.callbacks.filter_update_callbacks import setup_filter_update_callbacks
 from config.main_config import APP_TITLE, DEBUG_MODE, PORT, DATA_FILE_162, DATA_FILE_158
@@ -26,7 +26,7 @@ from charting.chart import create_chart
 from data_process.data_utils import create_year_quarter_options, load_and_preprocess_data
 from data_process.process_filters import MetricsProcessor
 from data_process.table_data import get_data_table
-from application.app_layout import create_app_layout
+from application.app_layout import create_app_layout, setup_sidebar_callbacks
 from application.callbacks.period_filter import setup_period_type_callbacks
 logger = get_logger(__name__)
 from config.default_values import DEFAULT_REPORTING_FORM
