@@ -1,3 +1,95 @@
+/* Sidebar container */
+.sidebar-col {
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 300px;
+    z-index: 1000;
+    background-color: white;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.sidebar-col.collapsed {
+    transform: translateX(-100%);
+}
+
+/* Sidebar filters */
+.sidebar-filters {
+    height: 100vh;
+    overflow-y: auto;
+    position: sticky;
+    top: 0;
+    padding-bottom: 2rem;
+}
+
+/* Scrollbar styling */
+.sidebar-filters::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-filters::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.sidebar-filters::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.sidebar-filters::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Main content adjustment */
+.main-content {
+    margin-left: 0;
+    transition: margin-left 0.3s ease;
+}
+
+.main-content.sidebar-open {
+    margin-left: 300px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .sidebar-col {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .main-content.sidebar-open {
+        margin-left: 0;
+    }
+    
+    .sidebar-row {
+        flex-direction: column;
+    }
+    
+    .sidebar-column {
+        width: 100%;
+    }
+}
+
+/* Filter rows styling */
+.sidebar-row {
+    margin: 0;
+    padding: 1rem;
+}
+
+.sidebar-column {
+    padding: 0.5rem;
+}
+
+/* Tree container */
+.tree-container {
+    margin: 0;
+    padding: 0;
+}
+
+
 
 .first-row-container {
     padding: 0;
@@ -60,20 +152,23 @@
 }
 
 
-.sidebar-filters {
-    background: var(--color-surface-primary);
-    overflow-y: hidden;
-    overflow-x: hidden;
-}
 
-.sidebar-filters.collapsed {
-    height: 0;
-    width: 0;
+
+/* height: var(--sidebar-height); */
+
+.chart-container {
+    height: auto;
+    width: auto;
+    border-right: 1px solid var(--color-border-weak);
+    overflow: hidden;    
+    position: relative;  /* Ensures proper rendering */
     padding: 0;
-    overflow-y: hidden;
+    border: 1px solid #ccc;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
 }
-
-
 
 
 .titles-container-chart {
@@ -104,13 +199,4 @@
     width: auto;
     margin: 0 auto;
     padding: 0;
-}
-
-
-.tree-container {
-    width: 100%;
-    background: var(--color-surface-primary);
-    border-radius: var(--radius-md);
-    padding: var(--space-4);
-    margin-bottom: var(--space-4);
 }

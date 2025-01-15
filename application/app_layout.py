@@ -382,66 +382,70 @@ def setup_sidebar_callbacks(app: dash.Dash) -> None:
 import dash_bootstrap_components as dbc
 from dash import html
 
-def create_sidebar_filters() -> dbc.CardBody:
+def create_sidebar_filters() -> html.Div:
     """Create sidebar filters with responsive two-column layout."""
-    return dbc.CardBody(
-        id="sidebar-filters",
-        className="sidebar-filters collapsed",
-        children=[
-            dbc.Row([
-                # Left column
-                dbc.Col([
-                    create_filter_row("Форма отчетности:", "reporting-form", label_width=9, component_width=3),
-                    create_filter_row("Отчетный квартал:", "end-quarter", label_width=9, component_width=3),
-                    html.Label("Тип данных:", className="filter-label mb-2"),
-                    create_period_type_buttons(),
-                    html.Div(id="period-type-text", className="period-type__text mb-3"),
-                    create_filter_row(
-                        "Бизнес:", 
-                        "premium-loss-checklist",
-                        component_type="checklist", 
-                        label_width=3, 
-                        component_width=9
-                    ),
-                ], className="sidebar-column", lg=6, md=6, sm=12),  # Two columns on larger screens, one on small
+    return html.Div(
+        dbc.CardBody(
+            id="sidebar-filters",
+            className="sidebar-filters collapsed",
+            children=[
+                dbc.Row([
+                    # Left column
+                    dbc.Col([
+                        create_filter_row("Форма отчетности:", "reporting-form", label_width=9, component_width=3),
+                        create_filter_row("Отчетный квартал:", "end-quarter", label_width=9, component_width=3),
+                        html.Label("Тип данных:", className="filter-label mb-2"),
+                        create_period_type_buttons(),
+                        html.Div(id="period-type-text", className="period-type__text mb-3"),
+                        create_filter_row(
+                            "Бизнес:", 
+                            "premium-loss-checklist",
+                            component_type="checklist", 
+                            label_width=3, 
+                            component_width=9
+                        ),
+                    ], className="sidebar-column", lg=6, md=6, sm=12),
+                    
+                    # Right column
+                    dbc.Col([
+                        create_filter_row(
+                            "Показать долю рынка:", 
+                            "toggle-selected-market-share",
+                            component_type="checklist", 
+                            label_width=10, 
+                            component_width=2
+                        ),
+                        create_filter_row(
+                            "Показать динамику:", 
+                            "toggle-selected-qtoq",
+                            component_type="checklist", 
+                            label_width=10, 
+                            component_width=2
+                        ),
+                        create_filter_row(
+                            "Кол-во периодов для сравнения:", 
+                            "number-of-periods-data-table",
+                            component_type="input", 
+                            label_width=9, 
+                            component_width=3
+                        ),
+                        create_filter_row(
+                            "Кол-во страховщиков:", 
+                            "number-of-insurers",
+                            component_type="input", 
+                            label_width=9, 
+                            component_width=3
+                        ),
+                        create_filter_row("Доп. показатель:", "secondary-y-metric", vertical=True),
+                    ], className="sidebar-column", lg=6, md=6, sm=12),
+                ], className="sidebar-row g-0"),
                 
-                # Right column
-                dbc.Col([
-                    create_filter_row(
-                        "Показать долю рынка:", 
-                        "toggle-selected-market-share",
-                        component_type="checklist", 
-                        label_width=10, 
-                        component_width=2
-                    ),
-                    create_filter_row(
-                        "Показать динамику:", 
-                        "toggle-selected-qtoq",
-                        component_type="checklist", 
-                        label_width=10, 
-                        component_width=2
-                    ),
-                    create_filter_row(
-                        "Кол-во периодов для сравнения:", 
-                        "number-of-periods-data-table",
-                        component_type="input", 
-                        label_width=9, 
-                        component_width=3
-                    ),
-                    create_filter_row(
-                        "Кол-во страховщиков:", 
-                        "number-of-insurers",
-                        component_type="input", 
-                        label_width=9, 
-                        component_width=3
-                    ),
-                    create_filter_row("Доп. показатель:", "secondary-y-metric", vertical=True),
-                ], className="sidebar-column", lg=6, md=6, sm=12),  # Two columns on larger screens, one on small
-            ], className="sidebar-row g-0"),  # Remove gutters with g-0
-            
-            html.Div(id="tree-container", className="tree-container"),
-            create_lines_checklist_buttons()
-        ]
+                html.Div(id="tree-container", className="tree-container"),
+                create_lines_checklist_buttons()
+            ]
+        ),
+        id="sidebar-col",
+        className="sidebar-col collapsed"
     )
 
 def create_app_layout(initial_quarter_options: Optional[List[dict]] = None) -> List:
@@ -461,11 +465,7 @@ def create_app_layout(initial_quarter_options: Optional[List[dict]] = None) -> L
                     id="toggle-sidebar-button-sidebar",
                     className="btn-custom btn-sidebar-toggle"
                 ),
-                html.Div(
-                    create_sidebar_filters(),
-                    id="sidebar-col",
-                    className="sidebar-col collapsed"
-                ),
+                create_sidebar_filters(),
                 dbc.Row([
                     dbc.Col([
                         html.H4(id="table-title", className="table-title"),
