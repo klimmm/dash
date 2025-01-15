@@ -1,67 +1,67 @@
 /* Sidebar container */
 .sidebar-col {
-    height: 100vh;
-    position: fixed;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 300px;
-    z-index: 1000;
-    background-color: white;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
+    padding: 0;
+    border: 0;
+    margin: 0 !important;
+    border: 0;
 }
-
 .sidebar-col.collapsed {
-    transform: translateX(-100%);
+    width: 0;
+    height: 0;
 }
-
-/* Sidebar filters */
 .sidebar-filters {
-    height: 100vh;
-    overflow-y: auto;
-    position: sticky;
-    top: 0;
-    padding-bottom: 2rem;
+    width: 100%;
+    padding: 0;
+    margin: 0 !important;
+    height: auto;
+}
+.sidebar-filters.collapsed {
+    width: 0;
+    padding: 0;
+    height: 0;
+    overflow: hidden;
+}
+/* Layout components */
+.sidebar-row {
+    margin: 0;
+    padding: 0;
+}
+.sidebar-column {
+    padding: 0;
 }
 
-/* Scrollbar styling */
-.sidebar-filters::-webkit-scrollbar {
-    width: 6px;
+.tree-container {
+    margin: 0 !important;
+    padding: 0;
+    height: 0;
+    width: 0;
 }
 
-.sidebar-filters::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
 
-.sidebar-filters::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 3px;
-}
-
-.sidebar-filters::-webkit-scrollbar-thumb:hover {
-    background: #555;
-}
-
-/* Main content adjustment */
-.main-content {
-    margin-left: 0;
-    transition: margin-left 0.3s ease;
-}
-
-.main-content.sidebar-open {
-    margin-left: 300px;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
+/* Large screens and up */
+@media (min-width: 1400px) {  
     .sidebar-col {
         width: 100%;
-        max-width: 300px;
     }
-    
-    .main-content.sidebar-open {
-        margin-left: 0;
+    .sidebar-filters {
+        padding: 0;
+    }
+}
+
+/* Medium-large screens */
+@media (min-width: 992px) and (max-width: 1399px) {
+    .sidebar-col {
+        width: 100%;
+    }
+    .sidebar-filters {
+        padding: 0;
+    }
+}
+
+/* Tablets and smaller screens */
+@media (max-width: 991px) {
+    .sidebar-col {
+        width: 100%;
     }
     
     .sidebar-row {
@@ -73,130 +73,92 @@
     }
 }
 
-/* Filter rows styling */
-.sidebar-row {
-    margin: 0;
-    padding: 1rem;
-}
-
-.sidebar-column {
-    padding: 0.5rem;
-}
-
-/* Tree container */
-.tree-container {
-    margin: 0;
+.button-container {
+    border: 1px solid red;
     padding: 0;
-}
-
-
-
-.first-row-container {
-    padding: 0;
+    width: 50%;
     margin: 0;
-    width: 100%;
-    display: flex;
-    align-items: flex-start;
+    border: 0;
+
+    
 }
+
 
 .table-wrapper {
-    width: fit-content;  /* Changed from fit-content */
+    width: fit-content;
     position: relative;
-    padding: 0;  /* Added padding to contain children */
+    padding: 0;
     margin: 0;
-    border: 1px solid #ccc;
-    overflow: hidden;  /* Contains floating children */
+    border: 0;
+    overflow: hidden;
 }
 
 .insurance-line-dropdown-container {
-    min-width: 0;
-    max-width: 480px;
+    border: 1px solid red;
+    margin: 0;
     padding: 0;
-    margin-left: 0;
-    margin-right: 0;
-    margin-top: 0;
-    margin-bottom: 0;
-    border: 1px solid #ccc;
 }
+
 .primary-y-metric-container {
+    margin: 0;
+    border: 0;
     padding: 0;
-    margin-left: 0;
-    margin-right: 0;
-    margin-top: 0;
-    margin-bottom: 0;
-    border: 1px solid #ccc;
 }
-
-
-
-
 
 .titles-container {
     width: 100%;
-    overflow-y: hidden;
-    overflow-x: hidden;
     overflow: hidden;
-    border: 1px solid #ccc;
+    border: 0;
     margin: 0;
+    border: 1px solid #ccc;
     display: flex;
     align-items: center;
 }
 
 .datatable-container {
     width: fit-content;
+    border: 1px solid #ccc;
     height: calc(100% - var(--titles-height));
     overflow-x: auto;
     font-family: var(--font-family-sans);
     font-size: var(--table-font-size);
-    border: 1px solid #ccc;  
+    border: 0;
 }
-
-
-
-
-/* height: var(--sidebar-height); */
 
 .chart-container {
     height: auto;
     width: auto;
+    border: 1px solid red;
     border-right: 1px solid var(--color-border-weak);
-    overflow: hidden;    
-    position: relative;  /* Ensures proper rendering */
+    overflow: hidden;
+    position: relative;
     padding: 0;
-    border: 1px solid #ccc;
-    margin-left: 1rem;
-    margin-right: 1rem;
-    margin-top: 1rem;
-    margin-bottom: 1rem;
+    margin: 1rem;
+    min-width: 100px;
+    max-width: 100px;
 }
 
+.chart-container.collapsed {
+    width: 90%;
+    border: 1px solid #ccc;
+}
 
 .titles-container-chart {
-    height: var( --titles-height);
-    min-height: var( --titles-height);
-    max-height: var( --titles-height);
+    height: var(--titles-height);
     width: 100%;
-    overflow-x: hidden;
     border: 1px solid #ccc;
-    margin-left: 0;
-    margin-right: 0;    
-}
-.chart-container.collapsed {
-    width: 90%;    
+    overflow-x: hidden;
+    border: 0;
+    margin: 0;
+    max-width: 100px;
 }
 
 .graph-container {
     height: calc(100% - var(--titles-height));
-    border: 1px solid #ccc;
     width: 100%;
+    border: 1px solid #ccc;
     margin: 0;
     padding: 0;
-}
-
-.dashbio-container, /* The full app container */
-.dash-container, 
-._dash-container {
-    width: auto;
-    margin: 0 auto;
-    padding: 0;
+    min-width: 100px;
+    max-width: 100px;
 }

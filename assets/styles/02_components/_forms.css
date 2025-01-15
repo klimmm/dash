@@ -5,7 +5,7 @@
     font-size: var(--font-size-sm);
     height: var(--input-height-xs);
     padding: var(--space-2);
-    border: 1px solid var(--color-border-weak);
+    border: 0;
     border-radius: var(--radius-md);
     width: 100%;
     transition: border-color var(--transition-duration-fast);
@@ -30,26 +30,44 @@
     color: var(--color-text-default);
     font-weight: var(--font-weight-semibold);
     display: flex;
+    border: 0;
     align-items: center;
-    margin-bottom: 0 !important; /* Ensure no bottom margin */
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 1.8rem !important;
 }
 
 .filter-row {
     display: flex;
     width: 100%;
+    border: 1px solid red;
     margin-bottom: 0 !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
     align-items: center;
+    min-height: 1.8rem !important;
+}
+
+.filter-content {
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 1.8rem !important;
+    border: 0;
+    align-items: center;
+    width: 100%;
+    display: flex;
 }
 
 .filter-row.row {
     --bs-gutter-x: 0;
+    
 }
 
 .filter-row--vertical {
     flex-direction: column;
+    
     align-items: flex-start;
+    min-height: 1.8rem !important;
 }
 
 .filter-row--vertical .filter-label {
@@ -83,6 +101,8 @@
 .filter-checklist {
     display: flex;
     align-items: center;
+    margin-top: 0 !important;  /* Space between items */
+    margin-bottom: 0 !important;  /* Space between items */
     gap: var(--space-2);
 }
 
@@ -102,7 +122,9 @@
 .checklist .form-check {
     display: flex;
     align-items: center;
-    margin-right: 0;  /* Space between items */
+    margin-top: 0 !important;  /* Space between items */
+    margin-bottom: 0 !important;  /* Space between items */
+    margin-right: 0rem;  /* Space between items */
     margin-left: 0.7rem;  /* Space between checkbox and label */
 }
 
@@ -111,6 +133,7 @@
     align-items: center;
     margin-left: 0.5rem;  /* Space between checkbox and label */
 }
+
 
 /* Reset core Dash dropdown styles */
 .dash-dropdown {
@@ -122,7 +145,6 @@
     margin-bottom: 0; /* Ensure no bottom margin */
     height: 100%;
 }
-
 /* Main dropdown container */
 .dd-control {
     position: relative;
@@ -130,6 +152,7 @@
     width: 100%;
     font-size: var(--font-size-sm);
     margin-bottom: 0; /* Ensure no bottom margin */
+    padding: 0;  /* Remove padding */
     display: block; /* Change from potential flex */
     line-height: 1; /* Reset line height */
     height: 100%;
@@ -138,46 +161,45 @@
 .dd-control .Select {
     height: var(--input-height-xs);
 }
-
 /* Main control element */
 .dd-control .Select-control {
     height: var(--input-height-xs);
     align-items: center;  /* Vertically center content */
     padding: 0;  /* Remove padding */
-    margin: 0;  /* Remove margin */
+    margin-bottom: 0;  /* Remove margin */
 }
-
 /* Value and placeholder */
 .dd-control .Select-value,
 .dd-control .Select-placeholder {
     height: 100%;
     display: flex;
     align-items: center;  /* Vertically center text */
-    padding: 0 var(--space-2);
-    margin: 0;  /* Remove margin */
+    padding: 0;  /* Remove padding */
+    margin-bottom: 0;  /* Remove margin */
     font-size: var(--font-size-sm);
     line-height: 1;  /* Reset line height */
 }
-
 .dd-control .Select-input {
     height: calc(var(--input-height-sm) - 7px);
     padding: 0;  /* Remove padding */
-    margin: 0;  /* Remove margin */
+    font-size: var(--font-size-xs);
+    margin-bottom: 0;  /* Remove margin */
 }
-
 /* Dropdown menu */
 .dd-control .Select-menu-outer {
-    margin: 0;  /* Keep only top margin */
+    margin-bottom: 0;  /* Keep only top margin */
+    padding: 0;  /* Remove padding */
     border: 1px solid var(--color-border-weak);
     border-radius: var(--radius-md);
+    font-size: var(--font-size-xs);
     background: var(--color-surface-primary);
 }
-
 /* Menu options */
 .dd-control .Select-option {
-    padding: 4px var(--space-2);  /* Minimal padding */
+    padding: 0;  /* Remove padding */
     display: flex;
     align-items: center;  /* Vertically center text */
+    font-size: var(--font-size-xs);
     min-height: var(--input-height-xs);
 }
-
+\

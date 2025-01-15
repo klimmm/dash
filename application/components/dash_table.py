@@ -17,6 +17,7 @@ css_content = load_css_file(str(CSS_PATH))
 # Define base theme structure with simplified column definitions
 THEME = {
     'colors': {
+        # Keep existing color variables
         'header_bg': 'var(--table-surface-header)',
         'header_text': '#000000',
         'cell_bg': 'var(--table-surface-cell)',
@@ -28,6 +29,7 @@ THEME = {
         'qtoq_bg': 'var(--table-surface-highlight)'
     },
     'typography': {
+        # Keep existing typography variables
         'font_family': 'var(--font-family-sans)',
         'font_size': 'var(--table-font-size)',
         'header_weight': 'var(--font-weight-semibold)',
@@ -35,32 +37,33 @@ THEME = {
         'normal_weight': 'normal'
     },
     'spacing': {
+        # Keep existing spacing variables
         'cell_padding': 'var(--space-2)',
         'header_padding': 'var(--space-2) var(--space-3)',
     },
     'columns': {
         'defaults': {
-            'width': '120px',
-            'min_width': '100px',
-            'max_width': '120px',
+            'width': '100%',  # Changed from 'auto' to '100%'
+            'min_width': '80px',  # Reduced from 100px for better compression
+            'max_width': 'none',  # Changed from fixed 140px to allow flexibility
             'text_align': 'right'
         },
         'rank': {
-            'width': 'var(--table-col-width-rank)',
+            'width': 'fit-content',  # Changed from 'auto' to 'fit-content'
             'min_width': 'var(--table-col-min-width-rank)',
             'max_width': 'var(--table-col-max-width-rank)',
             'text_align': 'center'
         },
         'insurer': {
-            'width': 'var(--table-col-width-insurer)',
+            'width': '100%',  # Changed from 'auto' to '100%'
             'min_width': 'var(--table-col-min-width-insurer)',
-            'max_width': 'var(--table-col-max-width-insurer)',
+            'max_width': 'none',  # Changed from fixed value to allow expansion
             'text_align': 'left'
         },
         'change': {
-            'width': '150px',
-            'min_width': '130px',
-            'max_width': '150px',
+            'width': 'fit-content',  # Changed from 'auto' to 'fit-content'
+            'min_width': '100px',  # Reduced from 130px
+            'max_width': 'none',  # Changed from fixed 170px to allow flexibility
             'text_align': 'center'
         }
     }
@@ -170,7 +173,18 @@ def generate_dash_table_config(
             'if': {'column_id': col},
             **{k: TABLE_THEME['columns'][col_type][k] for k in ['width', 'min_width', 'max_width', 'text_align']}
         })
+    
+        base_style = {
+            'if': {'column_id': col},
+            'textAlign': TABLE_THEME['columns'][col_type]['text_align'],
+            'minWidth': TABLE_THEME['columns'][col_type]['min_width'],
+            'width': 'auto',  # Allow columns to adjust based on content
+            'maxWidth': ('none' if col == INSURER_COL else  # Let insurer column expand
+                        TABLE_THEME['columns'][col_type]['max_width'])
+        }
+        style_cell_conditional.append(base_style)
 
+    
     # Generate conditional styles
     style_data_conditional = [
         # Base cell background
@@ -212,7 +226,6 @@ def generate_dash_table_config(
            'fontWeight': TABLE_THEME['typography']['bold_weight'],
            f'border{"Bottom" if idx == 0 else "Top"}': 'none'
           } for col in IDENTIFIER_COLS for idx in [0, 1]],
-
         # Styling for other columns based on their type
         *[{'if': {'column_id': col, 'header_index': idx},
            'fontWeight': TABLE_THEME['typography']['bold_weight' if idx == 0 else 'normal_weight'],
@@ -229,13 +242,22 @@ def generate_dash_table_config(
     ]
 
     return {
-        'style_table': {'overflowX': 'auto', 'width': 'fit-content'},
+        'style_table': {
+            'overflowX': 'auto',  # Enable horizontal scroll when needed
+            'width': '100%',      # Take full width of container
+            'maxWidth': '100%',   # Ensure table doesn't exceed container
+        },
         'style_cell': {
             'fontFamily': TABLE_THEME['typography']['font_family'],
             'fontSize': TABLE_THEME['typography']['font_size'],
             'padding': TABLE_THEME['spacing']['cell_padding'],
-            'whiteSpace': 'normal',
-            'border': f"1px solid {TABLE_THEME['colors']['border']}"
+            'whiteSpace': 'normal',   # Allow text wrapping
+            'overflow': 'hidden',
+            'textOverflow': 'ellipsis',
+            'border': f"1px solid {TABLE_THEME['colors']['border']}",
+            'minWidth': '0',          # Allow cells to shrink below content width
+            'width': '100%',          # Make cells fill available space
+            'maxWidth': '100%',       # Prevent cells from growing too large
         },
         'style_cell_conditional': style_cell_conditional,
         'style_header': {
@@ -262,6 +284,21 @@ def generate_dash_table_config(
                 ('q_to_q_change' in col and not show_qtoq)
             )
         ],
+        'css': [
+            # Custom CSS for better responsiveness
+            {
+                'selector': '.dash-table-container',
+                'rule': 'max-width: 100%; width: 100%; margin: 0; padding: 0;'
+            },
+            {
+                'selector': '.dash-spreadsheet',
+                'rule': 'max-width: 100%; width: 100%;'
+            },
+            {
+                'selector': '.dash-cell',
+                'rule': 'max-width: 100%; width: auto;'
+            }
+        ],        
         'sort_action': 'none',
         'sort_mode': None,
         'filter_action': 'none',

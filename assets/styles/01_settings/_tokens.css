@@ -44,9 +44,10 @@
     --space-4: 1rem;
     
     /* Component Specific */
+    --button-height-xxs: 1.15rem;
     --button-height-xs: 1.5rem;
-    --input-height-sm: 2rem;
-    --input-height-xs: 1.5rem;
+    --input-height-sm: 1.9rem;
+    --input-height-xs: 1.4rem;
     --radius-md: 0.25rem;
     
     /* Shadows */
@@ -55,12 +56,10 @@
     
     /* Table Specific */
     --table-border: #e9ecef;
-    --table-col-width-rank: 120px;
-    --table-col-max-width-rank: 130px;
+    --table-col-max-width-rank: 150px;
     --table-col-min-width-rank: 120px;
-    --table-col-width-insurer: 360px;
     --table-col-min-width-insurer: 360px;
-    --table-col-max-width-insurer: 360px;
+    --table-col-max-width-insurer: 400px;
 
     --table-font-size: 0.875rem;
     --table-surface-cell: #ffffff;

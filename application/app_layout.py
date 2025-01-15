@@ -34,7 +34,7 @@ APP_CONFIG = {
         'secondary-y-metric': {
             'options': [],
             'value': None,
-            'placeholder': "Доп. показтель...",
+            'placeholder': "Доп. показатель...",
             'multi': False
         },
         'end-quarter': {
@@ -158,13 +158,19 @@ def create_filter_row(
     
     if vertical:
         return html.Div([
-            html.Label(label_text, className="filter-label d-block mb-2"),
+            html.Label(label_text, className="filter-label"),
             html.Div(component, className="filter-content w-100")  # Added filter-content class
-        ], className="filter-row filter-row--vertical mb-3")  # Added filter-row classes
+        ], className="filter-row filter-row--vertical")  # Added filter-row classes
 
     label_width = kwargs.get("label_width", 6)
     component_width = kwargs.get("component_width", 6)
 
+    col_className = ""
+    if component_id == "premium-loss-checklist":
+        col_className = "d-flex justify-content-start"  # Align left for the checklist
+    else:
+        col_className = "d-flex justify-content-end"    # Keep end alignment for other components
+    
     return dbc.Row(
         [
             dbc.Col(
@@ -174,12 +180,11 @@ def create_filter_row(
             dbc.Col(
                 component,
                 width=component_width,
-                className="d-flex justify-content-end"
+                className=col_className
             )
         ],
-        className="filter-row mb-0"  # Removed explicit row class since dbc.Row adds it automatically
+        className="filter-row mb-0"
     )
-
 
 def create_lines_checklist_buttons() -> dbc.Row:
     """Create hierarchy control buttons."""
@@ -301,7 +306,7 @@ class SidebarState:
             main_class="sidebar-filters",
             sidebar_col_class="sidebar-col",
             inner_btn_text="Hide Filters",
-            inner_btn_class="btn-custom btn-sidebar-toggle-nav"
+            inner_btn_class="btn-custom btn-sidebar-toggle-hide"
         )
 
     @classmethod
@@ -312,7 +317,7 @@ class SidebarState:
             main_class="sidebar-filters collapsed",
             sidebar_col_class="sidebar-col collapsed",
             inner_btn_text="Show Filters",
-            inner_btn_class="btn-custom btn-sidebar-toggle-nav",
+            inner_btn_class="btn-custom btn-sidebar-toggle-show",
         )
 
     def to_tuple(self) -> Tuple[str, str, str, str, str]:
@@ -394,7 +399,7 @@ def create_sidebar_filters() -> html.Div:
                     dbc.Col([
                         create_filter_row("Форма отчетности:", "reporting-form", label_width=9, component_width=3),
                         create_filter_row("Отчетный квартал:", "end-quarter", label_width=9, component_width=3),
-                        html.Label("Тип данных:", className="filter-label mb-2"),
+                        html.Label("Тип данных:", className="filter-label"),
                         create_period_type_buttons(),
                         html.Div(id="period-type-text", className="period-type__text mb-3"),
                         create_filter_row(
@@ -404,7 +409,7 @@ def create_sidebar_filters() -> html.Div:
                             label_width=3, 
                             component_width=9
                         ),
-                    ], className="sidebar-column", lg=6, md=6, sm=12),
+                    ], className="sidebar-column pe-2", lg=6, md=6, sm=12),
                     
                     # Right column
                     dbc.Col([
@@ -436,12 +441,15 @@ def create_sidebar_filters() -> html.Div:
                             label_width=9, 
                             component_width=3
                         ),
-                        create_filter_row("Доп. показатель:", "secondary-y-metric", vertical=True),
+                        create_filter_row(
+                            "Доп. показатель:", 
+                            "secondary-y-metric", 
+                            component_type="dropdown", 
+                            label_width=4, 
+                            component_width=8
+                        ),
                     ], className="sidebar-column", lg=6, md=6, sm=12),
                 ], className="sidebar-row g-0"),
-                
-                html.Div(id="tree-container", className="tree-container"),
-                create_lines_checklist_buttons()
             ]
         ),
         id="sidebar-col",
@@ -458,12 +466,13 @@ def create_app_layout(initial_quarter_options: Optional[List[dict]] = None) -> L
         return dbc.Container([  # Wrap everything in Container
             *create_stores(),
             create_navbar(),
-
+            html.Div(id="tree-container", className="tree-container"),
+            create_lines_checklist_buttons(),
             dbc.CardBody([
                 dbc.Button(
                     "Show Additional Filters",
                     id="toggle-sidebar-button-sidebar",
-                    className="btn-custom btn-sidebar-toggle"
+                    className="btn-custom btn-sidebar-toggle-show"
                 ),
                 create_sidebar_filters(),
                 dbc.Row([
@@ -472,13 +481,18 @@ def create_app_layout(initial_quarter_options: Optional[List[dict]] = None) -> L
                         html.H4(id="table-subtitle", className="table-subtitle mb-3", style={"display": "none"}),
                     ], className="titles-container", style={"display": "none"}),
                 ]),
-                dbc.Row([
-                    dbc.Col([
-                        create_filter_row("", "insurance-line-dropdown", label_width=0, component_width=12),
-                    ], className="insurance-line-dropdown-container"),
-                    dbc.Col([
-                        create_filter_row("", "primary-y-metric", label_width=0, component_width=12)    
-                    ], className="primary-y-metric-container"),
+                html.Div([
+                    dbc.Row([
+                        html.Div([
+                            dbc.Col([
+                                create_filter_row("Вид страхования:", "insurance-line-dropdown", label_width=4, component_width=8),
+                            ], width=6, className="sidebar-column pe-2"),
+                            dbc.Col([
+                                create_filter_row("Показатель:", "primary-y-metric", label_width=4, component_width=8)    
+                            ], width=6, className="primary-y-metric-container pe-2"),
+                        ]),
+    
+                    ]),
                 ]),
                 html.Div([
                     dcc.Loading(
