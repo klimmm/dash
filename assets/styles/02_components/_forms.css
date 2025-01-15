@@ -40,7 +40,7 @@
 .filter-row {
     display: flex;
     width: 100%;
-    border: 1px solid red;
+    border: 0;
     margin-bottom: 0 !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
@@ -78,6 +78,7 @@
     width: 100%;
 }
 
+
 /* Period Filter Specific */
 .period-type__text {
     font-size: var(--font-size-sm);
@@ -97,6 +98,8 @@
     margin-top: var(--space-1);
 }
 
+
+
 /* Checklist Filter Specific */
 .filter-checklist {
     display: flex;
@@ -109,7 +112,6 @@
 .filter-checklist .form-check {
     margin: 0;
 }
-
 
 .checklist {
     display: flex !important;
@@ -135,71 +137,46 @@
 }
 
 
+
+
 /* Reset core Dash dropdown styles */
 .dash-dropdown {
-    /* Remove default Dash styles */
     all: unset;
-    /* Ensure the container takes full width */
-    display: block;
+    font-size: var(--font-size-xxs);
     width: 100%;
-    margin-bottom: 0; /* Ensure no bottom margin */
     height: 100%;
 }
+
 /* Main dropdown container */
 .dd-control {
     position: relative;
-    height: var(--input-height-sm);
-    width: 100%;
-    font-size: var(--font-size-sm);
-    margin-bottom: 0; /* Ensure no bottom margin */
-    padding: 0;  /* Remove padding */
-    display: block; /* Change from potential flex */
-    line-height: 1; /* Reset line height */
+    font-size: var(--font-size-xxs);
+    padding: 0;
+    margin-bottom: 0;
     height: 100%;
-}
-/* Reset Select container */
-.dd-control .Select {
-    height: var(--input-height-xs);
-}
-/* Main control element */
-.dd-control .Select-control {
-    height: var(--input-height-xs);
-    align-items: center;  /* Vertically center content */
-    padding: 0;  /* Remove padding */
-    margin-bottom: 0;  /* Remove margin */
-}
-/* Value and placeholder */
-.dd-control .Select-value,
-.dd-control .Select-placeholder {
-    height: 100%;
+    line-height: 1;
     display: flex;
-    align-items: center;  /* Vertically center text */
-    padding: 0;  /* Remove padding */
-    margin-bottom: 0;  /* Remove margin */
-    font-size: var(--font-size-sm);
-    line-height: 1;  /* Reset line height */
+    align-items: center;
 }
+
+
+/* Value and placeholder specific styles */
+.dd-control .Select-value,
+.dd-control .Select-placeholder
+.dd-control .Select-control {
+{
+
+
+
+/* Input specific styles */
 .dd-control .Select-input {
-    height: calc(var(--input-height-sm) - 7px);
-    padding: 0;  /* Remove padding */
-    font-size: var(--font-size-xs);
-    margin-bottom: 0;  /* Remove margin */
+    height: calc(var(--input-height-sm) - 10px);
+    font-size: var(--font-size-xxs);
 }
+
 /* Dropdown menu */
 .dd-control .Select-menu-outer {
-    margin-bottom: 0;  /* Keep only top margin */
-    padding: 0;  /* Remove padding */
-    border: 1px solid var(--color-border-weak);
     border-radius: var(--radius-md);
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-xxs);
     background: var(--color-surface-primary);
 }
-/* Menu options */
-.dd-control .Select-option {
-    padding: 0;  /* Remove padding */
-    display: flex;
-    align-items: center;  /* Vertically center text */
-    font-size: var(--font-size-xs);
-    min-height: var(--input-height-xs);
-}
-\
