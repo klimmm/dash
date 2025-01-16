@@ -1,10 +1,9 @@
-/* Sidebar container */
-
 .filter-column {
-    padding: 0; 
-    border: 1px solid red;
-    overflow-x: hidden;  /* Prevents horizontal overflow */
+  flex: 0 0 50%;
+  width: 50%;
+  box-sizing: border-box;
 }
+
 
 .sidebar-col.collapsed {
     width: 0;
