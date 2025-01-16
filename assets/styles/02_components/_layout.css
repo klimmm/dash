@@ -1,9 +1,13 @@
 .filter-column {
-  flex: 0 0 50%;
   width: 50%;
   box-sizing: border-box;
 }
 
+@media (max-width: 767px) {
+  .filter-column {
+    width: 100%;
+  }
+}
 
 .sidebar-col.collapsed {
     width: 0;
