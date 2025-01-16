@@ -93,6 +93,7 @@ app.index_string = '''
         <title>{%title%}</title>
         {%favicon%}
         {%css%}
+        <link rel="stylesheet" type="text/css" href="./assets/styles/main.css">
     </head>
     <body>
         {%app_entry%}

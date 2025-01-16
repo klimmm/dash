@@ -255,7 +255,6 @@ def generate_dash_table_config(
             'overflow': 'hidden',
             'textOverflow': 'ellipsis',
             'border': f"1px solid {TABLE_THEME['colors']['border']}",
-            'minWidth': '0',          # Allow cells to shrink below content width
             'width': '100%',          # Make cells fill available space
             'maxWidth': '100%',       # Prevent cells from growing too large
         },

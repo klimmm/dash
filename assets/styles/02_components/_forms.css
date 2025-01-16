@@ -93,7 +93,7 @@
 }
 
 .period-type__description {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
     margin-top: var(--space-1);
 }
@@ -142,7 +142,7 @@
 /* Reset core Dash dropdown styles */
 .dash-dropdown {
     all: unset;
-    font-size: var(--font-size-xxs);
+    font-size: var(--font-size-sm);
     width: 100%;
     height: 100%;
 }
@@ -150,7 +150,7 @@
 /* Main dropdown container */
 .dd-control {
     position: relative;
-    font-size: var(--font-size-xxs);
+    font-size: var(--font-size-sm);
     padding: 0;
     margin-bottom: 0;
     height: 100%;
@@ -171,12 +171,12 @@
 /* Input specific styles */
 .dd-control .Select-input {
     height: calc(var(--input-height-sm) - 10px);
-    font-size: var(--font-size-xxs);
+    font-size: var(--font-size-sm);
 }
 
 /* Dropdown menu */
 .dd-control .Select-menu-outer {
     border-radius: var(--radius-md);
-    font-size: var(--font-size-xxs);
+    font-size: var(--font-size-sm);
     background: var(--color-surface-primary);
 }

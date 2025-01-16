@@ -481,17 +481,14 @@ def create_app_layout(initial_quarter_options: Optional[List[dict]] = None) -> L
                         html.H4(id="table-subtitle", className="table-subtitle mb-3", style={"display": "none"}),
                     ], className="titles-container", style={"display": "none"}),
                 ]),
-                html.Div([
+                dbc.CardBody([
                     dbc.Row([
-                        html.Div([
-                            dbc.Col([
-                                create_filter_row("Вид страхования:", "insurance-line-dropdown", label_width=4, component_width=8),
-                            ], width=6, className="sidebar-column pe-2"),
-                            dbc.Col([
-                                create_filter_row("Показатель:", "primary-y-metric", label_width=4, component_width=8)    
-                            ], width=6, className="primary-y-metric-container pe-2"),
-                        ]),
-    
+                        dbc.Col([
+                            create_filter_row("Вид страхования:", "insurance-line-dropdown", label_width=4, component_width=8),
+                        ], lg=6, md=6, sm=12, className="sidebar-column pe-2"),
+                        dbc.Col([
+                            create_filter_row("Показатель:", "primary-y-metric", label_width=4, component_width=8)    
+                        ], lg=6, md=6, sm=12, className="primary-y-metric-container pe-2"),
                     ]),
                 ]),
                 html.Div([
