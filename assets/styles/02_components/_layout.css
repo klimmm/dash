@@ -1,37 +1,43 @@
 /* Sidebar container */
-.sidebar-col {
-    padding: 0;
-    max-width: 100%;
-    max-height: calc(100vh - var(--navbar-height));
-    border: 0;
-    margin: 0 !important;
-    border: 0;
-    overflow-x: auto;
-}
+
+
 .sidebar-col.collapsed {
     width: 0;
     height: 0;
-}
-.sidebar-filters {
-    width: 100%;
+    position: absolute;
     padding: 0;
-    margin: 0 !important;
-    height: auto;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 1px solid red;
+    
 }
-.sidebar-filters.collapsed {
-    width: 0;
+
+.datatable-container {
+    width: fit-content;
+    border: 1px solid #ccc;
+    height: calc(100% - var(--titles-height));
+    overflow-x: auto;
+    font-family: var(--font-family-sans);
+    font-size: var(--table-font-size);
+    border: 1px solid red;
+}
+
+.layout-wrapper {
+    width: fit-content;
+    position: relative;
     padding: 0;
-    height: 0;
+    margin: 0;
+    border: 0;
+    border: 1px solid red;
     overflow: hidden;
 }
 
-/* Layout components */
-.sidebar-row {
-    margin: 0;
-    padding: 0;
-}
-.sidebar-column {
-    padding: 0;
+.filter-column {
+    padding: 0; 
+    min-width: 250px;
+    overflow: hidden   
 }
 
 
@@ -50,26 +56,8 @@
     border: 0; 
 }
 
-.table-wrapper {
-    width: fit-content;
-    position: relative;
-    padding: 0;
-    margin: 0;
-    border: 0;
-    overflow: hidden;
-}
 
-.insurance-line-dropdown-container {
-    border: 0;
-    margin: 0;
-    padding: 0;
-}
 
-.primary-y-metric-container {
-    margin: 0;
-    border: 0;
-    padding: 0;
-}
 
 .titles-container {
     width: 100%;
@@ -81,15 +69,7 @@
     align-items: center;
 }
 
-.datatable-container {
-    width: fit-content;
-    border: 1px solid #ccc;
-    height: calc(100% - var(--titles-height));
-    overflow-x: auto;
-    font-family: var(--font-family-sans);
-    font-size: var(--table-font-size);
-    border: 0;
-}
+
 
 .chart-container {
     height: auto;

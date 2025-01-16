@@ -34,19 +34,18 @@
     align-items: center;
     margin: 0 !important;
     padding: 0 !important;
-    min-height: 1.8rem !important;
+    min-height: 1.9rem !important;
 }
 
 .filter-row {
     display: flex;
     width: 100%;
     border: 0;
-    border: 1px solid red;
     margin-bottom: 0 !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
     align-items: center;
-    min-height: 1.8rem !important;
+    min-height: 1.9rem !important;
 }
 
 .filter-content {
@@ -84,6 +83,8 @@
 .period-type__text {
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
+    min-height: 1.9rem !important;
+    max-height: 1.9rem !important;
     margin-bottom: 0 !important; /* Ensure no bottom margin */
 }
 
@@ -161,53 +162,18 @@
 }
 
 
-
 /* Value and placeholder specific styles */
-
-
-.dd-control .Select-placeholder,
+.dd-control .Select-value,
+.dd-control .Select-placeholder
 .dd-control .Select-control {
-    height: var(--input-height-sm);
-    border: 0;
-    padding: 0;
-    margin: 0;
-}
+{
 
-.dd-control .Select-control {
-    border: 0;
-    padding: 0.4rem !important;
-    margin: 0;
-}
-
-
-.dd-control .Select-option {
-    display: flex;
-    align-items: center;
-}
-
-
-.dd-control .Select-multi-value,
-.dd-control .Select-value-label,
-.dd-control .Select-option,
-.dd-control .Select-caret,
-.dd-control .Select-clear,
-.dd-control .Select-arrows,
-.dd-control .Select-value {
-}
 
 
 /* Input specific styles */
 .dd-control .Select-input {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 1px solid red;
-    
+    height: calc(var(--input-height-sm) - 10px);
+    font-size: var(--font-size-sm);
 }
 
 /* Dropdown menu */

@@ -4,7 +4,7 @@
     --bs-gutter-x: var(--bs-gutter-x);
     --navbar-height: 56px;
     --sidebar-height: 700px;
-    --sidebar-width: 0;
+    --sidebar-width: 900px;
     --titles-height: 60px;
     
     /* Colors: Surface */
@@ -34,11 +34,18 @@
     --font-size-sm: 0.875rem;
     --font-size-xs: 0.75rem;
     --font-size-xxs: 0.6rem;
-
     --font-weight-semibold: 600;
     --line-height-tight: 1.25;
-    --line-height-base: 1.5
-    
+    --line-height-base: 1.5;
+
+    --bs-font-sans-serif: var(--font-family-sans);
+    --bs-body-font-family: var(--font-family-sans);
+    --bs-body-font-size: var(--font-size-base);
+    --bs-body-line-height: var(--line-height-base);
+    --bs-body-color: var(--color-text-default);
+    --bs-body-bg: var(--color-background-primary);
+
+        
     /* Spacing */
     --space-1: 0.25rem;
     --space-2: 0.5rem;
@@ -48,7 +55,7 @@
     /* Component Specific */
     --button-height-xxs: 1.15rem;
     --button-height-xs: 1.5rem;
-    --input-height-sm: 1.5rem;
+    --input-height-sm: 1.9rem;
     --input-height-xs: 1.4rem;
     --radius-md: 0.25rem;
     
@@ -58,11 +65,19 @@
     
     /* Table Specific */
     --table-border: #e9ecef;
-    --table-col-max-width-rank: 150px;
-    --table-col-min-width-rank: 120px;
-    --table-col-min-width-insurer: 360px;
-    --table-col-max-width-insurer: 400px;
-
+    --table-col-min-width-rank: 100px;
+    --table-col-max-width-rank: 100px;
+    --table-col-min-width-insurer: 300px;
+    --table-col-max-width-insurer: 300px;
+    --table-col-min-width-change: 100px;
+    --table-col-max-width-change: none;
+    --table-col-min-width-default: 80px;
+    --table-col-max-width-default: none
+    --table-col-width-default: fit-content;
+    --table-col-width-rank: fit-content;
+    --table-col-width-insurer: fit-content;
+    --table-col-width-change: fit-content;
+    
     --table-font-size: 0.875rem;
     --table-surface-cell: #ffffff;
     --table-surface-header: #3C5A99;

@@ -43,27 +43,32 @@ THEME = {
     },
     'columns': {
         'defaults': {
-            'width': '100%',  # Changed from 'auto' to '100%'
-            'min_width': '80px',  # Reduced from 100px for better compression
-            'max_width': 'none',  # Changed from fixed 140px to allow flexibility
+            'width': 'fit-content',  # Changed from 'auto' to 'fit-content'
+            'min_width': 'auto',  
+
+            # 'min_width': 'var(--table-col-min-width-default)',  # Reduced from 100px for better compression
+            'max_width': 'var(--table-col-msx-width-default)',  # Changed from fixed 140px to allow flexibility
             'text_align': 'right'
         },
         'rank': {
             'width': 'fit-content',  # Changed from 'auto' to 'fit-content'
-            'min_width': 'var(--table-col-min-width-rank)',
+            'min_width': 'auto',  
+            # 'min_width': 'var(--table-col-min-width-rank)',
             'max_width': 'var(--table-col-max-width-rank)',
             'text_align': 'center'
         },
         'insurer': {
-            'width': '100%',  # Changed from 'auto' to '100%'
-            'min_width': 'var(--table-col-min-width-insurer)',
-            'max_width': 'none',  # Changed from fixed value to allow expansion
+            'width': 'fit-content',  # Changed from 'auto' to 'fit-content'
+            'min_width': 'auto',  
+            # 'min_width': 'var(--table-col-min-width-insurer)',
+            'max_width': 'var(--table-col-max-width-insurer)',  # Changed from fixed value to allow expansion
             'text_align': 'left'
         },
         'change': {
             'width': 'fit-content',  # Changed from 'auto' to 'fit-content'
-            'min_width': '100px',  # Reduced from 130px
-            'max_width': 'none',  # Changed from fixed 170px to allow flexibility
+            'min_width': 'auto',  
+            # 'min_width': 'var(--table-col-min-width-change)',  # Reduced from 130px
+            'max_width': 'var(--table-col-max-width-change)',  # Changed from fixed 170px to allow flexibility
             'text_align': 'center'
         }
     }
