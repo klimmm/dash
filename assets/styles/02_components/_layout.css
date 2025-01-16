@@ -2,7 +2,7 @@
 
 .filter-column {
     padding: 0; 
-    min-width: 250px;
+    border: 1px solid red;
     overflow-x: hidden;  /* Prevents horizontal overflow */
 }
 
@@ -26,7 +26,6 @@
     overflow-x: auto;
     font-family: var(--font-family-sans);
     font-size: var(--table-font-size);
-    border: 1px solid red;
 }
 
 .layout-wrapper {
@@ -35,7 +34,6 @@
     padding: 0;
     margin: 0;
     border: 0;
-    border: 1px solid red;
 }
 
 
@@ -59,9 +57,9 @@
 
 .filter-row {
     display: flex;
-    width: 100%;
+    width: 100%;        /* Forces row to respect parent width */
+    max-width: 100%;    /* Prevents overflow */    
     border: 0;
-    border: 1px solid red;
     margin-bottom: 0 !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
