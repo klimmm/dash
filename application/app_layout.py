@@ -449,7 +449,7 @@ def create_sidebar_filters() -> html.Div:
                         component_width=8
                     ),
                 ], xs=12, md=6, className="filter-column"),
-            ], className="sidebar-col", id="sidebar-col collapsed"),
+            ], className="sidebar-col collapsed", id="sidebar-col"),
 
             # Second row with additional filters
             dbc.Row([

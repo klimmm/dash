@@ -37,55 +37,6 @@
     min-height: 1.8rem !important;
 }
 
-.filter-row {
-    display: flex;
-    width: 100%;
-    border: 0;
-    border: 1px solid red;
-    margin-bottom: 0 !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    align-items: center;
-    min-height: 1.8rem !important;
-}
-
-.filter-content {
-    margin: 0 !important;
-    padding: 0 !important;
-    min-height: 1.8rem !important;
-    border: 0;
-    align-items: center;
-    width: 100%;
-    display: flex;
-}
-
-.filter-row.row {
-    --bs-gutter-x: 0;
-    
-}
-
-.filter-row--vertical {
-    flex-direction: column;
-    
-    align-items: flex-start;
-    min-height: 1.8rem !important;
-}
-
-.filter-row--vertical .filter-label {
-    margin-bottom: 0;
-}
-
-.filter-row--vertical .filter-content {
-    width: 100%;
-}
-
-
-/* Period Filter Specific */
-.period-type__text {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    margin-bottom: 0 !important; /* Ensure no bottom margin */
-}
 
 .period-buttons-group {
     display: flex;
