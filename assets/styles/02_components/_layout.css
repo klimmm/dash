@@ -1,12 +1,17 @@
 .filter-column {
-  width: 50%;
-  box-sizing: border-box;
+    width: 50%;
+    max-width: 500px;
+    box-sizing: border-box;
+    border: 1px solid red;
 }
 
+
+
 @media (max-width: 767px) {
-  .filter-column {
-    width: 100%;
-  }
+    .filter-column {
+        width: 100%;
+    }
+
 }
 
 .sidebar-col.collapsed {
