@@ -26,7 +26,7 @@ from charting.chart import create_chart
 from data_process.data_utils import create_year_quarter_options, load_and_preprocess_data
 from data_process.process_filters import MetricsProcessor
 from data_process.table_data import get_data_table
-from application.app_layout import create_app_layout, setup_sidebar_callbacks
+from application.app_layout import create_app_layout, setup_sidebar_callbacks, setup_resize_observer_callback
 from application.callbacks.period_filter import setup_period_type_callbacks
 logger = get_logger(__name__)
 from config.default_values import DEFAULT_REPORTING_FORM
@@ -339,7 +339,7 @@ setup_debug_callbacks(app)
 setup_insurance_lines_callbacks(app, insurance_lines_tree)
 setup_filter_update_callbacks(app, quarter_options_162, quarter_options_158)
 setup_sidebar_callbacks(app)
-
+setup_resize_observer_callback(app)
 logger.debug("Dashboard layout created")
 
 @app.callback(

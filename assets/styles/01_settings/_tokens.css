@@ -1,4 +1,8 @@
 :root {
+    font-size: 14px;  /* This makes 1rem = 14px */
+
+
+    
     /* Layout & Sizing */
     --breakpoint-md: 768px;
     --bs-gutter-x: var(--bs-gutter-x);
@@ -26,7 +30,6 @@
     
     /* Colors: Borders */
     --color-border-weak: #e9ecef;
-    
     /* Typography */
     --font-family-sans: Arial, -apple-system, system-ui, sans-serif;
     --font-size-base: 1rem;

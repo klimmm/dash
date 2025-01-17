@@ -463,6 +463,36 @@ def create_sidebar_filters() -> html.Div:
         ])
     )
 
+def setup_resize_observer_callback(app: dash.Dash) -> None:
+    """Setup callback for observing datatable container resize."""
+    app.clientside_callback(
+        """
+        function() {
+            const resizeObserver = new ResizeObserver(entries => {
+                for (let entry of entries) {
+                    if (entry.target.classList.contains('datatable-container')) {
+                        document.documentElement.style.setProperty(
+                            '--datatable-width', 
+                            `${entry.target.offsetWidth}px`
+                        );
+                    }
+                }
+            });
+
+            // Find and observe the datatable container
+            const datatableContainer = document.querySelector('.datatable-container');
+            if (datatableContainer) {
+                resizeObserver.observe(datatableContainer);
+            }
+
+            // Return null since Dash expects a return value
+            return null;
+        }
+        """,
+        Output("dummy-output", "children"),
+        Input("dummy-trigger", "children"),
+    )
+    
 def create_app_layout(initial_quarter_options: Optional[List[dict]] = None) -> List:
     try:
         if initial_quarter_options:
@@ -473,6 +503,8 @@ def create_app_layout(initial_quarter_options: Optional[List[dict]] = None) -> L
         return dbc.Container([  # Wrap everything in Container
             *create_stores(),
             create_navbar(),
+            html.Div(id="dummy-output", style={"display": "none"}),
+            html.Div(id="dummy-trigger", style={"display": "none"}),
             html.Div(id="tree-container", className="tree-container"),
             create_lines_checklist_buttons(),
             dbc.CardBody([
