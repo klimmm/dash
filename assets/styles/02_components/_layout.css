@@ -1,15 +1,31 @@
 .filter-column {
     width: 50%;
-    max-width: 500px;
+    max-width: 400px;
+    min-width: 350px;
+    margin: 0 !important;
+    padding: 0 !important;
     box-sizing: border-box;
-    border: 1px solid red;
+    border: 0; 
 }
+
+.main-filter-column {
+    width: 50%;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-width: 350px;
+    max-width: 350px;
+    box-sizing: border-box;
+    border: 0; 
+}
+
 
 /* Sidebar styles */
 .sidebar-col {
     width: min(100%, var(--datatable-width, 100%));
-    max-width: 100vw;
-    border: 1px solid red;
+    max-width: 100%;
+    border: 0; 
+    border: 1px solid #e9ecef;
+    padding: 0 !important;
     margin-bottom: 1rem;
 }
 
@@ -19,12 +35,29 @@
 }
 
 
-@media (max-width: 767px) {
+@media (max-width: 699px) {
     .filter-column {
         width: 100%;
     }
 
 }
+
+@media (max-width: 799px) {
+    .main-filter-column {
+        width: 100%;
+        max-width: none;
+    }
+
+}
+
+@media (max-width: 600x) {
+    .main-filter-column {
+        max-width: 500px;
+    }
+
+}
+
+
 
 .sidebar-col.collapsed {
     width: 0;
@@ -32,7 +65,6 @@
     position: absolute;
     padding: 0;
     margin: -1px;
-    overflow: hidden;
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 1px solid red;
@@ -97,13 +129,13 @@
 
 
 
-
 .filter-row {
     display: flex;
     width: 100%;        /* Forces row to respect parent width */
     max-width: 100%;    /* Prevents overflow */    
-    border: 0;
+    border: 1px solid #e9ecef;
     margin-bottom: 0 !important;
+    margin: 0 !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
     align-items: center;
@@ -145,7 +177,9 @@
 .period-type__text {
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
-    margin-bottom: 0 !important; /* Ensure no bottom margin */
+    border: 1px solid #e9ecef;
+    padding-bottom: 1rem !important;
+    min-height: 1.8rem !important;
 }
 
 

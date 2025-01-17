@@ -119,14 +119,13 @@
 .dd-control .Select-placeholder,
 .dd-control .Select-control {
     height: var(--input-height-sm);
-    border: 0;
     padding: 0;
     margin: 0;
 }
 
 .dd-control .Select-control {
-    border: 0;
     padding: 0.4rem !important;
+    
     margin: 0;
 }
 

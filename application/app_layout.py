@@ -390,8 +390,8 @@ def create_sidebar_filters() -> html.Div:
             dbc.Row([
                 # Left column
                 dbc.Col([
-                    create_filter_row("Форма отчетности:", "reporting-form", label_width=9, component_width=3),
-                    create_filter_row("Отчетный квартал:", "end-quarter", label_width=9, component_width=3),
+                    create_filter_row("Форма отчетности:", "reporting-form", label_width=8, component_width=4),
+                    create_filter_row("Отчетный квартал:", "end-quarter", label_width=8, component_width=4),
                     dbc.Row([
                         dbc.Col([
                             html.Label("Тип данных:", className="filter-label"),
@@ -409,7 +409,7 @@ def create_sidebar_filters() -> html.Div:
                         label_width=3, 
                         component_width=9
                     ),
-                ], xs=12, sm=12, md=6, className="filter-column"),
+                ], xs=12, md=6, className="filter-column"),
                 
                 # Right column
                 dbc.Col([
@@ -448,17 +448,17 @@ def create_sidebar_filters() -> html.Div:
                         label_width=4, 
                         component_width=8
                     ),
-                ], xs=12, sm=12, md=6, className="filter-column"),
+                ], xs=12, md=6, className="filter-column"),
             ], className="sidebar-col collapsed", id="sidebar-col"),
 
             # Second row with additional filters
             dbc.Row([
                 dbc.Col([
                     create_filter_row("Вид страхования:", "insurance-line-dropdown", label_width=4, component_width=8),
-                ], xs=12, sm=12, md=6, className="filter-column"),
+                ], xs=12, sm=12, md=6, className="main-filter-column"),
                 dbc.Col([
                     create_filter_row("Показатель:", "primary-y-metric", label_width=4, component_width=8)    
-                ], xs=12, sm=12, md=6, className="filter-column"),
+                ], xs=12, sm=12, md=6, className="main-filter-column"),
             ], className="sidebar-col"),
         ])
     )

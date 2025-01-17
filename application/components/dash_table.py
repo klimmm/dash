@@ -47,28 +47,28 @@ THEME = {
             'min_width': 'none',  
 
             # 'min_width': 'var(--table-col-min-width-default)',  # Reduced from 100px for better compression
-            'max_width': 'var(--table-col-msx-width-default)',  # Changed from fixed 140px to allow flexibility
+            'max_width': 'auto',  # Changed from fixed value to allow expansion
             'text_align': 'right'
         },
         'rank': {
             'width': 'fit-content',  # Changed from 'auto' to 'fit-content'
             'min_width': 'none',  
             # 'min_width': 'var(--table-col-min-width-rank)',
-            'max_width': 'var(--table-col-max-width-rank)',
+            'max_width': 'auto',  # Changed from fixed value to allow expansion
             'text_align': 'center'
         },
         'insurer': {
             'width': 'fit-content',  # Changed from 'auto' to 'fit-content'
             'min_width': 'none',  
             # 'min_width': 'var(--table-col-min-width-insurer)',
-            'max_width': 'var(--table-col-max-width-insurer)',  # Changed from fixed value to allow expansion
+            'max_width': 'auto',  # Changed from fixed value to allow expansion
             'text_align': 'left'
         },
         'change': {
             'width': 'fit-content',  # Changed from 'auto' to 'fit-content'
             'min_width': 'none',  
             # 'min_width': 'var(--table-col-min-width-change)',  # Reduced from 130px
-            'max_width': 'var(--table-col-max-width-change)',  # Changed from fixed 170px to allow flexibility
+            'max_width': 'auto',  # Changed from fixed value to allow expansion
             'text_align': 'center'
         }
     }

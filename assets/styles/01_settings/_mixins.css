@@ -35,21 +35,21 @@
 /* Tablet */
 @media screen and (min-width: 768px) {
     :root {
-        font-size: 15px;
+        font-size: 14px;
     }
 }
 
 /* Desktop */
 @media screen and (min-width: 1024px) {
     :root {
-        font-size: 16px;
+        font-size: 14px;
     }
 }
 
 /* Large Desktop */
 @media screen and (min-width: 1440px) {
     :root {
-        font-size: 18px;
+        font-size: 14px;
     }
 }
 
