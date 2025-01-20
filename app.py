@@ -27,16 +27,15 @@ from data_process.table_data import get_data_table
 from data_process.calculate_metrics import calculate_metrics
 
 
-server = Flask(__name__)
 app = dash.Dash(
     __name__,
-    server=server,
     url_base_pathname="/",
-    serve_locally=True,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
     suppress_callback_exceptions=True,
     update_title=None
 )
+server = app.server  # Get the Flask server from Dash instead
+
 app.title = APP_TITLE
 app.index_string = '''
 <!DOCTYPE html>

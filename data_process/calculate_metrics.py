@@ -250,13 +250,13 @@ def calculate_metrics(
 
         # Step 2: Calculate ratios using updated metrics_dict
         for metric in required_ratios:
-          
+
             if metric in RATIO_CALCULATIONS:
 
                 if metric in metrics_dict:
                     logger.debug(f"Skipping calculation for existing metric {metric} with value {metrics_dict[metric]}")
                     continue  
-                
+
                 try:
                     deps, calculation = RATIO_CALCULATIONS[metric]
                     logger.debug(f"Required dependencies for {metric}: {deps}")
@@ -264,7 +264,7 @@ def calculate_metrics(
                     if missing_deps:
                         logger.debug(f"Missing dependencies for {metric}: {missing_deps}")
                         continue
-                    
+
                     # Check if all required basic metrics are calculated
                     if all(dep in metrics_dict for dep in deps):
                         logger.debug(f"All dependencies present for {metric}, calculating...")
