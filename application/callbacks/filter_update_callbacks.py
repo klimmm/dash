@@ -8,7 +8,7 @@ from data_process.data_utils import category_structure_162, category_structure_1
 from config.logging_config import get_logger, track_callback, track_callback_end
 from constants.filter_options import METRICS_OPTIONS
 from config.default_values import DEFAULT_PRIMARY_METRICS, DEFAULT_PRIMARY_METRICS_158, DEFAULT_PREMIUM_LOSS_TYPES
-from application.app_layout import create_component
+from application.app_layout import FilterComponents
 
 logger = get_logger(__name__)
 
@@ -35,7 +35,7 @@ PRIMARY_TO_SECONDARY_METRICS_MAP = {
                       'gross_loss_ratio'},
     'total_losses': {'direct_losses', 'inward_losses', 'ceded_losses', 
                     'net_losses', 'ceded_losses_ratio'},
-    'direct_premiums': {'new_contracts', 'average_new_premium', 'direct_losses',
+    'direct_premiums': {'inward_premiums', 'new_contracts', 'average_new_premium', 'direct_losses',
                        'direct_loss_ratio', 'premiums_interm', 
                        'premiums_interm_ratio', 'commissions_interm'},
     'direct_losses': {'claims_settled', 'average_loss'},
@@ -75,26 +75,44 @@ class FilterState:
         return [value] if not isinstance(value, list) else value
 
 
-def get_premium_loss_state(metric: str, reporting_form: str) -> Tuple[bool, Optional[List[str]]]:
-    if not metric:
+def get_premium_loss_state(metrics: List[str], reporting_form: str) -> Tuple[bool, Optional[List[str]]]:
+    if not metrics:
         return True, ['direct']
-
+    
     is_form_158 = reporting_form == '0420158'
-
     states = {
         ('total_premiums', 'total_losses'): 
-            (True, ['direct', 'inward']) if is_form_158 else (False, None),
+            (True, ['direct', 'inward']) if is_form_158 else (False, ['direct', 'inward']),
         ('ceded_premiums', 'ceded_losses', 'ceded_premiums_ratio',
          'ceded_losses_to_ceded_premiums_ratio', 'net_premiums', 'net_losses'):
             (True, ['direct', 'inward']),
         ('inward_premiums', 'inward_losses'): 
             (True, ['inward'])
     }
-
-    for metrics, state in states.items():
-        if metric in metrics:
-            return state
-    return True, ['direct']
+    
+    result_bool = True
+    result_states = set()
+    
+    # Check each metric in the input list
+    for metric in metrics:
+        found = False
+        for metrics_group, (bool_state, state_list) in states.items():
+            if metric in metrics_group:
+                found = True
+                # Update the boolean state
+                result_bool = result_bool and bool_state
+                # Always add states to the result set if they exist
+                if state_list:
+                    result_states.update(state_list)
+                break
+        if not found:
+            result_states.add('direct')
+    
+    # If no states were collected, use default
+    if not result_states:
+        result_states.add('direct')
+    
+    return result_bool, sorted(list(result_states))
 
 
 def get_metric_options(reporting_form: str, primary_metric: Optional[str] = None) -> Dict[str, List[Dict[str, Any]]]:
@@ -133,11 +151,13 @@ def setup_filter_update_callbacks(app: Dash, quarter_options_162, quarter_option
          Output('insurance-line-dropdown', 'options'),
          Output('premium-loss-checklist-container', 'children')],
         [Input('reporting-form', 'value'),
-         Input('primary-y-metric', 'value')],
+         Input('primary-y-metric', 'value'),
+         Input('secondary-y-metric', 'value'),
+        ],
          State('premium-loss-checklist', 'value'),
         prevent_initial_call=True
     )
-    def update_options(reporting_form, primary_metric, current_values):
+    def update_options(reporting_form, primary_metric, secondary_metric, current_values):
         ctx = dash.callback_context
         start_time = track_callback('app.callbacks.filter_update_callbacks', 'update_options', ctx)
 
@@ -146,22 +166,36 @@ def setup_filter_update_callbacks(app: Dash, quarter_options_162, quarter_option
             raise PreventUpdate
 
         try:
-            metric_options = get_metric_options(reporting_form, primary_metric)
+            metric = primary_metric[0] if isinstance(primary_metric, list) and primary_metric else primary_metric
 
+            metric_options = get_metric_options(reporting_form, metric)
+            secondary_metric_options = metric_options['secondary_y_metric_options']
+            filtered_secondary_metric_options = [option for option in secondary_metric_options if option['value'] not in primary_metric]
+
+            logger.debug(f"update_options metric_options: {metric_options}")
+
+            
+            logger.debug(f"update_options raw primary_metric type: {type(primary_metric)}")
+            logger.debug(f"update_options raw primary_metric value: {primary_metric}")            
             end_quarter_options = quarter_options_162 if reporting_form == '0420162' else quarter_options_158
 
             insurance_line_dropdown_options = get_categories_by_level(category_structure_162 if reporting_form == '0420162' else category_structure_158, level=2, indent_char="--")
+            selected_metrics = (primary_metric or[]) + (secondary_metric or [])
 
-            metric = primary_metric[0] if isinstance(primary_metric, list) and primary_metric else primary_metric
-            readonly, enforced_values = get_premium_loss_state(metric, reporting_form)
+            readonly, enforced_values = get_premium_loss_state(selected_metrics, reporting_form)
             values = enforced_values if enforced_values is not None else current_values
-            component = create_component('checklist', id='premium-loss-checklist', readonly=readonly, value=values)
-
-            output = metric_options['primary_y_metric_options'], metric_options['secondary_y_metric_options'], end_quarter_options, insurance_line_dropdown_options, [component]
+            component = FilterComponents.create_component(
+                'checklist',
+                id='premium-loss-checklist',
+                readonly=readonly,
+                value=values
+            )
+            logger.debug(f"metric_options {metric_options['primary_y_metric_options']}")
+            output = metric_options['primary_y_metric_options'], filtered_secondary_metric_options, end_quarter_options, insurance_line_dropdown_options, [component]
 
             track_callback_end('app.callbacks.filter_update_callbacks', 'update_options', start_time, result=output)
             # logger.debug(f"secondary_y_metric_options {metric_options['secondary_y_metric_options']}")
-            logger.warning(f"result update options {output}")
+            logger.debug(f"result update options {output}")
             return output
 
         except Exception as e:
@@ -191,14 +225,15 @@ def setup_filter_update_callbacks(app: Dash, quarter_options_162, quarter_option
 
         try:
             trigger_id = ctx.triggered[0]['prop_id'].split('.')[0]
-
+            logger.debug(f"update_values raw primary_metric type: {type(primary_metric)}")
+            logger.debug(f"update_values lines: {lines}")          
             # Initialize state
             primary = FilterState.normalize(primary_metric)
             secondary = FilterState.normalize(secondary_metric)
             selected_metrics = primary.copy()
             if secondary:
                 selected_metrics.extend(secondary)
-
+            # logger.debug(f"primary {primary}")
             state = FilterState(
                 primary_y_metric=primary,
                 secondary_y_metric=secondary,
@@ -209,14 +244,13 @@ def setup_filter_update_callbacks(app: Dash, quarter_options_162, quarter_option
                 # clear_filters_btn=clear_btn or 0,
                 reporting_form=reporting_form
             )
-
             if state.secondary_y_metric:
                 allowed_secondary = PRIMARY_TO_SECONDARY_METRICS_MAP.get(state.primary_y_metric[0], set())
                 if state.secondary_y_metric[0] not in allowed_secondary:
                     state.secondary_y_metric = []
                     state.selected_metrics = state.primary_y_metric
 
-            logger.warning(f"state ptimary {state.primary_y_metric}")
+            logger.debug(f"state ptimary {state.primary_y_metric}")
 
             # Validate form 158 metrics
             if reporting_form == '0420158' and state.primary_y_metric:
@@ -230,21 +264,23 @@ def setup_filter_update_callbacks(app: Dash, quarter_options_162, quarter_option
                     state.primary_y_metric = DEFAULT_PRIMARY_METRICS_158
                 else:
                     state.primary_y_metric = DEFAULT_PRIMARY_METRICS
-                
 
-            metric = primary_metric[0] if isinstance(primary_metric, list) and primary_metric else primary_metric
-            _ , enforced_values = get_premium_loss_state(metric, reporting_form)
+            selected_metrics = (primary_metric or[]) + (secondary_metric or [])
+
+            _ , enforced_values = get_premium_loss_state(selected_metrics, reporting_form)
+            
+            
             if enforced_values is not None:
                 state.premium_loss_checklist = enforced_values
 
-
+            # logger.debug(f"state ptimary {state.primary_y_metric}")
             result = (
                 vars(state),
-                state.primary_y_metric[0] if state.primary_y_metric else None,
-                state.secondary_y_metric[0] if state.secondary_y_metric else None
+                state.primary_y_metric if state.primary_y_metric else None,
+                state.secondary_y_metric if state.secondary_y_metric else None
             )
 
-            logger.warning(f"result update values {result}")
+            logger.debug(f"secondary_y_metric {state.secondary_y_metric}")
             track_callback_end('app.callbacks.filter_update_callbacks', 'update_values',
                              start_time, result=result)
             return result

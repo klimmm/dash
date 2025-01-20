@@ -150,7 +150,7 @@ def setup_insurance_lines_callbacks(app: dash.Dash, insurance_lines_tree):
         # state.selected = set(final_selected)
 
         # result = state.to_store(), final_selected
-        dropdown_value = final_selected[0] if isinstance(final_selected, list) and final_selected else final_selected
+        dropdown_value = final_selected if isinstance(final_selected, list) and final_selected else final_selected
 
         result = final_selected, dropdown_value  # first for store, second for dropdown
 

@@ -1,0 +1,4 @@
+
+repomix --ignore "outputs/,logs/,**/*.csv,**/*.ipynb,**/*.log,**/*.backup-*,**/*-Copy*.py"
+
+repomix --ignore "constants/,charting/,outputs/,logs/,**/*.csv,**/*.ipynb,**/*.log,**/*.backup-*,**/*-Copy*.py,**/*market*.py"

@@ -1,5 +1,5 @@
 :root {
-    font-size: 13px;  /* This makes 1rem = 14px */
+    font-size: 14px;  /* This makes 1rem = 14px */
 
 
     
@@ -51,7 +51,7 @@
     /* Component Specific */
     --button-height-xxs: 1.15rem;
     --button-height-xs: 1.5rem;
-    --input-height-sm: 1.5rem;
+    --input-height-sm: 1rem;
     --input-height-xs: 1.4rem;
     --radius-md: 0.25rem;
     

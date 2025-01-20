@@ -53,7 +53,7 @@ def create_chart(
         chart_config = ChartConfig()
         layout_manager = ChartLayoutManager(chart_config)
         trace_generator = ChartTraceGenerator(chart_config, layout_manager)
-        logger.warning(f"primary_chart_type {primary_chart_type}")
+        logger.debug(f"primary_chart_type {primary_chart_type}")
         fig = make_subplots(specs=chart_config.layout.subplot["specs"])
 
         traces, base_values = trace_generator.generate_traces(
@@ -134,7 +134,7 @@ def create_chart(
 
     
     except Exception as e:
-        logger.warning(f"Error generating chart: {str(e)}", exc_info=True)
+        logger.debug(f"Error generating chart: {str(e)}", exc_info=True)
         return go.Figure(), f"An error occurred: {str(e)}"
 
 if __name__ == "__main__":

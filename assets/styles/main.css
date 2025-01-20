@@ -11,8 +11,3 @@
 @import url('./02_components/_data-table.css');
 @import url('./02_components/_forms.css');
 @import url('./02_components/_buttons.css');
-
-/* Ensure assets are loaded */
-:root {
-    --asset-check: "loaded";
-}

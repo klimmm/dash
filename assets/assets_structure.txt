@@ -8,7 +8,6 @@ assets/
 │   ├── 02_components/
 │   │   ├── _layout.css 
 │   │   ├── _data-table.css
-│   │   ├── _buttons.css 
 │   │   ├── _forms.css          
-│   │   └── _dropdowns.css     
+│   │   └── _buttons.css     
 │   └── main.css                

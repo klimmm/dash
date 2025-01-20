@@ -9,8 +9,9 @@ DEFAULT_REPORTING_FORM = '0420162'
 DEFAULT_CHECKED_LINES = ["все линии"]
 DEFAULT_PRIMARY_METRICS = ['direct_premiums']
 DEFAULT_PRIMARY_METRICS_158 = ['total_premiums']
+DEFAULT_INSURER = ['total']
 
-DEFAULT_PRIMARY_METRICS_INWARD = ['inward_premiums']
+DEFAULT_PRIMARY_METRICS_INWARD = ['ceded_premiums', 'inward_premiums']
 DEFAULT_SECONDARY_METRICS = []
 
 DEFAULT_PREMIUM_LOSS_TYPES = ['direct']

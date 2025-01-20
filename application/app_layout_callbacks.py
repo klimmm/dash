@@ -6,7 +6,35 @@ from config.logging_config import get_logger, track_callback, track_callback_end
 logger = get_logger(__name__)
 
 
+def setup_resize_observer_callback(app: dash.Dash) -> None:
+    """Setup callback for observing datatable container resize."""
+    app.clientside_callback(
+        """
+        function() {
+            const resizeObserver = new ResizeObserver(entries => {
+                for (let entry of entries) {
+                    if (entry.target.classList.contains('datatable-container')) {
+                        document.documentElement.style.setProperty(
+                            '--datatable-width', 
+                            `${entry.target.offsetWidth}px`
+                        );
+                    }
+                }
+            });
 
+            // Find and observe the datatable container
+            const datatableContainer = document.querySelector('.datatable-container');
+            if (datatableContainer) {
+                resizeObserver.observe(datatableContainer);
+            }
+
+            // Return null since Dash expects a return value
+            return null;
+        }
+        """,
+        Output("dummy-output", "children"),
+        Input("dummy-trigger", "children"),
+    )
 
 
 def setup_debug_callbacks(app: dash.Dash) -> None:

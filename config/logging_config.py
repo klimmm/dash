@@ -197,13 +197,14 @@ def setup_logging(console_level=logging.DEBUG, file_level=logging.DEBUG,
 
     # Configure module-specific loggers
     logger_levels = {
-        'app.app_layout': logging.DEBUG,
-        'app.callbacks': {
+        'application.app_layout': logging.DEBUG,
+        'application.market_callbacks': logging.DEBUG,
+        'application.callbacks': {
             'app_layout_callbacks': logging.WARNING,
             'insurance_lines_callbacks': logging.WARNING,
             'filter_update_callbacks': logging.DEBUG,
         },
-        'app.components': {
+        'application.components': {
             'insurance_lines_tree': logging.WARNING,
             'period_filter': logging.WARNING,
             'range_filter': logging.WARNING,

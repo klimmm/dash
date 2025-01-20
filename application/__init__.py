@@ -28,15 +28,13 @@ from constants.filter_options import (
 
 from application.app_layout import create_app_layout
 from application.components.insurance_lines_tree import InsuranceLinesTree
-from application.components.dash_table import generate_dash_table_config
 from application.callbacks.period_filter import setup_period_type_callbacks
 from application.callbacks.insurance_lines_callbacks import setup_insurance_lines_callbacks
 from application.callbacks.filter_update_callbacks import setup_filter_update_callbacks
 
 from data_process.data_utils import (
     create_year_quarter_options, load_and_preprocess_data,
-    save_df_to_csv, log_dataframe_info, print_dataframe_info,
-    load_json, log_chart_structure, process_inputs, map_line, map_insurer
+    save_df_to_csv,
+    load_json, map_line, map_insurer
 )
-from data_process.process_filters import MetricsProcessor
 from data_process.table_data import get_data_table

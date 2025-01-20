@@ -1,16 +1,58 @@
-# data_process.table_data.py
 import pandas as pd
 import numpy as np
-import re
 from dash import dash_table
-from typing import List, Tuple, Optional, Dict, OrderedDict
-from application.components.dash_table import generate_dash_table_config
-from data_process.data_utils import map_line
+from dash.dash_table.Format import Format, Scheme, Group
+from pathlib import Path
+from typing import Any, List, Tuple, Optional, Dict, OrderedDict
+from data_process.data_utils import map_line, map_insurer, save_df_to_csv
 from constants.translations import translate
 from config.logging_config import get_logger
+from constants.filter_options import METRICS
+from data_process.data_utils import map_line
 
 logger = get_logger(__name__)
 
+# Simplified base theme with consolidated styles
+TABLE_THEME = {
+    'colors': {
+        'header_bg': 'var(--table-surface-header)',
+        'header_text': '#000000',
+        'cell_bg': 'var(--table-surface-cell)',
+        'cell_text': 'var(--table-text-cell)',
+        'border': 'var(--table-border)',
+        'highlight': 'var(--table-surface-highlight)',
+        'success': 'var(--color-success-600)',
+        'danger': 'var(--color-danger-600)',
+        'qtoq_bg': 'var(--table-surface-highlight)'
+    },
+    'typography': {
+        'font_family': 'var(--font-family-sans)',
+        'font_size': 'var(--table-font-size)',
+        'header_weight': 'var(--font-weight-semibold)',
+        'bold_weight': 'bold',
+        'normal_weight': 'normal'
+    },
+    'spacing': {
+        'cell_padding': 'var(--space-2)',
+        'header_padding': 'var(--space-2) var(--space-3)',
+    },
+    'columns': {
+        'defaults': {'width': 'fit-content', 'min_width': 'none', 'max_width': 'auto', 'text_align': 'right'},
+        'rank': {'width': 'fit-content', 'min_width': '70px', 'max_width': '70px', 'text_align': 'center'},
+        'insurer': {'width': 'fit-content', 'min_width': '250px', 'max_width': 'auto', 'text_align': 'left'},
+        'change': {'width': 'fit-content', 'min_width': 'none', 'max_width': 'auto', 'text_align': 'center'}
+    }
+}
+
+
+# Constants
+PLACE_COL = 'N'
+INSURER_COL = 'insurer'
+IDENTIFIER_COLS = {PLACE_COL, INSURER_COL}
+SPECIAL_INSURERS = {
+    'Топ': {'backgroundColor': 'var(--table-surface-highlight)', 'fontWeight': 'bold'},
+    'Весь рынок': {'backgroundColor': 'var(--table-surface-highlight)', 'fontWeight': 'bold'}
+}
 
 def get_data_table(
     df: pd.DataFrame,
@@ -22,263 +64,528 @@ def get_data_table(
     toggle_selected_qtoq: Optional[List[str]],
     prev_ranks: Optional[Dict[str, int]] = None
 ) -> Tuple[dash_table.DataTable, str, str]:
-
-    logger.debug(f"Updating data table. table_selected_metric: {table_selected_metric}")
-    df.to_csv("df_before_puvot.csv", index=False)
+    """
+    @API_STABILITY: BACKWARDS_COMPATIBLE
+    Generate a formatted data table with rankings and metrics.
+    """
+    save_df_to_csv(df, "df_before_pivot.csv")
     table_data = table_data_pivot(df, table_selected_metric, prev_ranks)
-    table_data.to_csv("pivot_table.csv", index=False)
+    save_df_to_csv(table_data, "df_after_pivot.csv")
     table_config = generate_dash_table_config(
         df=table_data,
         period_type=period_type,
         toggle_selected_market_share=toggle_selected_market_share,
         toggle_selected_qtoq=toggle_selected_qtoq
     )
-    
-    # logger.warning(f"table_config {table_config}")
+
+    logger.debug(f"prev_ranks {prev_ranks}")
     data_table = dash_table.DataTable(**table_config)
-
+    
     mapped_lines = map_line(selected_linemains)
-
     lines_str = ', '.join(mapped_lines) if isinstance(mapped_lines, list) else mapped_lines
-    table_title = f"Топ-{number_of_insurers} страховщиков"
-    table_subtitle = f"{translate(table_selected_metric[0])}: {lines_str}"
-
-    def calculate_datatable_width(data_table, columns_to_sum=None):
-        """
-        Calculates the combined width of specified columns in a Dash DataTable.
-        If no columns are specified, it calculates the total width of all visible columns.
     
-        Parameters:
-        - data_table (dash_table.DataTable): The Dash DataTable object.
-        - columns_to_sum (list of str, optional): List of column IDs to sum their widths.
-          If None or empty, all visible columns with defined widths will be summed.
-    
-        Returns:
-        - int: The total width in pixels.
-        """
-        total_width = 0
-        width_pattern = re.compile(r'^(\d+)px$')  # Pattern to extract numeric value from 'px'
-    
-        # Retrieve hidden columns; default to empty list if not defined
-        hidden_columns = data_table.hidden_columns if hasattr(data_table, 'hidden_columns') else []
-        
-        # Determine if specific columns are to be summed
-        sum_all = not columns_to_sum  # True if columns_to_sum is None or empty
-    
-        # Iterate through the style_cell_conditional list
-        for style in data_table.style_cell_conditional:
-            column_id = style.get('if', {}).get('column_id')
-    
-            # Skip if the column is hidden
-            if column_id in hidden_columns:
-                logger.debug(f"Column '{column_id}' is hidden. Skipping.")
-                continue
-    
-            # Decide whether to include this column in the sum
-            if sum_all or (column_id in columns_to_sum):
-                width_str = style.get('width')
-                if width_str:
-                    match = width_pattern.match(width_str)
-                    if match:
-                        width_value = int(match.group(1))
-                        logger.debug(f"Width of column '{column_id}': {width_value}px")
-                        total_width += width_value
-                    else:
-                        logger.debug(f"Width for column '{column_id}' is not in 'px' format: '{width_str}'. Skipping.")
-                else:
-                    logger.debug(f"No width defined for column '{column_id}'. Skipping.")
-    
-        return total_width
-
-    total_width = calculate_datatable_width(data_table, columns_to_sum=['N', 'insurer'])
-
-    return data_table, table_title, table_subtitle, total_width
-
+    return (
+        data_table,
+        f"Топ-{number_of_insurers} страховщиков",
+        f"{translate(table_selected_metric[0])}: {lines_str}"
+    )
 
 def table_data_pivot(
     df: pd.DataFrame,
     table_selected_metric: List[str], 
-    prev_ranks: Optional[Dict[str, int]] = None
+    prev_ranks: Optional[Dict[str, Dict[str, int]]] = None  # Changed type hint
 ) -> pd.DataFrame:
-
+    """Process and pivot table data with rankings and metrics."""
     logger.debug("Starting table data pivot")
-
+    
     try:
-        # 1. Prepare metrics and initial filtering
-        def _prepare_metrics(base_metrics: List[str]) -> List[str]:
-            """Generate complete list of metrics including derived ones."""
-            derived_suffixes = ['q_to_q_change', 'market_share', 'market_share_q_to_q_change']
-            return (base_metrics +
-                    [f"{m}_{suffix}" for m in base_metrics for suffix in derived_suffixes])
+        unique_lines = df['linemain'].unique()
+        multiple_lines = len(unique_lines) > 1
+    
+        # Generate metrics to keep
+        metric_suffixes = ['q_to_q_change', 'market_share', 'market_share_q_to_q_change']
+        metrics_to_keep = (
+            table_selected_metric +
+            [f"{m}_{suffix}" for m in table_selected_metric for suffix in metric_suffixes]
+        )
+        
+        # Initial data processing
+        processed_df = df[df['metric'].isin(metrics_to_keep)].copy()
+        processed_df['year_quarter'] = pd.to_datetime(processed_df['year_quarter']).dt.to_period('Q').astype(str)
+        
+        final_dfs = []
+        
+        for line in sorted(unique_lines):
+            # Add section header row for the line
+            if multiple_lines:
+                separator_row = pd.DataFrame([{
+                    'N': '',
+                    'insurer': '',
+                    'is_section_header': False
+                }])
+                final_dfs.append(separator_row)
+                
+                header_row = pd.DataFrame([{
+                    'N': '',
+                    'insurer': map_line(line),  # Using map_line to translate the line name
+                    'is_section_header': True  # Adding a marker for styling
+                }])
+                final_dfs.append(header_row)
 
-        metrics_to_keep = _prepare_metrics(table_selected_metric)
-        logger.debug(f"metrics_to_keep : {metrics_to_keep}")
-        filtered_df = df[df['metric'].isin(metrics_to_keep)].copy()
 
-        # 2. Format time periods and extract metric components
-        def _format_time_periods(df: pd.DataFrame) -> pd.DataFrame:
-            """Convert year_quarter to standard YYYYQX format."""
-            df['year_quarter'] = pd.to_datetime(df['year_quarter']).dt.to_period('Q').astype(str)
-            return df
 
-        def _extract_metric_components(df: pd.DataFrame, base_metrics: List[str]) -> pd.DataFrame:
-            """Split metrics into base metric and attribute components."""
-            def extract_metric_attribute(metric, base_metrics):
-                # Sort base_metrics by length, longest first
-                sorted_bases = sorted(base_metrics, key=len, reverse=True)
-                for base in sorted_bases:
-                    if metric.startswith(base):
-                        suffix = metric[len(base):].lstrip('_')
-                        return base, suffix or ''
-                return metric, ''
-
-            df[['base_metric', 'attribute']] = df.apply(
-                lambda row: pd.Series(extract_metric_attribute(row['metric'], base_metrics)),
-                axis=1
+            
+            line_df = processed_df[processed_df['linemain'] == line].copy()
+            
+            # Extract metric components
+            def split_metric(metric: str) -> Tuple[str, str]:
+                base = next((m for m in sorted(table_selected_metric, key=len, reverse=True) 
+                            if metric.startswith(m)), metric)
+                return base, metric[len(base):].lstrip('_') if metric.startswith(base) else ''
+            
+            line_df[['base_metric', 'attribute']] = pd.DataFrame(
+                line_df['metric'].apply(split_metric).tolist(),
+                index=line_df.index
             )
-            return df
-
-        processed_df = _format_time_periods(filtered_df)
-        processed_df = _extract_metric_components(processed_df, table_selected_metric)
-        logger.debug(f"metrics uniqye processed_df after _extract_metric_components: {processed_df['metric'].unique() }")
-
-        # 3. Create and format pivot table
-        def _create_pivot_columns(df: pd.DataFrame) -> pd.DataFrame:
-            """Create unified column names for pivot operation."""
-            df['column_name'] = df.apply(
-                lambda row: f"{row['base_metric']}_{row['year_quarter']}"
-                           f"{'_' + row['attribute'] if row['attribute'] else ''}",
-                axis=1
+            
+            # Create unified column names and pivot
+            line_df['column_name'] = (
+                line_df['base_metric'] + '_' + 
+                line_df['year_quarter'] + 
+                line_df['attribute'].apply(lambda x: f'_{x}' if x else '')
             )
-            return df
-
-        def _pivot_data(df: pd.DataFrame) -> pd.DataFrame:
-            """Create pivot table with insurers as index."""
-            return df.pivot_table(
+            
+            pivot_df = line_df.pivot_table(
                 index='insurer',
                 columns='column_name',
                 values='value',
                 aggfunc='first'
             ).reset_index()
-
-        processed_df = _create_pivot_columns(processed_df)
-        logger.debug(f"processed_df first row:\n{processed_df.head(1).to_string()}")
-        logger.debug(f"metrics uniqye processed_df: {processed_df['column_name'].unique() }")
-        pivot_df = _pivot_data(processed_df)
-        logger.debug(f"pivot_df: {pivot_df.head() }")
-        logger.debug(f"pivot_df first row:\n{pivot_df.head(1).to_string()}")
-
-        # 4. Organize columns and handle missing values
-        def _organize_columns(df: pd.DataFrame, base_metrics: List[str],
-                             time_periods: List[str]) -> pd.DataFrame:
-            """Organize columns in desired order and format."""
+            
+            # Organize columns
+            time_periods = sorted(line_df['year_quarter'].unique(), reverse=True)
             attributes = ['', 'q_to_q_change', 'market_share', 'market_share_q_to_q_change']
             desired_columns = ['insurer'] + [
                 f"{metric}_{year}{'_' + attr if attr else ''}"
-                for metric in base_metrics
+                for metric in table_selected_metric
                 for attr in attributes
-                for year in sorted(time_periods, reverse=True)
+                for year in time_periods
             ]
-            # Remove duplicates while preserving order
             desired_columns = list(OrderedDict.fromkeys(desired_columns))
-
-            # Add missing columns and reorder
+            
+            # Add missing columns
             for col in desired_columns:
-                if col not in df.columns:
-                    df[col] = pd.NA
-            return df[desired_columns]
-
-        organized_df = _organize_columns(
-            pivot_df,
-            table_selected_metric,
-            processed_df['year_quarter'].unique()
-        )
-
-        logger.debug(f"organized_df first row:\n{organized_df.head(1).to_string()}")
-
-        # 5. Clean and sort the final table
-        def _clean_and_sort_table(df: pd.DataFrame) -> pd.DataFrame:
-            # Remove empty columns except insurer
-            value_cols = df.columns[df.columns != 'insurer']
-            mask = ~((df[value_cols] == 0) | df[value_cols].isna()).all()
-            keep_cols = ['insurer'] + list(value_cols[mask])
-            df = df[keep_cols]
+                if col not in pivot_df.columns:
+                    pivot_df[col] = pd.NA
             
-            # Separate regular and summary rows
-            summary_mask = df['insurer'].str.lower().str.startswith(('top', 'total'))
-            main_df = df[~summary_mask].copy()
-            summary_df = df[summary_mask].copy()
+            pivot_df = pivot_df[desired_columns]
             
-            # Sort main data by first metric column
+            # Clean and sort the line data
+            value_cols = [col for col in pivot_df.columns if col != 'insurer']
+            mask = ~((pivot_df[value_cols] == 0) | pivot_df[value_cols].isna()).all()
+            final_cols = ['insurer'] + [col for col, keep in zip(value_cols, mask) if keep]
+            
+            line_df = pivot_df[final_cols].copy()
+            
+            # Split and process regular and summary rows
+            summary_mask = line_df['insurer'].str.lower().str.startswith(('top', 'total'))
+            main_df = line_df[~summary_mask].copy()
+            summary_df = line_df[summary_mask].copy()
+            
+            # Sort main data
             sort_col = value_cols[0]
             main_df[sort_col] = pd.to_numeric(main_df[sort_col], errors='coerce')
             main_df = main_df.sort_values(by=sort_col, ascending=False)
             
-            # Sort summary rows
-            def get_sort_key(row):
-                insurer = row['insurer'].lower()
-                if insurer.startswith('total'):
-                    return (2, 0)  # Will be placed last
-                elif insurer.startswith('top-'):
-                    try:
-                        # Extract number from "top-X" and use it for sorting
-                        num = int(insurer.split('-')[1])
-                        return (1, num)  # Will be sorted by the number
-                    except (IndexError, ValueError):
-                        return (1, float('inf'))  # Handle malformed "top-" entries
-                return (0, 0)  # Fallback case
-            
-            summary_df = summary_df.sort_values(
-                by='insurer',
-                key=lambda x: pd.Series([get_sort_key(row) for _, row in summary_df.iterrows()]),
-                ascending=True
-            )
-            
-            # Add numbering with rank change
+            # Add rankings with change indicators
             main_df.insert(0, 'N', range(1, len(main_df) + 1))
-            if prev_ranks:
+            if prev_ranks and line in prev_ranks:  # Check if we have ranks for this line
                 main_df['N'] = main_df.apply(
-                    lambda row: format_rank_with_change(
+                    lambda row: format_rank_change(
                         current_rank=int(row['N']),
-                        previous_rank=prev_ranks.get(row['insurer']),
-                        insurer=row['insurer']
+                        previous_rank=prev_ranks[line].get(row['insurer'])  # Get rank for specific line
                     ),
                     axis=1
                 )
             else:
                 main_df['N'] = main_df['N'].astype(str)
             
-            # Combine and finalize
+            # Process summary rows
+            summary_df = sort_summary_rows(summary_df)
             summary_df.insert(0, 'N', np.nan)
-            final_df = pd.concat([main_df, summary_df], ignore_index=True)
-            return final_df.fillna('-')
-
-        def format_rank_with_change(current_rank: int, previous_rank: int | None, insurer: str) -> str:
-            """Format rank with change indicator (↑ for improvement, ↓ for decline, - for no change)"""
-            if previous_rank is None:
-                return str(current_rank)
-
-            rank_change = previous_rank - current_rank  # Positive means improvement (moved up)
-
-            if rank_change > 0:
-                change_indicator = f"+{rank_change}"
-            elif rank_change < 0:
-                change_indicator = f"-{abs(rank_change)}"
-            else:
-                change_indicator = "-"
-
-            return f"{current_rank} ({change_indicator})"
-
-        final_df = _clean_and_sort_table(organized_df)
-        logger.debug(f"final_df first row:\n{final_df.head(1).to_string()}")
-
-        logger.debug(f"Completed table pivot. Output shape: {final_df.shape}")
+            
+            # Add is_section_header column
+            main_df['is_section_header'] = False
+            summary_df['is_section_header'] = False
+            main_df.fillna('-')
+            summary_df.fillna('-')
+            # Combine main and summary for this line
+            line_final_df = pd.concat([main_df, summary_df], ignore_index=True)
+            
+            final_dfs.append(line_final_df)
+            
+            # Add empty row as separator if not the last line
+            '''if multiple_lines and line != sorted(unique_lines)[-1]:
+                separator_row = pd.DataFrame([{
+                    'N': '',
+                    'insurer': '',
+                    'is_section_header': False
+                }])
+                final_dfs.append(separator_row)'''
+        
+        # Combine all lines
+        final_df = pd.concat(final_dfs, ignore_index=True)
+        
         return final_df
-
+        
     except Exception as e:
         logger.error(f"Error in table_data_pivot: {e}", exc_info=True)
         raise
+        
+def format_rank_change(current_rank: int, previous_rank: Optional[int]) -> str:
+    """Format rank with change indicator."""
+    if previous_rank is None:
+        return str(current_rank)
+        
+    rank_change = previous_rank - current_rank
+    change_str = (
+        f"+{rank_change}" if rank_change > 0 else
+        f"-{abs(rank_change)}" if rank_change < 0 else
+        "-"
+    )
+    return f"{current_rank} ({change_str})"
 
-    final_df = _clean_and_sort_table(organized_df)
+def sort_summary_rows(df: pd.DataFrame) -> pd.DataFrame:
+    """Sort summary rows based on their prefix and number."""
+    def get_sort_key(insurer: str) -> Tuple[int, int]:
+        insurer = insurer.lower()
+        if insurer.startswith('total'):
+            return (2, 0)
+        if insurer.startswith('top-'):
+            try:
+                return (1, int(insurer.split('-')[1]))
+            except (IndexError, ValueError):
+                return (1, float('inf'))
+        return (0, 0)
+    
+    return df.sort_values(
+        by='insurer',
+        key=lambda x: pd.Series([get_sort_key(ins) for ins in x]),
+        ascending=True
+    )
 
-    return final_df
+def get_column_format(col_name: str) -> Format:
+    """Get format configuration for a column."""
+    is_market_share_qtoq = 'market_share_q_to_q_change' in col_name
+    is_percentage = any(x in col_name for x in ['market_share', 'q_to_q_change', 'ratio', 'rate'])
+    
+    return Format(
+        precision=2 if is_percentage or is_market_share_qtoq else 3,
+        scheme=Scheme.fixed if is_market_share_qtoq else (
+            Scheme.percentage if is_percentage else Scheme.fixed
+        ),
+        group=Group.yes,
+        groups=3,
+        group_delimiter=',',
+        sign='+' if 'q_to_q_change' in col_name else ''
+    )
+
+def format_period(quarter_str: str, period_type: str = '', comparison: bool = False) -> str:
+    """Format quarter string into readable period format."""
+    if not quarter_str or len(quarter_str) != 6:
+        raise ValueError("Quarter string must be in format 'YYYYQ1', e.g. '2024Q1'")
+    
+    year_short = quarter_str[2:4]
+    quarter = quarter_str[5]
+    
+    if period_type == 'ytd':
+        if comparison:
+            return year_short
+        return {
+            '1': f'3 мес. {year_short}',
+            '2': f'1 пол. {year_short}',
+            '3': f'9 мес. {year_short}',
+            '4': f'12 мес. {year_short}'
+        }[quarter]
+    
+    if comparison:
+        return year_short if period_type in ['yoy_y', 'yoy_q'] else f'{quarter}кв.'
+    return f'{quarter} кв. {year_short}'
+
+def get_comparison_quarters(columns: List[str]) -> Dict[str, str]:
+    """Get mapping of quarters to their comparison quarters."""
+    quarter_pairs = {}
+    for col in columns:
+        if 'q_to_q_change' not in col:
+            continue
+            
+        current_quarter = next((part for part in col.split('_') 
+                              if 'Q' in part and len(part) >= 5), None)
+        if not current_quarter:
+            continue
+            
+        year, q_num = current_quarter[:4], current_quarter[5]
+        year_ago = f"{int(year)-1}Q{q_num}"
+        prev_q = f"{year}Q{int(q_num)-1}" if q_num != '1' else f"{int(year)-1}Q4"
+        
+        comparison = (
+            year_ago if any(year_ago in c for c in columns if '_q_to_q_change' not in c) else
+            prev_q if any(prev_q in c for c in columns if '_q_to_q_change' not in c) else
+            None
+        )
+        
+        if comparison:
+            quarter_pairs[current_quarter] = comparison
+            
+    return quarter_pairs
+
+def generate_dash_table_config(
+    df: pd.DataFrame,
+    period_type: str,
+    columns_config: Optional[Dict[str, str]] = None,
+    toggle_selected_market_share: Optional[List[str]] = None,
+    toggle_selected_qtoq: Optional[List[str]] = None,
+) -> Dict[str, Any]:
+    """Generate complete table configuration with styling and formatting."""
+    show_market_share = toggle_selected_market_share and "show" in toggle_selected_market_share
+    show_qtoq = toggle_selected_qtoq and "show" in toggle_selected_qtoq
+
+
+    
+
+
+    # Handle market share q-to-q change columns
+    df_modified = df.copy()
+    market_share_qtoq_cols = [col for col in df_modified.columns 
+                             if 'market_share_q_to_q_change' in col]
+    for col in market_share_qtoq_cols:
+        df_modified[col] = df_modified[col].apply(
+            lambda x: '-' if x == 0 or x == '-' else x * 100
+        )
+
+    
+    # Generate column configurations
+    columns = []
+    comparison_quarters = get_comparison_quarters(df.columns)
+
+    identifier_cols = set(IDENTIFIER_COLS)
+    for col in df.columns:
+        # Skip is_section_header column
+        if col == 'is_section_header':
+            continue
+            
+        if col in identifier_cols:
+            translated_col = translate(col)
+            columns.append({
+                "id": col,
+                "name": [translated_col] * 3
+            })
+            continue
+        
+        metric = next((m for m in sorted(METRICS.keys(), key=len, reverse=True) 
+                      if col.startswith(m)), '')
+        quarter = col[len(metric)+1:].split('_')[0] if metric else col.split('_')[0]
+        
+        is_qtoq = 'q_to_q_change' in col
+        is_market_share = 'market_share' in col
+        
+        if is_qtoq:
+            comparison = comparison_quarters.get(quarter, '')
+            header = (
+                f"{format_period(quarter, period_type, True)} vs "
+                f"{format_period(comparison, period_type, True)}"
+            ) if comparison else format_period(quarter, period_type)
+            base = 'Δ(п.п.)' if is_market_share else '%Δ'
+        else:
+            header = format_period(quarter, period_type)
+            base = translate('market_share') if is_market_share else 'млрд руб.'
+            
+        columns.append({
+            "id": col,
+            "name": [translate(metric), base, header],
+            "type": "numeric",
+            "format": get_column_format(col)
+        })
+    
+    # Generate styles
+    style_cell_conditional = generate_cell_styles(df.columns)
+    style_data_conditional = generate_data_styles(df)
+    style_header_conditional = generate_header_styles(df.columns)
+    
+    return {
+        'style_table': {
+            'overflowX': 'auto',
+            'width': '100%',
+            'maxWidth': '100%',
+        },
+        'style_cell': {
+            **TABLE_THEME['typography'],
+            'padding': TABLE_THEME['spacing']['cell_padding'],
+            'whiteSpace': 'normal',
+            'overflow': 'hidden',
+            'textOverflow': 'ellipsis',
+            'border': f"1px solid {TABLE_THEME['colors']['border']}",
+            'width': '100%',
+            'maxWidth': '100%',
+        },
+        'style_cell_conditional': style_cell_conditional,
+        'style_header': {
+            'backgroundColor': TABLE_THEME['colors']['header_bg'],
+            'color': TABLE_THEME['colors']['header_text'],
+            'fontWeight': TABLE_THEME['typography']['header_weight'],
+            'textAlign': 'center',
+            'whiteSpace': 'normal',
+            'padding': TABLE_THEME['spacing']['header_padding']
+        },
+        'style_data': {
+            'backgroundColor': TABLE_THEME['colors']['cell_bg'],
+            'color': TABLE_THEME['colors']['cell_text']
+        },
+        'style_data_conditional': style_data_conditional,
+        'style_header_conditional': style_header_conditional,
+        'columns': [{
+            **col,
+            "hideable": False,
+            "selectable": False,
+            "deletable": False,
+            "renamable": False
+        } for col in columns],
+        'data': df_modified.assign(
+            insurer=lambda x: x['insurer'].map(map_insurer)
+        ).to_dict('records'),
+        'hidden_columns': [
+            col for col in df.columns
+            if col == 'is_section_header' or (
+                col not in IDENTIFIER_COLS and (
+                    ('market_share' in col and not show_market_share) or
+                    ('q_to_q_change' in col and not show_qtoq)
+                )
+            )
+        ],
+        'css': generate_responsive_css(),
+        'sort_action': 'none',
+        'sort_mode': None,
+        'filter_action': 'none',
+        'merge_duplicate_headers': True,
+        'sort_as_null': ['', 'No answer', 'No Answer', 'N/A', 'NA'],
+        'column_selectable': False,
+        'row_selectable': False,
+        'cell_selectable': False,
+        'page_action': 'none',
+        'editable': False,
+    }
+
+def generate_data_styles(df: pd.DataFrame) -> List[Dict[str, Any]]:
+    """Generate conditional data styles."""
+    # Get unique line names from data
+    line_names = {row['insurer'] for row in df.to_dict('records') 
+                 if row.get('is_section_header')}
+
+    styles = [
+        # Base cell background
+        {'if': {'column_id': col for col in df.columns},
+         'backgroundColor': TABLE_THEME['colors']['cell_bg']},
+        
+        # Section header styling for line names
+        *[{'if': {'filter_query': f'{{insurer}} = "{line_name}"'},
+           'backgroundColor': '#E5E7EB',
+           'fontWeight': 'bold',
+           'borderTop': '2px solid #E5E7EB',
+           'borderBottom': '2px solid #E5E7EB',
+           'paddingLeft': '8px',
+           'fontSize': '10px',
+           'color': '#374151',
+           'height': '24px'} 
+          for line_name in line_names],
+        
+        {'if': {'column_id': 'N', 'filter_query': '{N} contains "(+"'},
+         'background': 'linear-gradient(90deg, transparent 0%, transparent calc(50% - 2ch), rgba(0, 255, 0, 0.15) calc(50% + 1.5ch), rgba(0, 255, 0, 0.15) calc(50% + 2.5ch), transparent calc(50% + 3ch), transparent 100%)'
+        },
+         
+        *[{'if': {'filter_query': f'{{insurer}} contains "{insurer}"'},
+           **style} for insurer, style in SPECIAL_INSURERS.items()],
+           
+        *[{'if': {'column_id': col, 'filter_query': f'{{{col}}} {op} 0'},
+           'color': TABLE_THEME['colors']['success' if op == '>' else 'danger'],
+           'fontWeight': TABLE_THEME['typography']['normal_weight'],
+           'backgroundColor': TABLE_THEME['colors']['qtoq_bg']}
+          for col in df.columns if '_q_to_q_change' in col
+          for op in ['>', '<']]
+    ]
+    
+    # Add negative rank change styling
+    for i in range(1, 10):
+        styles.append({
+            'if': {'column_id': 'N', 'filter_query': f'{{N}} contains "(-{i}"'},
+'background': 'linear-gradient(90deg, transparent 0%, transparent calc(50% - 1ch), rgba(255, 0, 0, 0.15) calc(50% + 1.5ch), rgba(255, 0, 0, 0.15) calc(50% + 2.5ch), transparent calc(50% + 3ch), transparent 100%)'
+        })
+    
+    return styles
+
+def generate_cell_styles(columns: List[str]) -> List[Dict[str, Any]]:
+    """Generate conditional cell styles."""
+    styles = []
+    for col in columns:
+        col_type = (
+            'rank' if col == PLACE_COL else
+            'insurer' if col == INSURER_COL else
+            'change' if 'q_to_q_change' in col else
+            'defaults'
+        )
+        styles.append({
+            'if': {'column_id': col},
+            **{k: TABLE_THEME['columns'][col_type][k] 
+               for k in ['width', 'min_width', 'max_width', 'text_align']}
+        })
+    return styles
+
+def generate_header_styles(columns: List[str]) -> List[Dict[str, Any]]:
+    """Generate conditional header styles."""
+    return [
+        *[{'if': {'column_id': col, 'header_index': idx},
+           'textAlign': 'left' if col == INSURER_COL else 'center',
+           'verticalAlign': 'bottom',
+           'height': '100%',
+           'backgroundColor': '#F9FAFB',
+           'color': TABLE_THEME['colors']['header_text'] if idx == 1 else 'transparent',
+           'fontWeight': TABLE_THEME['typography']['bold_weight'],
+           f'border{"Bottom" if idx == 0 else "Top"}': 'none'
+          } for col in IDENTIFIER_COLS for idx in [0, 1, 2]],
+          
+        *[{'if': {'column_id': col, 'header_index': idx},
+           'fontWeight': TABLE_THEME['typography']['bold_weight' if idx == 0 else 'normal_weight'],
+           'textAlign': 'center',
+           'backgroundColor': get_header_background(col, idx)
+          } for col in columns if col not in IDENTIFIER_COLS
+          for idx in [0, 1, 2]]
+    ]
+
+def get_header_background(col: str, idx: int) -> str:
+    """Get background color for header based on column type and index."""
+    if idx == 0:
+        return '#F9FAFB'
+    if any(x in col for x in ['market_share', 'market_share_q_to_q_change']):
+        return '#F0FDF4'
+    if any(x in col for x in ['q_to_q_change']) or (
+        col not in IDENTIFIER_COLS and 
+        not any(x in col for x in ['market_share', 'market_share_q_to_q_change'])
+    ):
+        return '#EFF6FF'
+    return 'inherit'
+
+def generate_responsive_css() -> List[Dict[str, str]]:
+    """Generate CSS for responsive table layout."""
+    return [
+        {
+            'selector': '.dash-table-container',
+            'rule': 'max-width: 100%; width: 100%; margin: 0; padding: 0;'
+        },
+        {
+            'selector': '.dash-spreadsheet',
+            'rule': 'max-width: 100%; width: 100%;'
+        },
+        {
+            'selector': '.dash-cell',
+            'rule': 'max-width: 100%; width: auto;'
+        }
+    ]

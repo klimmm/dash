@@ -32,11 +32,63 @@
     display: flex;
     border: 0;
     align-items: center;
+    margin: 0;
+    padding: 0 !important;
+    min-height: 1.9rem !important;
+    margin: 0.4rem !important;
+}
+
+.filter-row {
+    display: flex;
+    width: 100%;
+    border: 0;
+    margin-bottom: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    align-items: center;
+    min-height: 1.9rem !important;
+    padding-right: 0.5rem;
+}
+
+.filter-content {
     margin: 0 !important;
     padding: 0 !important;
     min-height: 1.8rem !important;
+    border: 0;
+    align-items: center;
+    width: 100%;
+    display: flex;
 }
 
+.filter-row.row {
+    --bs-gutter-x: 0;
+    
+}
+
+.filter-row--vertical {
+    flex-direction: column;
+    
+    align-items: flex-start;
+    min-height: 1.8rem !important;
+}
+
+.filter-row--vertical .filter-label {
+    margin-bottom: 0;
+}
+
+.filter-row--vertical .filter-content {
+    width: 100%;
+}
+
+
+/* Period Filter Specific */
+.period-type__text {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    min-height: 1.9rem !important;
+    max-height: 1.9rem !important;
+    margin-bottom: 0 !important; /* Ensure no bottom margin */
+}
 
 .period-buttons-group {
     display: flex;
@@ -112,52 +164,20 @@
 }
 
 
-
 /* Value and placeholder specific styles */
-
-
-.dd-control .Select-placeholder,
+.dd-control .Select-value,
+.dd-control .Select-placeholder
 .dd-control .Select-control {
-    height: var(--input-height-sm);
-    padding: 0;
-    margin: 0;
-}
-
-.dd-control .Select-control {
-    padding: 0.4rem !important;
-    
-    margin: 0;
-}
-
-
-.dd-control .Select-option {
-    display: flex;
-    align-items: center;
-}
-
-
-.dd-control .Select-multi-value,
-.dd-control .Select-value-label,
-.dd-control .Select-option,
-.dd-control .Select-caret,
-.dd-control .Select-clear,
-.dd-control .Select-arrows,
-.dd-control .Select-value {
-}
+    border: 1px solid red;  
+    height: 100%;
+{
 
 
 /* Input specific styles */
 .dd-control .Select-input {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 1px solid red;
-    
+    height: calc(var(--input-height-sm) - 10px);
+    font-size: var(--font-size-sm);
+    border: 1px solid blue;  
 }
 
 /* Dropdown menu */
@@ -165,4 +185,103 @@
     border-radius: var(--radius-md);
     font-size: var(--font-size-sm);
     background: var(--color-surface-primary);
+}
+
+
+/* Reset core Dash dropdown styles */
+.dash-dropdown {
+}
+
+/* Main dropdown container */
+.dd-control {
+}
+
+/* Common styles for Select-placeholder and Select-control */
+.dd-control .Select-placeholder,
+.dd-control .Select-control {
+}
+
+/* 
+   Shared styles for multiple elements that need:
+   position: relative and font-size: var(--font-size-sm)
+*/
+.dd-control
+    .Select-multi-value,
+.dd-control
+    .Select-value-label,
+.dd-control
+    .Select-option,
+.dd-control
+    .Select-caret,
+.dd-control
+    .Select-clear,
+.dd-control
+    .Select-arrows,
+.dd-control
+    .Select-value {
+
+}
+
+/* .Select-option specifics */
+.dd-control .Select-option {
+
+}
+
+/* .Select-value-label and .Select-value share some display rules */
+.dd-control .Select-value,
+.dd-control .Select-value-label {
+
+}
+
+/* .Select-value needs an extra border */
+.dd-control .Select-value {
+  
+}
+
+/* Input specifics */
+.dd-control .Select-input {
+
+}
+
+/* Dropdown menu */
+.dd-control .Select-menu-outer {
+}
+
+/* Empty placeholders for potential future styles */
+.dd-control
+    .Select-no-results,
+.dd-control
+    .Select-noresults,
+.dd-control
+    .Select-aria-only,
+.dd-control
+    .Select-group,
+.dd-control
+    .Select-group-header,
+.dd-control
+    .Select-create-option,
+.dd-control
+    .Select-create-option-placeholder,
+.dd-control
+    .Select-multi-value-wrapper,
+.dd-control
+    .Select-value-icon,
+.dd-control
+    .Select-clear-zone,
+.dd-control
+    .Select-arrow-zone,
+.dd-control
+    .Select-focus-state,
+.dd-control
+    .Select-loading-zone {
+    /* (Intentionally left blank) */
+}
+
+/* Additional styles for the search input */
+.dd-control .Select-search-input {
+}
+
+/* .Select-placeholder specifics */
+.dd-control .Select-placeholder {
+
 }
