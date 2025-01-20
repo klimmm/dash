@@ -2,3 +2,10 @@
 repomix --ignore "outputs/,logs/,**/*.csv,**/*.ipynb,**/*.log,**/*.backup-*,**/*-Copy*.py"
 
 repomix --ignore "constants/,charting/,outputs/,logs/,**/*.csv,**/*.ipynb,**/*.log,**/*.backup-*,**/*-Copy*.py,**/*market*.py"
+(base) klim@MacBook-Air-klim dash-clean % git status
+(base) klim@MacBook-Air-klim dash-clean % git add .                                                               
+(base) klim@MacBook-Air-klim dash-clean % git commit -m "refactor: update layout components and styling structure"
+(base) klim@MacBook-Air-klim dash-clean % dash-clean % git push -f origin main  
+
+(base) klim@MacBook-Air-klim dash-clean % git checkout -- .                                                       
+(base) klim@MacBook-Air-klim dash-clean % git clean -f                                                            
