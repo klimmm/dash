@@ -30,6 +30,7 @@ from data_process.calculate_metrics import calculate_metrics
 app = dash.Dash(
     __name__,
     url_base_pathname="/",
+    assets_folder='assets', 
     external_stylesheets=[dbc.themes.BOOTSTRAP],
     suppress_callback_exceptions=True,
     update_title=None
