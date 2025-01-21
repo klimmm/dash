@@ -9,8 +9,8 @@ from flask import Flask
 from functools import lru_cache
 from pandas.tseries.offsets import DateOffset
 from typing import Dict, List, Tuple, Any
-from application.app_layout import create_app_layout, setup_sidebar_callbacks
-from application.app_layout_callbacks import setup_debug_callbacks, setup_resize_observer_callback
+from application.app_layout import create_app_layout
+from application.app_layout_callbacks import setup_debug_callbacks, setup_resize_observer_callback, setup_sidebar_callbacks
 from application.market_callbacks import setup_market_analysis_callbacks
 from application.callbacks.filter_update_callbacks import setup_filter_update_callbacks
 from application.callbacks.insurance_lines_callbacks import setup_insurance_lines_callbacks
@@ -150,14 +150,13 @@ setup_resize_observer_callback(app)
 logger.debug("Dashboard layout created")
 
 @app.callback(
-    [Output('processed-data-store', 'data'),
-     Output('number-of-periods-data-table', 'value'),
-     Output('number-of-insurers', 'value')],
+    [Output('processed-data-store', 'data')],
+     # Output('number-of-periods-data-table', 'value')],
     [Input('filter-state-store', 'data'),
      Input('selected-insurers', 'value'),
      Input('end-quarter', 'value'),
-     Input('number-of-periods-data-table', 'value'),
-     Input('number-of-insurers', 'value'),
+     Input('number-of-periods-data-table', 'data'),
+     Input('number-of-insurers', 'data'),
      Input('insurer-line-switch', 'value'),
     ],
     [State('show-data-table', 'data')],
@@ -223,7 +222,7 @@ def process_data(
         save_df_to_csv(df, "process_dataframe.csv")
 
         df['year_quarter'] = df['year_quarter'].dt.strftime('%Y-%m-%d')
-        output = ({'df': df.to_dict('records'), 'prev_ranks': prev_ranks}, min(num_periods_selected, number_of_unique_periods), min(number_of_insurers, number_of_insurer_options))
+        output = ({'df': df.to_dict('records'), 'prev_ranks': prev_ranks},) #, min(num_periods_selected, number_of_unique_periods))
         # logger.debug(f"metrics unique: {df['metric'].unique() }")
 
         return output
@@ -244,12 +243,12 @@ def process_data(
      Output('table-subtitle-chart', 'children'),
      Output('graph', 'figure')],
     [Input('processed-data-store', 'data'),
-     Input('toggle-selected-market-share', 'value'),
-     Input('toggle-selected-qtoq', 'value')],
+     Input('toggle-selected-market-share', 'data'),
+     Input('toggle-selected-qtoq', 'data')],
     [State('filter-state-store', 'data'),
      State('period-type', 'data'),
      State('end-quarter', 'value'),
-     State('number-of-insurers', 'value')],
+     State('number-of-insurers', 'data')],
     prevent_initial_call=True
 )
 # @monitor_memory
@@ -279,8 +278,9 @@ def process_ui(
             toggle_selected_qtoq=toggle_selected_qtoq,
             prev_ranks=processed_data['prev_ranks']
         )
-
-        logger.debug(f"toggle_selected_market_share {toggle_selected_market_share}")
+        logger.warning(f"number_of_insurers {number_of_insurers}")
+        logger.warning(f"toggle_selected_market_share {toggle_selected_market_share}")
+        logger.warning(f"toggle_selected_qtoq {toggle_selected_qtoq}")
         unique_insurers = df['insurer'].unique().tolist()
 
         # Get main insurer (first one)

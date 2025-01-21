@@ -38,8 +38,8 @@ TABLE_THEME = {
     },
     'columns': {
         'defaults': {'width': 'fit-content', 'min_width': 'none', 'max_width': 'auto', 'text_align': 'right'},
-        'rank': {'width': 'fit-content', 'min_width': '70px', 'max_width': '70px', 'text_align': 'center'},
-        'insurer': {'width': 'fit-content', 'min_width': '250px', 'max_width': 'auto', 'text_align': 'left'},
+        'rank': {'width': 'fit-content', 'min_width': '50px', 'max_width': '70px', 'text_align': 'center'},
+        'insurer': {'width': 'fit-content', 'min_width': '175px', 'max_width': 'auto', 'text_align': 'left'},
         'change': {'width': 'fit-content', 'min_width': 'none', 'max_width': 'auto', 'text_align': 'center'}
     }
 }
@@ -73,6 +73,7 @@ def get_data_table(
     save_df_to_csv(table_data, "df_after_pivot.csv")
     table_config = generate_dash_table_config(
         df=table_data,
+        table_selected_metric=table_selected_metric,
         period_type=period_type,
         toggle_selected_market_share=toggle_selected_market_share,
         toggle_selected_qtoq=toggle_selected_qtoq
@@ -342,6 +343,7 @@ def get_comparison_quarters(columns: List[str]) -> Dict[str, str]:
 
 def generate_dash_table_config(
     df: pd.DataFrame,
+    table_selected_metric,
     period_type: str,
     columns_config: Optional[Dict[str, str]] = None,
     toggle_selected_market_share: Optional[List[str]] = None,
@@ -369,17 +371,34 @@ def generate_dash_table_config(
         # Skip is_section_header column
         if col == 'is_section_header':
             continue
-            
-        if col in identifier_cols:
-            translated_col = translate(col)
-            columns.append({
-                "id": col,
-                "name": [translated_col] * 3
-            })
-            continue
+        # Add detailed logging for metric identification
+        logger.warning("Processing column: %s", col)
+        
+        # Log all available metrics before trying to match
+        logger.warning("Available METRICS keys: %s", sorted(METRICS.keys()))
+        
+        # Add logging for metric matching
+        all_matches = [m for m in sorted(METRICS.keys(), key=len, reverse=True) 
+                      if col.startswith(m)]
+        #logger.warning("All matching metrics for column %s: %s", col, all_matches)
         
         metric = next((m for m in sorted(METRICS.keys(), key=len, reverse=True) 
                       if col.startswith(m)), '')
+                      
+        logger.debug("Selected metric for column %s: %s", col, metric)
+
+        if col in identifier_cols:
+            if metric:
+                logger.warning("Found metric %s for identifier column %s", metric, col)
+            else:
+                logger.warning("No metric found for identifier column %s", col)
+            columns.append({
+                "id": col,
+                "name": [translate(table_selected_metric[0]), translate(col)]
+            })
+            continue
+        
+
         quarter = col[len(metric)+1:].split('_')[0] if metric else col.split('_')[0]
         
         is_qtoq = 'q_to_q_change' in col
@@ -398,7 +417,7 @@ def generate_dash_table_config(
             
         columns.append({
             "id": col,
-            "name": [translate(metric), base, header],
+            "name": [base, header],
             "type": "numeric",
             "format": get_column_format(col)
         })
@@ -423,6 +442,9 @@ def generate_dash_table_config(
             'border': f"1px solid {TABLE_THEME['colors']['border']}",
             'width': '100%',
             'maxWidth': '100%',
+            'height': 'auto',  # Changed from fixed height
+            'maxHeight': '10px',  # Add minimum height
+            'lineHeight': '10px',  # Add line height to control actual content height
         },
         'style_cell_conditional': style_cell_conditional,
         'style_header': {
@@ -431,7 +453,10 @@ def generate_dash_table_config(
             'fontWeight': TABLE_THEME['typography']['header_weight'],
             'textAlign': 'center',
             'whiteSpace': 'normal',
-            'padding': TABLE_THEME['spacing']['header_padding']
+            'padding': TABLE_THEME['spacing']['header_padding'],
+            'height': 'auto',
+            'maxHeight': '10px',  # Control header height
+            'lineHeight': '10px',  # For multi-line headers
         },
         'style_data': {
             'backgroundColor': TABLE_THEME['colors']['cell_bg'],
@@ -491,7 +516,7 @@ def generate_data_styles(df: pd.DataFrame) -> List[Dict[str, Any]]:
            'paddingLeft': '8px',
            'fontSize': '10px',
            'color': '#374151',
-           'height': '24px'} 
+           'height': '15px'} 
           for line_name in line_names],
         
         {'if': {'column_id': 'N', 'filter_query': '{N} contains "(+"'},
@@ -540,26 +565,24 @@ def generate_header_styles(columns: List[str]) -> List[Dict[str, Any]]:
     return [
         *[{'if': {'column_id': col, 'header_index': idx},
            'textAlign': 'left' if col == INSURER_COL else 'center',
-           'verticalAlign': 'bottom',
+           'verticalAlign': 'center',
            'height': '100%',
            'backgroundColor': '#F9FAFB',
-           'color': TABLE_THEME['colors']['header_text'] if idx == 1 else 'transparent',
+           'color': TABLE_THEME['colors']['header_text'],
            'fontWeight': TABLE_THEME['typography']['bold_weight'],
-           f'border{"Bottom" if idx == 0 else "Top"}': 'none'
-          } for col in IDENTIFIER_COLS for idx in [0, 1, 2]],
+          } for col in IDENTIFIER_COLS for idx in [0, 1]],
           
         *[{'if': {'column_id': col, 'header_index': idx},
            'fontWeight': TABLE_THEME['typography']['bold_weight' if idx == 0 else 'normal_weight'],
            'textAlign': 'center',
            'backgroundColor': get_header_background(col, idx)
           } for col in columns if col not in IDENTIFIER_COLS
-          for idx in [0, 1, 2]]
+          for idx in [0, 1]]
     ]
 
 def get_header_background(col: str, idx: int) -> str:
     """Get background color for header based on column type and index."""
-    if idx == 0:
-        return '#F9FAFB'
+
     if any(x in col for x in ['market_share', 'market_share_q_to_q_change']):
         return '#F0FDF4'
     if any(x in col for x in ['q_to_q_change']) or (
@@ -583,5 +606,21 @@ def generate_responsive_css() -> List[Dict[str, str]]:
         {
             'selector': '.dash-cell',
             'rule': 'max-width: 100%; width: auto;'
+        },
+        {
+            'selector': '.dash-table-container',
+            'rule': 'max-width: 100%; width: 100%; margin: 0; padding: 0;'
+        },
+        {
+            'selector': '.dash-spreadsheet',
+            'rule': 'max-width: 100%; width: 100%;'
+        },
+        {
+            'selector': '.dash-cell',
+            'rule': 'max-width: 100%; width: auto; height: auto !important; max-height: 15px !important; line-height: 15px !important;'
+        },
+        {
+            'selector': '.dash-header',
+            'rule': 'height: auto !important; max-height: 15px !important; line-height: 15px !important;'
         }
     ]

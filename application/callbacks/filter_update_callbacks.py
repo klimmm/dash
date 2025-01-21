@@ -31,7 +31,7 @@ FORM_METRICS = {
 def get_premium_loss_state(metrics: List[str], reporting_form: str) -> Tuple[bool, Optional[List[str]]]:
     if not metrics:
         return True, ['direct']
-    
+
     is_form_158 = reporting_form == '0420158'
     states = {
         ('total_premiums', 'total_losses'): 
@@ -40,10 +40,11 @@ def get_premium_loss_state(metrics: List[str], reporting_form: str) -> Tuple[boo
          'ceded_losses_to_ceded_premiums_ratio', 'net_premiums', 'net_losses'):
             (True, ['direct', 'inward']),
         ('inward_premiums', 'inward_losses'): 
-            (True, ['inward'])
+            (True, ['inward']),
+        ('direct_premiums', 'direct_losses'): (True, ['direct'])
     }
     
-    result_bool = True
+    result_bool = False  # Change initial value to False
     result_states = set()
     
     # Check each metric in the input list
@@ -53,7 +54,7 @@ def get_premium_loss_state(metrics: List[str], reporting_form: str) -> Tuple[boo
             if metric in metrics_group:
                 found = True
                 # Update the boolean state
-                result_bool = result_bool and bool_state
+                result_bool = result_bool or bool_state
                 # Always add states to the result set if they exist
                 if state_list:
                     result_states.update(state_list)
@@ -64,76 +65,87 @@ def get_premium_loss_state(metrics: List[str], reporting_form: str) -> Tuple[boo
     # If no states were collected, use default
     if not result_states:
         result_states.add('direct')
-    
+
+    logger.warning(f"metric: {metric}")
+    logger.warning(f"readonly: {result_bool}")
+    logger.warning(f"values: {sorted(list(result_states))}")
     return result_bool, sorted(list(result_states))
 
 
-def get_metric_options(reporting_form: str, primary_metric: Optional[List[str]] = None, secondary_metric: Optional[List[str]] = None) -> Dict[str, List[Dict[str, Any]]]:
-    allowed_metrics = FORM_METRICS.get(reporting_form, set())
-    availabale_metrics = get_available_metrics(allowed_metrics)
-    
-    # Include metrics from allowed_metrics
-    primary_metrics = allowed_metrics.copy()
-    
-    # Add primary metrics if they exist in available metrics
-    if primary_metric:
-        primary_metrics.update(metric for metric in primary_metric if metric in availabale_metrics)
-    
-    # Create primary options first
-    primary_options = [opt for opt in METRICS_OPTIONS if opt['value'] in primary_metrics]
-    primary_option_values = {opt['value'] for opt in primary_options}
-    
-    # Initialize list for valid primary metrics
-    valid_primary = []
-    if primary_metric:
-        valid_primary.extend(metric for metric in primary_metric if metric in primary_option_values)
-    
-    # Move secondary metrics that appear in primary options to primary metrics
-    secondary_metrics_to_move = set()
-    if secondary_metric:
-        for metric in secondary_metric:
-            if metric in primary_option_values:
-                primary_metrics.add(metric)
-                secondary_metrics_to_move.add(metric)
-                valid_primary.append(metric)  # Add moved metrics to valid primary metrics
-    
-    # Update secondary metrics list by removing moved metrics
-    final_secondary_metrics = set(secondary_metric or []) - secondary_metrics_to_move
-    
-    # Set valid primary metrics if we have any
-    valid_primary_metrics = valid_primary if valid_primary else None
-    
-    # Recalculate primary and secondary options
-    primary_options = [opt for opt in METRICS_OPTIONS if opt['value'] in primary_metrics]
+def get_metric_options(
+    reporting_form: str,
+    selected_primary_metrics: Optional[List[str]] = None,
+    selected_secondary_metrics: Optional[List[str]] = None
+) -> Dict[str, List[Dict[str, Any]]]:
+    # 1. Initialize and normalize inputs
+    allowed_basic_metrics = FORM_METRICS.get(reporting_form, set())
+    available_calculated_metrics = set(get_available_metrics(allowed_basic_metrics))  # Convert to set explicitly
+    selected_primary_metrics = [selected_primary_metrics] if isinstance(selected_primary_metrics, str) else (selected_primary_metrics or [])
+    selected_secondary_metrics = [selected_secondary_metrics] if isinstance(selected_secondary_metrics, str) else (selected_secondary_metrics or [])
+
+
+    # 2. Determine default metrics sets
+    primary_metric_set = allowed_basic_metrics.copy()
+    secondary_metric_set = available_calculated_metrics.copy()
+
+    # 3. Handle selected primary metrics that are in secondary set
+    for metric in selected_primary_metrics:
+        if metric in secondary_metric_set:
+            primary_metric_set.add(metric)
+            secondary_metric_set.remove(metric)
+            
+    # 4. Validate primary metrics
+    valid_primary_metrics = [
+        metric for metric in selected_primary_metrics 
+        if metric in primary_metric_set
+    ] or None
+
+    # 5. Handle selected secondary metrics based on primary validation
+    if not valid_primary_metrics and selected_secondary_metrics:
+        # If no valid primary metrics, collect eligible secondary metrics
+        valid_primary_metrics = []
+        metrics_to_remove = []
+        
+        for metric in selected_secondary_metrics:
+            if metric in primary_metric_set or metric in secondary_metric_set:
+                valid_primary_metrics.append(metric)
+                metrics_to_remove.append(metric)
+                primary_metric_set.add(metric)
+                secondary_metric_set.discard(metric)
+        
+        # Remove processed metrics from selected_secondary_metrics
+        for metric in metrics_to_remove:
+            selected_secondary_metrics.remove(metric)
+    else:
+        # If we have valid primary metrics, move appropriate metrics to secondary
+        for metric in selected_secondary_metrics:
+            if metric in primary_metric_set:
+                primary_metric_set.remove(metric)
+                secondary_metric_set.add(metric)
+
+    # 6. Validate secondary metrics
+    valid_secondary_metrics = [
+        metric for metric in selected_secondary_metrics 
+        if metric in secondary_metric_set
+    ] or None
+
+    # 7. Create options based on the metric sets
+    primary_options = [
+        opt for opt in METRICS_OPTIONS 
+        if opt['value'] in primary_metric_set
+    ]
+
     secondary_options = [
         opt for opt in METRICS_OPTIONS 
-        if opt['value'] in availabale_metrics 
-        and opt['value'] not in primary_metrics
-        and (not secondary_metric or opt['value'] in final_secondary_metrics)
+        if opt['value'] in secondary_metric_set
     ]
-    
-    # Validate secondary_metric against available secondary options
-    valid_secondary_metrics = None
-    if secondary_metric:
-        available_secondary_values = {opt['value'] for opt in secondary_options}
-        valid_secondary = [metric for metric in final_secondary_metrics if metric in available_secondary_values]
-        valid_secondary_metrics = valid_secondary if valid_secondary else None
-    
-    logger.warning(f"primary_metric {primary_metric}")
-    logger.debug(f"availabale_metrics {availabale_metrics}")
-    logger.debug(f"primary_options {primary_options}")
-    logger.debug(f"secondary_options {secondary_options}")
-    logger.debug(f"METRICS_OPTIONS {METRICS_OPTIONS}")
-    logger.warning(f"valid_primary_metrics {valid_primary_metrics}")
+
     return {
         'primary_y_metric_options': primary_options,
         'secondary_y_metric_options': secondary_options,
         'primary_metric': valid_primary_metrics,
         'secondary_metric': valid_secondary_metrics
     }
-
-
-
 
 def setup_filter_update_callbacks(app: Dash, quarter_options_162, quarter_options_158) -> None:
     @app.callback(
@@ -144,8 +156,10 @@ def setup_filter_update_callbacks(app: Dash, quarter_options_162, quarter_option
          Output('end-quarter', 'options'),
          Output('insurance-line-dropdown', 'options'),
          Output('premium-loss-checklist-container', 'children'),
+
+         
          Output('filter-state-store', 'data')],  # Add filter state store output
-        [Input('reporting-form', 'value'),
+        [Input('reporting-form', 'data'),
          Input('primary-y-metric', 'value'),
          Input('secondary-y-metric', 'value'),
          Input('premium-loss-checklist', 'value'),
@@ -175,7 +189,7 @@ def setup_filter_update_callbacks(app: Dash, quarter_options_162, quarter_option
             # Use validated metrics or empty list if None
             primary_metric_value = validated_primary if validated_primary is not None else DEFAULT_PRIMARY_METRICS if reporting_form == '0420162' else DEFAULT_PRIMARY_METRICS_158
             secondary_metric_value = validated_secondary if validated_secondary is not None else []
-            
+            selected_metrics = (primary_metric_value or []) + (secondary_metric_value or [])
             end_quarter_options = quarter_options_162 if reporting_form == '0420162' else quarter_options_158
             insurance_line_dropdown_options = get_categories_by_level(
                 category_structure_162 if reporting_form == '0420162' else category_structure_158, 
@@ -184,7 +198,6 @@ def setup_filter_update_callbacks(app: Dash, quarter_options_162, quarter_option
             )
 
             # Use validated metrics for selected_metrics
-            selected_metrics = (primary_metric_value or []) + (secondary_metric_value or [])
             readonly, enforced_values = get_premium_loss_state(selected_metrics, reporting_form)
             values = enforced_values if enforced_values is not None else current_values
             
@@ -208,12 +221,14 @@ def setup_filter_update_callbacks(app: Dash, quarter_options_162, quarter_option
                 'reporting_form': reporting_form,
                 'period_type': period_type,
             }
+            logger.warning(f"component: {[component]}")
+            
             
             output = (
                 metric_options['primary_y_metric_options'],
                 primary_metric_value[0],
                 metric_options['secondary_y_metric_options'],
-                secondary_metric_value,
+                secondary_metric_value[0] if secondary_metric_value else [],
                 end_quarter_options,
                 insurance_line_dropdown_options,
                 [component],

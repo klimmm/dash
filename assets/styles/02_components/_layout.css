@@ -20,6 +20,14 @@
     margin: 0;
 }
 
+.main-filters-row {
+    border: 0.2px solid red;
+}
+
+.reporting-controls-row {
+    border: 0.2px solid red;
+}
+
 /* Sidebar styles */
 .sidebar-col {
     width: 100%;
@@ -49,6 +57,7 @@
     padding: 0 !important;
     max-width: 100%;
     border: 0.2px solid #e9ecef;
+    border: 0;
 }
 
 .datatable-container {

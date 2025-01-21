@@ -215,7 +215,7 @@ def calculate_metrics(
     
     # Get proper calculation order
     calculation_order = get_calculation_order(required_metrics)
-    logger.warning(f"Calculation order determined: {calculation_order}")
+    logger.debug(f"Calculation order determined: {calculation_order}")
     
     # Process each group separately
     grouping_cols = [col for col in df.columns if col not in ['metric', 'value']]
@@ -225,12 +225,12 @@ def calculate_metrics(
         metrics_dict = dict(zip(group['metric'], group['value']))
         base_dict = {col: group[col].iloc[0] for col in grouping_cols}
         new_rows = []
-        logger.warning(f"metrics_dict: {metrics_dict}")
+        logger.debug(f"metrics_dict: {metrics_dict}")
         # Calculate metrics in determined order
         for metric in calculation_order:
             
             if metric in metrics_dict:
-                logger.warning(f"Skipping existing metric: {metric}")
+                logger.debug(f"Skipping existing metric: {metric}")
                 continue
 
             if metric not in METRIC_CALCULATIONS:
@@ -239,7 +239,7 @@ def calculate_metrics(
             deps, calculation = METRIC_CALCULATIONS[metric]
             try:
                 value = calculation(metrics_dict)
-                logger.warning(f"Calculated {metric} = {value}")
+                logger.debug(f"Calculated {metric} = {value}")
                 new_rows.append({
                     **base_dict,
                     'metric': metric,
