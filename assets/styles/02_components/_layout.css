@@ -1,17 +1,13 @@
-
 .container-fluid {
     min-width: 100%;
     padding-right: 15px;
     padding-left: 15px;
     margin-right: auto;
     margin-left: auto;
+    
 }
 
-
-
-.main-navbar {
-
-    
+.main-navbar {    
 }
 
 /* Base container styles */
@@ -20,25 +16,22 @@
     display: flex;
     flex-direction: column;
     position: relative;
-    overflow-x: hidden;
     padding: 0;
     margin: 0;
 }
 
-
 /* Sidebar styles */
 .sidebar-col {
-    width: min(100%, var(--datatable-width, 100%));
+    width: 100%;
     max-width: 100%;
     border: 0; 
     border: 1px solid #e9ecef;
+    border: 0; 
     padding: 0 !important;
-    margin-bottom: 1rem;
-    overflow: visible;    
-    
+    margin: 0 !important;
+    position: relative;
+    overflow: visible;
 }
-
-
 
 .sidebar-col.collapsed {
     width: 100%;
@@ -46,28 +39,17 @@
     height: 0;
     position: absolute;
     padding: 0;
-    margin: -1px;
+    margin: 0;
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
-    overflow-x: hidden;
-    
 }
-
-.filter-column {
-    margin: 0 !important;
-    padding: 0 !important;
-    box-sizing: border-box;
-    border: 0; 
-}
-
 
 .main-filter-column {
-    margin: 0 !important;
+    margin-left: 0;
     padding: 0 !important;
-    box-sizing: border-box;
-    border: 0; 
+    max-width: 100%;
+    border: 0.2px solid #e9ecef;
 }
-
 
 .datatable-container {
     width: 100%;
@@ -77,11 +59,9 @@
     overflow: auto;
     font-family: var(--font-family-sans);
     font-size: var(--table-font-size);
-    border: 1px solid blue;
     overflow-x: hidden;
     margin: 0;
 }
-
 
 .titles-container {
     width: 100%;
@@ -93,25 +73,20 @@
     align-items: center;
 }
 
-
 .col-md-6 {
-
 }
 
 .col-md-12 {
-
 }
 
 .market-analysis-content {
     margin-top: 1rem;
 }
 
-
 .market-analysis-title {
     font-weight: bold;
     font-size: 0.875rem;
 }
-
 
 .card-container {
     margin-bottom: 1rem;
@@ -139,11 +114,6 @@
     background: none;
 }
 
-
-
-
-
-
 .chart-container {
     height: auto;
     width: auto;
@@ -151,7 +121,7 @@
     overflow: hidden;
     position: relative;
     padding: 0;
-    margin: 1rem;
+    margin: 0;
     min-width: 100px;
     max-width: 100px;
 }
@@ -160,7 +130,6 @@
     width: 90%;
     border: 1px solid #ccc;
 }
-
 
 .titles-container-chart {
     height: var(--titles-height);

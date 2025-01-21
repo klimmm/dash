@@ -152,7 +152,7 @@ def setup_insurance_lines_callbacks(app: dash.Dash, insurance_lines_tree):
         # result = state.to_store(), final_selected
         dropdown_value = final_selected if isinstance(final_selected, list) and final_selected else final_selected
 
-        result = final_selected, dropdown_value  # first for store, second for dropdown
+        result = final_selected, dropdown_value[0]  # first for store, second for dropdown
 
         track_callback_end(
             'app.checklist',

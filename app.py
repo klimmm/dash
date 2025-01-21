@@ -155,7 +155,6 @@ logger.debug("Dashboard layout created")
      Output('number-of-insurers', 'value')],
     [Input('filter-state-store', 'data'),
      Input('selected-insurers', 'value'),
-     Input('period-type', 'data'),
      Input('end-quarter', 'value'),
      Input('number-of-periods-data-table', 'value'),
      Input('number-of-insurers', 'value'),
@@ -168,7 +167,7 @@ logger.debug("Dashboard layout created")
 def process_data(
     filter_state: Dict[str, Any],
     selected_insurers: List[str],
-    period_type: str,
+    
     end_quarter: str,
     num_periods_selected: int,
     number_of_insurers: int,
@@ -185,10 +184,10 @@ def process_data(
     memory_monitor.log_memory("before_process_data", logger)
 
     try:
-        logger.debug(f"Process data - processing with parameters: {filter_state}, period_type: {period_type}, end_quarter: {end_quarter}, num_periods_selected: {num_periods_selected}, number_of_insurers: {number_of_insurers} ")
+        logger.debug(f"Process data - processing with parameters: {filter_state}, end_quarter: {end_quarter}, num_periods_selected: {num_periods_selected}, number_of_insurers: {number_of_insurers} ")
         logger.debug(f"insurer_line_switch: {insurer_line_switch}")
         logger.debug(f"processdata selected_lines: {filter_state['selected_lines']}")
-        
+        period_type = filter_state['period_type']
         reporting_form = filter_state['reporting_form']
         selected_lines = filter_state['selected_lines']
         selected_metrics = filter_state['selected_metrics']

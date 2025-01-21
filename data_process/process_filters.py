@@ -32,6 +32,16 @@ def filter_by_date_range_and_period_type(
     elif period_type == 'ytd':
         df.loc[:, 'quarter'] = df['year_quarter'].dt.quarter
         df['year'] = df['year_quarter'].dt.year.to_numpy()
+
+        complete_years = (df[df['quarter'] == 1]
+                 .groupby('year')
+                 .size()
+                 .index)
+        
+        # Filter to keep only those years
+        df = df[df['year'].isin(complete_years)]
+
+        
         df = (df[df['year_quarter'].dt.quarter <= end_quarter_num]
               .assign(year=lambda x: x['year_quarter'].dt.year,
                      ytd_value=lambda x: x.groupby(['year'] + grouping_cols)['value'].cumsum())
@@ -42,17 +52,21 @@ def filter_by_date_range_and_period_type(
         df = df.drop(columns=['year'])
     elif period_type in ['mat', 'yoy_y']:
         df = df.sort_values(grouping_cols + ['year_quarter'])
+        df['quarter_end'] = df['year_quarter'] + pd.offsets.QuarterEnd() 
+        start_date = df.groupby(grouping_cols)['year_quarter'].transform('min')
+        df['days_history'] = (df['quarter_end'] - start_date).dt.total_seconds() / (24 * 60 * 60)
+        df = df.drop(columns=['quarter_end'])
         df.set_index('year_quarter', inplace=True)
         df['value'] = df.groupby(grouping_cols)['value'].transform(
             lambda x: x.rolling(window='365D', min_periods=1).sum()
         )
         df.reset_index(inplace=True)
-
+        df = df[df['days_history'] >= 364].drop(columns=['days_history'])
         if period_type == 'yoy_y':
             df.loc[:, 'quarter'] = df['year_quarter'].dt.quarter
             df = df[df['quarter'] == end_quarter_num]
             df = df.drop(columns=['quarter'])
-
+    
     elif period_type == 'cumulative_sum':
         df['value'] = df.groupby(grouping_cols)['value'].cumsum()
 

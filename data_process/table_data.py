@@ -217,11 +217,12 @@ def table_data_pivot(
             # Add is_section_header column
             main_df['is_section_header'] = False
             summary_df['is_section_header'] = False
-            main_df.fillna('-')
-            summary_df.fillna('-')
+            summary_df = summary_df.replace(0, '-').fillna('-')
+            main_df = main_df.replace(0, '-').fillna('-')
+            
             # Combine main and summary for this line
             line_final_df = pd.concat([main_df, summary_df], ignore_index=True)
-            
+
             final_dfs.append(line_final_df)
             
             # Add empty row as separator if not the last line
@@ -350,10 +351,6 @@ def generate_dash_table_config(
     show_market_share = toggle_selected_market_share and "show" in toggle_selected_market_share
     show_qtoq = toggle_selected_qtoq and "show" in toggle_selected_qtoq
 
-
-    
-
-
     # Handle market share q-to-q change columns
     df_modified = df.copy()
     market_share_qtoq_cols = [col for col in df_modified.columns 
@@ -363,7 +360,6 @@ def generate_dash_table_config(
             lambda x: '-' if x == 0 or x == '-' else x * 100
         )
 
-    
     # Generate column configurations
     columns = []
     comparison_quarters = get_comparison_quarters(df.columns)

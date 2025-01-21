@@ -1,6 +1,7 @@
 # app/components/period_filter.py
 
 import dash
+from dash import no_update
 from dash import Input, Output, State
 from constants.translations import translate
 from config.default_values import (
@@ -67,7 +68,7 @@ def setup_period_type_callbacks(app: dash.Dash) -> None:
         # If no button clicked, return initial state
         if not ctx.triggered:
             period_type_text = translate(current_state)
-            output = (*button_classes, current_state, period_type_text)
+            output = (*button_classes, no_update, period_type_text)
             track_callback_end('app.period_filter', 'update_period_type', start_time, result=output)
             return output
 

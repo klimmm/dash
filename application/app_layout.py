@@ -30,7 +30,6 @@ from config.default_values import (
 from config.logging_config import get_logger, track_callback, track_callback_end
 logger = get_logger(__name__)
 
-from typing import Dict
 
 class StyleConstants:
 
@@ -40,7 +39,6 @@ class StyleConstants:
     SIDEBAR_COLLAPSED = "sidebar-col collapsed"
     TREE = "tree"
 
-    
     # Layout containers
     CONTAINER = {
         "CHART": "chart-container",
@@ -74,7 +72,6 @@ class StyleConstants:
         "SIDEBAR_HIDE": "btn-custom btn-sidebar-toggle-hide",
         "TAB": "btn-custom btn-tab",
         "TABLE_TAB": "btn-custom btn-table-tab"
-        
     }
 
     # Filters
@@ -128,12 +125,13 @@ class ComponentConfig:
     max: Optional[int] = None
     step: Optional[int] = None
 
+
 class FilterComponents:
     """Filter component configurations and creation methods"""
-    
+
     BASE_STYLE = {"fontSize": "0.85rem"}
     _config = None
-    
+
     @classmethod
     def _initialize_config(cls):
         """Initialize component configurations"""
@@ -147,14 +145,16 @@ class FilterComponents:
                             level=2,
                             indent_char="--"
                         ),
-                        'multi': True,
+                        'multi': False,
+                        'clearable': False,
                         'value': DEFAULT_CHECKED_LINES,
                         'placeholder': "Select a category..."
                     },
                     'primary-y-metric': {
                         'options': VALUE_METRICS_OPTIONS,
                         'value': DEFAULT_PRIMARY_METRICS,
-                        'multi': True,
+                        'multi': False,
+                        'clearable': False,
                         'placeholder': "Select primary metric"
                     },
                     'secondary-y-metric': {
@@ -166,9 +166,9 @@ class FilterComponents:
                     'selected-insurers': {
                         'label': False,
                         'options': [],
-                        'value': DEFAULT_INSURER,
-                        'multi': True,
-                        'clearable': True
+                        'value': ','.join(DEFAULT_INSURER),
+                        'multi': False,
+                        'clearable': False
                     },
                     'end-quarter': {
                         'options': [],
@@ -234,7 +234,6 @@ class FilterComponents:
                 }
             }
 
-    
     @classmethod
     def update_dropdown_options(cls, dropdown_id: str, new_options: list) -> None:
         """Update options for a specific dropdown component"""
@@ -246,7 +245,7 @@ class FilterComponents:
     def create_component(cls, component_type: str, id: Optional[str] = None, **kwargs) -> Any:
         """Create a UI component based on type and kwargs"""
         cls._initialize_config()
-        
+
         # Get base config if id is provided
         base_config = {}
 
@@ -255,16 +254,16 @@ class FilterComponents:
             component_group = "radioitems"
         else:
             component_group = f"{component_type}s"
-        
+
         # logger.deug(f"Looking for config in group: {component_group}")
-        
+
         if id and component_group in cls._config and id in cls._config[component_group]:
             base_config = cls._config[component_group][id]
             logger.debug(f"Found base config: {base_config}")
-    
+
         # Merge base config with kwargs
         config = {**base_config, **kwargs}
-        
+
         if component_type == "dropdown":
             return dcc.Dropdown(
                 id=id,
@@ -275,12 +274,12 @@ class FilterComponents:
                 clearable=config.get('clearable', True),
                 className=StyleConstants.FORM["DD"]
             )
-        
+
         if component_type == "checklist":
             style = {**cls.BASE_STYLE, "margin": 0}
             if config.get('readonly'):
                 style.update({"pointerEvents": "none", "opacity": 0.5})
-            
+
             return dbc.Checklist(
                 id=id,
                 options=config.get('options', []),
@@ -290,13 +289,14 @@ class FilterComponents:
                 style=style,
                 className=StyleConstants.FORM["CHECKLIST"]
             )
+
         if component_type == "radioitems":
             options = config.get('options', [])
             value = config.get('value')
             inline = config.get('inline', False)
-            
+
             logger.debug(f"Creating RadioItems with: options={options}, value={value}, inline={inline}")
-            
+
             return dbc.RadioItems(
                 id=id,
                 options=options,
@@ -304,8 +304,7 @@ class FilterComponents:
                 inline=inline,
                 className=StyleConstants.FORM["CHECKLIST"]
             )
-        
-        
+
         if component_type == "input":
             return dcc.Input(
                 id=id,
@@ -348,81 +347,132 @@ class FilterComponents:
         ], className=StyleConstants.FILTER["ROW_NO_MARGIN"])
 
 
-
 def create_filters() -> html.Div:
     """Create the complete filter interface"""
     components = FilterComponents()
-    
+
     # Create premium loss checklist with container
     premium_loss_checklist = components.create_component("checklist", "premium-loss-checklist")
     premium_loss_container = html.Div(
         id="premium-loss-checklist-container",
         children=[premium_loss_checklist]
     )
-    
-    left_column = [
+
+    left_column_row1 = [
+
         components.create_filter_row(
             "Форма отчетности:",
             components.create_component("dropdown", "reporting-form"),
             label_width=8,
             component_width=4
-        ),
+        )
+    ]
+
+    middle_column_row1 = [
         components.create_filter_row(
             "Отчетный квартал:",
             components.create_component("dropdown", "end-quarter"),
             label_width=8,
             component_width=4
-        ),
-        dbc.Row([
-            dbc.Col([html.Label("Тип данных:", className=StyleConstants.FILTER["LABEL"])], xs=12, sm=3),
-            dbc.Col([create_period_type_buttons()], xs=12, sm=9),
-        ], className=StyleConstants.FILTER["ROW_NO_MARGIN"]),
-        html.Div(id="period-type-text", className=StyleConstants.UTILS["PERIOD_TYPE"]),
-        components.create_filter_row(
-            "Бизнес:",
-            premium_loss_container,
-            label_width=3,
-            component_width=9,
-            component_id="premium-loss-checklist"
         )
     ]
-    
-    right_column = [
-        components.create_filter_row(
-            "Показать долю рынка:",
-            components.create_component("checklist", "toggle-selected-market-share"),
-            label_width=10,
-            component_width=2
-        ),
-        components.create_filter_row(
-            "Показать динамику:",
-            components.create_component("checklist", "toggle-selected-qtoq"),
-            label_width=10,
-            component_width=2
-        ),
-        components.create_filter_row(
-            "Кол-во периодов для сравнения:",
-            components.create_component("input", "number-of-periods-data-table"),
-            label_width=9,
-            component_width=3
-        ),
+
+    right_column_row1 = [
+        dbc.Row([
+            dbc.Col([html.Label("Тип данных:", className=StyleConstants.FILTER["LABEL"])], xs=4, sm=3),
+            dbc.Col([create_period_type_buttons()], xs=8, sm=9),
+        ], className=StyleConstants.FILTER["ROW_NO_MARGIN"]),
+        html.Div(id="period-type-text", className=StyleConstants.UTILS["PERIOD_TYPE"], style={"display": "none"})
+    ]
+
+    left_column_row2 = [
+
         components.create_filter_row(
             "Кол-во страховщиков:",
             components.create_component("input", "number-of-insurers"),
             label_width=9,
             component_width=3
         ),
+
+    ]
+
+    middle_column_row2 = [
+
+        components.create_filter_row(
+            "Показать динамику:",
+            components.create_component("checklist", "toggle-selected-qtoq"),
+            label_width=10,
+            component_width=2
+        ),
+
+    ]
+
+
+    right_column_row2 = [
+        components.create_filter_row(
+            "Бизнес:",
+            premium_loss_container,
+            label_width=3,
+            component_width=9,
+            component_id="premium-loss-checklist"
+        ),      
+
+
+    ]
+    left_column_row3 = [
+
+
         components.create_filter_row(
             "Доп. показатель:",
             components.create_component("dropdown", "secondary-y-metric"),
             label_width=4,
-            component_width=8
+            component_width=8    
         )
     ]
 
-    return html.Div(dbc.CardBody([
-        # Additional filters section
+    middle_column_row3 = [
 
+
+        components.create_filter_row(
+            "Кол-во периодов:",
+            components.create_component("input", "number-of-periods-data-table"),
+            label_width=9,
+            component_width=3
+        )
+    ]
+
+
+    right_column_row3 = [
+    
+        components.create_filter_row(
+            "Показать долю рынка:",
+            components.create_component("checklist", "toggle-selected-market-share"),
+            label_width=10,
+            component_width=2
+        )
+
+
+
+
+
+
+        
+    ]
+
+
+    return html.Div(dbc.CardBody([
+        dbc.Row([
+            dbc.Col(left_column_row1, xs=6, sm=4, md=4, className=StyleConstants.FILTER["MAIN"]),
+            dbc.Col(middle_column_row1, xs=6, sm=4, md=4, className=StyleConstants.FILTER["MAIN"]),
+            dbc.Col(right_column_row1, xs=6, sm=4, md=4, className=StyleConstants.FILTER["MAIN"]),
+            dbc.Col(right_column_row2, xs=6, sm=4, md=4, className=StyleConstants.FILTER["MAIN"]),
+            dbc.Col(left_column_row2, xs=6, sm=4, md=4, className=StyleConstants.FILTER["MAIN"]),
+            dbc.Col(middle_column_row2, xs=6, sm=4, md=4, className=StyleConstants.FILTER["MAIN"]),
+            dbc.Col(middle_column_row3, xs=6, sm=4, md=4, className=StyleConstants.FILTER["MAIN"]),
+            dbc.Col(right_column_row3, xs=6, sm=4, md=4, className=StyleConstants.FILTER["MAIN"]), 
+            dbc.Col(left_column_row3, xs=12, sm=4, md=4, className=StyleConstants.FILTER["MAIN"]),
+            
+        ], className=StyleConstants.SIDEBAR_COLLAPSED, id="sidebar-col"),
         dbc.Row([
             dbc.Col([
                 components.create_filter_row(
@@ -431,65 +481,61 @@ def create_filters() -> html.Div:
                     label_width=2,
                     component_width=10
                 ),
-            ], xs=12, sm=6, md=6, className=StyleConstants.FILTER["MAIN"]),
-            dbc.Col([
-                components.create_filter_row(
-                        "Страховщик:",
-                        components.create_component("dropdown", "selected-insurers"),
-                        label_width=3,
-                        component_width=9
-                ),
-            ], xs=12, sm=6, md=6, className=StyleConstants.FILTER["MAIN"]),
+            ], xs=12, sm=6, md=6, className=StyleConstants.FILTER["MAIN"], style={"display": "none"}),
+
         ], className=StyleConstants.SIDEBAR),
         dbc.Row([
-            dbc.Col(left_column, xs=12, sm=6, md=6, className=StyleConstants.FILTER["COLUMN"]),
-            dbc.Col(right_column, xs=12, sm=6, md=6, className=StyleConstants.FILTER["COLUMN"]),
-        ], className=StyleConstants.SIDEBAR_COLLAPSED, id="sidebar-col"),
-        dbc.Row([
+            dbc.Col([
+                components.create_filter_row(
+                    "Страховщик:",
+                    components.create_component("dropdown", "selected-insurers"),
+                    label_width=4,
+                    component_width=8
+                ),
+            ], xs=12, sm=6, md=4, className=StyleConstants.FILTER["MAIN"]),            
             dbc.Col([
                 components.create_filter_row(
                     "Вид страхования:",
                     components.create_component("dropdown", "insurance-line-dropdown"),
-                    label_width=3,
-                    component_width=9
+                    label_width=4,
+                    component_width=8
                 )
-            ],  xs=12, sm=6, md=6, className=StyleConstants.FILTER["MAIN"]),
+            ],  xs=12, sm=6, md=4, className=StyleConstants.FILTER["MAIN"]),
             dbc.Col([
                 components.create_filter_row(
                     "Показатель:",
                     components.create_component("dropdown", "primary-y-metric"),
-                    label_width=3,
-                    component_width=9
+                    label_width=4,
+                    component_width=8
                 )
-            ], xs=12, sm=6, md=6, className=StyleConstants.FILTER["MAIN"]),
+            ], xs=12, sm=6, md=4, className=StyleConstants.FILTER["MAIN"]),
         ], className=StyleConstants.SIDEBAR),
     ]))
-
 
 
 def create_period_type_buttons() -> html.Div:
     """Create period type selection buttons"""
     period_types = [
-        ("YTD", "ytd"),
-        ("YoY-Q", "yoy-q"),
-        ("YoY-Y", "yoy-y"),
-        ("QoQ", "qoq"),
-        ("MAT", "mat")
+        ("YTD", "ytd", {}),
+        ("YoY-Q", "yoy-q", {}),
+        ("YoY-Y", "yoy-y", {"display": "none"}),
+        ("QoQ", "qoq", {}),
+        ("MAT", "mat", {"display": "none"})
     ]
-    
     return html.Div([
         dbc.Row([
             dbc.ButtonGroup([
                 dbc.Button(
                     label,
                     id=f"btn-{value}",
-                    className=StyleConstants.BTN["PERIOD"]
-
+                    className=StyleConstants.BTN["PERIOD"],
+                    style=style
                 )
-                for label, value in period_types
+                for label, value, style in period_types
             ])
         ], className=StyleConstants.UTILS["MB_0"])
     ])
+
 
 def create_stores() -> List[html.Div]:
     """Create store components for app state management."""
@@ -526,7 +572,6 @@ def create_navbar() -> dbc.Navbar:
         dark=True,
         className=StyleConstants.NAV
     )
-
 
 
 @dataclass
@@ -569,7 +614,7 @@ class SidebarState:
 
 def setup_sidebar_callbacks(app: dash.Dash) -> None:
     """Setup callbacks for sidebar toggle functionality."""
-    
+
     @app.callback(
         [
             Output("chart-container", "className"),
@@ -609,7 +654,7 @@ def setup_sidebar_callbacks(app: dash.Dash) -> None:
             track_callback_end('app.sidebar_callbacks', 'toggle_sidebar', start_time, 
                              result=f"toggled_to_{'collapsed' if is_expanded else 'expanded'}")
 
-            logger.warning(f"sidebar_clicks {sidebar_clicks}, current_class {current_class},trigger {ctx.triggered[0]}, new state {new_state.to_tuple()} ")
+            logger.debug(f"sidebar_clicks {sidebar_clicks}, current_class {current_class},trigger {ctx.triggered[0]}, new state {new_state.to_tuple()} ")
 
             return new_state.to_tuple()
 
@@ -619,12 +664,11 @@ def setup_sidebar_callbacks(app: dash.Dash) -> None:
             raise
 
 
-
 def create_market_analysis_component():
     """Creates the market analysis component without data dependencies"""
     layout = html.Div([
         html.H1("Анализ динамики Топ-10 страховых компаний", className=StyleConstants.MARKET["TITLE"]),
-        
+
         dbc.Row([
             dbc.Col(html.Div(id="market-volume-card"), md=12, className=StyleConstants.CONTAINER["CARD"]),
             dbc.Col(html.Div(id="market-concentration-card"), md=12, className=StyleConstants.CONTAINER["CARD"]),
@@ -681,7 +725,6 @@ def create_app_layout(initial_quarter_options: Optional[List[dict]] = None, init
                 initial_insurer_options  # Pass the options directly since they're already in the correct format
             )
 
-        
         return dbc.Container([  # Wrap everything in Container
             *create_stores(),
             create_navbar(),
