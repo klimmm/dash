@@ -120,7 +120,7 @@ class FilterComponents:
             },
             'selected-insurers': {
                 'options': [],
-                'value': ','.join(DEFAULT_INSURER),
+                'value': DEFAULT_INSURER,
                 'multi': False,
                 'clearable': False
             },

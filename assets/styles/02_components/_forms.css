@@ -35,6 +35,7 @@
     margin: 0;
     padding: 0 !important;
     min-height: 1.9rem !important;
+    
 }
 
 .filter-row {
@@ -43,8 +44,9 @@
     border: 0;
     margin: 0 !important;
     align-items: center;
-    min-height: 2rem !important;
+    min-height: 2.5rem !important;
     padding-right: 0;
+    border: 1px solid #ccc;
     
 }
 
@@ -136,7 +138,7 @@
     margin-left: 0.5rem;  /* Space between checkbox and label */
 }
 
-/* Reset core Dash dropdown styles */
+/* Base dropdown */
 .dash-dropdown {
     all: unset;
     font-size: var(--font-size-sm);
@@ -144,7 +146,7 @@
     height: 100%;
 }
 
-/* Main dropdown container */
+/* Control container */
 .dd-control {
     position: relative;
     font-size: var(--font-size-sm);
@@ -156,47 +158,124 @@
     align-items: center;
 }
 
-/* Value and placeholder specific styles */
+/* Value, placeholder and control heights */
 .dd-control .Select-value,
-.dd-control .Select-placeholder
+.dd-control .Select-placeholder,
 .dd-control .Select-control {
     height: 2rem;
 }
 
-/* Input specific styles */
-.dd-control .Select-input {
-    height: calc(var(--input-height-sm) - 10px);
-    font-size: var(--font-size-sm);
-    border: 1px solid blue;  
-    border: 0;
+/* Input handling - Make invisible but functional */
+.dd-control .Select-input,
+input[role="combobox"],
+input[autocomplete="off"][role="combobox"] {
+    position: absolute !important;
+    opacity: 0 !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
 }
 
-/* Dropdown menu */
-.dd-control .Select-menu-outer {
+/* Menu styling */
+.dd-control .Select-menu-outer,
+.Select-menu-outer {
     border-radius: 0;
     padding: 0;
     border: 0;
     font-size: var(--font-size-wm);
     background: var(--color-surface-primary);
+    line-height: 1.2;
+    z-index: 1000;
 }
 
-/* Reset core Dash dropdown styles */
-.dash-dropdown {
-    
-}
-/* Main dropdown container */
-.dd-control {
+/* Option styling */
+.dd-control .Select-option,
+.Select-option {
+    height: 2rem;
+    padding: 0;
+    line-height: 2rem;
 }
 
-/* Common styles for Select-placeholder and Select-control */
+.VirtualizedSelectOption {
+    height: 24px !important;
+    padding: 0;
+}
+
+/* Value and label styling */
+.dd-control .Select-value,
+.dd-control .Select-value-label,
+.Select-value-label {
+    margin: 0;
+    padding: 0 !important;
+    font-size: var(--font-size-sm);
+    height: 2rem;
+    display: flex;
+    align-items: center !important;
+}
+
+.Select-value-label[role="option"][aria-selected="true"] {
+    padding: 0 !important;
+}
+
+/* Control styling */
+.Select-control {
+    height: 2rem !important;
+    padding: 0 !important;
+    border: 0;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+}
+
+/* Arrow styling */
+.Select-arrow-zone,
+.Select-arrow-zone .Select-arrow {
+
+}
+
+.Select-arrow {
+}
+
+/* Placeholder styling */
 .dd-control .Select-placeholder,
-.dd-control .Select-control {
+.Select-placeholder {
+    font-size: var(--font-size-sm);
+    display: flex;
+    align-items: center;
+    padding: 0;
+    height: 2rem;
 }
 
-/* 
-   Shared styles for multiple elements that need:
-   position: relative and font-size: var(--font-size-sm)
-*/
+/* Value icon */
+.Select-value-icon {
+    display: none;
+    padding: 0 !important;
+}
+
+/* Menu */
+.Select-menu {
+    line-height: 1.2;
+}
+
+/* Additional input styles */
+input[autocomplete="off"] {
+    padding: 0;
+}
+
+input[aria-activedescendant="react-select-4--value"] {
+    display: none !important;
+}
+
+/* Multi-value wrapper */
+.Select-multi-value-wrapper {
+}
+
+/* Multi-selector groups */
 .dd-control
     .Select-multi-value,
 .dd-control
@@ -211,161 +290,9 @@
     .Select-arrows,
 .dd-control
     .Select-value {
-
-    
-}
-    
-
-/* .Select-option specifics */
-.dd-control .Select-option {
-    height: 2rem;
-
 }
 
-/* .Select-value-label and .Select-value share some display rules */
-.dd-control .Select-value,
-.dd-control .Select-value-label {
-    margin: 0;
-    padding: 0 !important;
-    font-size: var(--font-size-sm);
-
-
-}
-
-/* .Select-value needs an extra border */
-.dd-control .Select-value { 
-    height: 2rem;
-
-}
-
-/* Input specifics */
-.dd-control .Select-input {
-    height: 2rem;
-}
-
-input[autocomplete="off"] {
-    padding: 0;
-}
-
-.Select-value-label[role="option"][aria-selected="true"] {
-    padding: 0 !important;
-}
-
-.Select-value {
-    padding: 0 !important;
-    height: 100%;
-}
-
-.Select-value-label {
-    padding: 0 !important;
-    height: 100%;
-}
-
-.Select-control {
-    padding: 0 !important;
-    height: 2rem !important;
-}
-
-.Select-input {
-}
-
-
-.Select-arrow-zone,
-.Select-arrow-zone .Select-arrow {
-    height: 10px;
-}
-
-/* Dropdown menu */
-.dd-control .Select-menu-outer {
-    
-}
-
-.Select-value-label {
-    font-size: var(--font-size-sm);
-    display: flex;
-    align-items: center !important;
-    margin: 0;
-}
-
-
-.Select-value-label {
-}
-
-.Select-placeholder {
-    font-size: var(--font-size-sm);
-    display: flex;
-    align-items: center;
-    padding: 0;
-}
-
-.Select-multi-value-wrapper {
-
-}
-
-.Select-value-icon {
-
-    display: none;
-    padding: 0 !important;
-
-    
-}
-
-
-.Select-option {
-    padding-top: 0;
-    padding-bottom: 0;
-    height: auto;
-    max-height: 12px;  /* adjust this value as needed */
-}
-
-/* If you also want to reduce the spacing between options */
-.Select-menu {
-    line-height: 1.2;
-}
-
-/* If you need to adjust the menu container itself */
-.Select-menu-outer {
-    line-height: 1.2;
-}
-
-.Select-option {
-    padding: 0;  /* reduce from default 8px to 3px */
-}
-
-.Select-control {
-    border: 0;  /* reduce from default 8px to 3px */
-}
-/* Set the base height for all options */
-/* Set base height for options */
-.VirtualizedSelectOption {
-    height: 24px !important;  /* Reduced from 35px */
-    padding: 0;  /* Add some padding instead of excess height */
-}
-.Select-input {
-    display: none !important;
-    heigth: 0px !important;
-}
-.Select-arrow {
-    margin-top: 0.7rem !important;
-    
-}
-
-
-
-input[aria-activedescendant="react-select-4--value"] {
-    display: none !important;
-}
-
-input[role="combobox"] {
-    display: none;
-}
-
-input[autocomplete="off"][role="combobox"] {
-    display: none;
-}
-
-
-/* Empty placeholders for potential future styles */
+/* Additional select states and zones */
 .dd-control
     .Select-no-results,
 .dd-control
@@ -394,11 +321,6 @@ input[autocomplete="off"][role="combobox"] {
     .Select-loading-zone {
 }
 
-/* Additional styles for the search input */
+/* Search input */
 .dd-control .Select-search-input {
-}
-
-/* .Select-placeholder specifics */
-.dd-control .Select-placeholder {
-
 }

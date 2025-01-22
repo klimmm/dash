@@ -9,3 +9,7 @@ repomix --ignore "constants/,charting/,outputs/,logs/,**/*.csv,**/*.ipynb,**/*.l
 
 (base) klim@MacBook-Air-klim dash-clean % git checkout -- .                                                       
 (base) klim@MacBook-Air-klim dash-clean % git clean -f                                                            
+
+
+find . -name ".ipynb_checkpoints"
+find . -type d -name ".ipynb_checkpoints" -exec rm -rf {} +

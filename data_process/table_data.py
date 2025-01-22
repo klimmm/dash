@@ -2,57 +2,18 @@ import pandas as pd
 import numpy as np
 from dash import dash_table
 from dash.dash_table.Format import Format, Scheme, Group
-from pathlib import Path
 from typing import Any, List, Tuple, Optional, Dict, OrderedDict
 from data_process.data_utils import map_line, map_insurer, save_df_to_csv
 from constants.translations import translate
 from config.logging_config import get_logger
 from constants.filter_options import METRICS
-from data_process.data_utils import map_line
-
+from data_process.table_styles import generate_table_config
 logger = get_logger(__name__)
-
-# Simplified base theme with consolidated styles
-TABLE_THEME = {
-    'colors': {
-        'header_bg': 'var(--table-surface-header)',
-        'header_text': '#000000',
-        'cell_bg': 'var(--table-surface-cell)',
-        'cell_text': 'var(--table-text-cell)',
-        'border': 'var(--table-border)',
-        'highlight': 'var(--table-surface-highlight)',
-        'success': 'var(--color-success-600)',
-        'danger': 'var(--color-danger-600)',
-        'qtoq_bg': 'var(--table-surface-highlight)'
-    },
-    'typography': {
-        'font_family': 'var(--font-family-sans)',
-        'font_size': 'var(--table-font-size)',
-        'header_weight': 'var(--font-weight-semibold)',
-        'bold_weight': 'bold',
-        'normal_weight': 'normal'
-    },
-    'spacing': {
-        'cell_padding': 'var(--space-2)',
-        'header_padding': 'var(--space-2) var(--space-3)',
-    },
-    'columns': {
-        'defaults': {'width': 'fit-content', 'min_width': 'none', 'max_width': 'auto', 'text_align': 'right'},
-        'rank': {'width': 'fit-content', 'min_width': '50px', 'max_width': '70px', 'text_align': 'center'},
-        'insurer': {'width': 'fit-content', 'min_width': '175px', 'max_width': 'auto', 'text_align': 'left'},
-        'change': {'width': 'fit-content', 'min_width': 'none', 'max_width': 'auto', 'text_align': 'center'}
-    }
-}
-
 
 # Constants
 PLACE_COL = 'N'
 INSURER_COL = 'insurer'
 IDENTIFIER_COLS = {PLACE_COL, INSURER_COL}
-SPECIAL_INSURERS = {
-    'Топ': {'backgroundColor': 'var(--table-surface-highlight)', 'fontWeight': 'bold'},
-    'Весь рынок': {'backgroundColor': 'var(--table-surface-highlight)', 'fontWeight': 'bold'}
-}
 
 def get_data_table(
     df: pd.DataFrame,
@@ -64,10 +25,7 @@ def get_data_table(
     toggle_selected_qtoq: Optional[List[str]],
     prev_ranks: Optional[Dict[str, int]] = None
 ) -> Tuple[dash_table.DataTable, str, str]:
-    """
-    @API_STABILITY: BACKWARDS_COMPATIBLE
-    Generate a formatted data table with rankings and metrics.
-    """
+    """Generate a formatted data table with rankings and metrics."""
     save_df_to_csv(df, "df_before_pivot.csv")
     table_data = table_data_pivot(df, table_selected_metric, prev_ranks)
     save_df_to_csv(table_data, "df_after_pivot.csv")
@@ -132,9 +90,6 @@ def table_data_pivot(
                     'is_section_header': True  # Adding a marker for styling
                 }])
                 final_dfs.append(header_row)
-
-
-
             
             line_df = processed_df[processed_df['linemain'] == line].copy()
             
@@ -225,15 +180,6 @@ def table_data_pivot(
             line_final_df = pd.concat([main_df, summary_df], ignore_index=True)
 
             final_dfs.append(line_final_df)
-            
-            # Add empty row as separator if not the last line
-            '''if multiple_lines and line != sorted(unique_lines)[-1]:
-                separator_row = pd.DataFrame([{
-                    'N': '',
-                    'insurer': '',
-                    'is_section_header': False
-                }])
-                final_dfs.append(separator_row)'''
         
         # Combine all lines
         final_df = pd.concat(final_dfs, ignore_index=True)
@@ -371,16 +317,12 @@ def generate_dash_table_config(
         # Skip is_section_header column
         if col == 'is_section_header':
             continue
-        # Add detailed logging for metric identification
+            
         logger.warning("Processing column: %s", col)
-        
-        # Log all available metrics before trying to match
         logger.warning("Available METRICS keys: %s", sorted(METRICS.keys()))
         
-        # Add logging for metric matching
         all_matches = [m for m in sorted(METRICS.keys(), key=len, reverse=True) 
                       if col.startswith(m)]
-        #logger.warning("All matching metrics for column %s: %s", col, all_matches)
         
         metric = next((m for m in sorted(METRICS.keys(), key=len, reverse=True) 
                       if col.startswith(m)), '')
@@ -394,10 +336,9 @@ def generate_dash_table_config(
                 logger.warning("No metric found for identifier column %s", col)
             columns.append({
                 "id": col,
-                "name": [translate(table_selected_metric[0]), translate(col)]
+                "name": [translate(col), translate(col), translate(col)]
             })
             continue
-        
 
         quarter = col[len(metric)+1:].split('_')[0] if metric else col.split('_')[0]
         
@@ -417,210 +358,22 @@ def generate_dash_table_config(
             
         columns.append({
             "id": col,
-            "name": [base, header],
+            "name": [translate(metric), base, header],
             "type": "numeric",
             "format": get_column_format(col)
         })
+
+    # Get complete table configuration from styling module
+    table_config = generate_table_config(
+        df=df,
+        columns=columns,
+        show_market_share=show_market_share,
+        show_qtoq=show_qtoq
+    )
     
-    # Generate styles
-    style_cell_conditional = generate_cell_styles(df.columns)
-    style_data_conditional = generate_data_styles(df)
-    style_header_conditional = generate_header_styles(df.columns)
+    # Add data to the configuration
+    table_config['data'] = df_modified.assign(
+        insurer=lambda x: x['insurer'].map(map_insurer)
+    ).to_dict('records')
     
-    return {
-        'style_table': {
-            'overflowX': 'auto',
-            'width': '100%',
-            'maxWidth': '100%',
-        },
-        'style_cell': {
-            **TABLE_THEME['typography'],
-            'padding': TABLE_THEME['spacing']['cell_padding'],
-            'whiteSpace': 'normal',
-            'overflow': 'hidden',
-            'textOverflow': 'ellipsis',
-            'border': f"1px solid {TABLE_THEME['colors']['border']}",
-            'width': '100%',
-            'maxWidth': '100%',
-            'height': 'auto',  # Changed from fixed height
-            'maxHeight': '10px',  # Add minimum height
-            'lineHeight': '10px',  # Add line height to control actual content height
-        },
-        'style_cell_conditional': style_cell_conditional,
-        'style_header': {
-            'backgroundColor': TABLE_THEME['colors']['header_bg'],
-            'color': TABLE_THEME['colors']['header_text'],
-            'fontWeight': TABLE_THEME['typography']['header_weight'],
-            'textAlign': 'center',
-            'whiteSpace': 'normal',
-            'padding': TABLE_THEME['spacing']['header_padding'],
-            'height': 'auto',
-            'maxHeight': '10px',  # Control header height
-            'lineHeight': '10px',  # For multi-line headers
-        },
-        'style_data': {
-            'backgroundColor': TABLE_THEME['colors']['cell_bg'],
-            'color': TABLE_THEME['colors']['cell_text']
-        },
-        'style_data_conditional': style_data_conditional,
-        'style_header_conditional': style_header_conditional,
-        'columns': [{
-            **col,
-            "hideable": False,
-            "selectable": False,
-            "deletable": False,
-            "renamable": False
-        } for col in columns],
-        'data': df_modified.assign(
-            insurer=lambda x: x['insurer'].map(map_insurer)
-        ).to_dict('records'),
-        'hidden_columns': [
-            col for col in df.columns
-            if col == 'is_section_header' or (
-                col not in IDENTIFIER_COLS and (
-                    ('market_share' in col and not show_market_share) or
-                    ('q_to_q_change' in col and not show_qtoq)
-                )
-            )
-        ],
-        'css': generate_responsive_css(),
-        'sort_action': 'none',
-        'sort_mode': None,
-        'filter_action': 'none',
-        'merge_duplicate_headers': True,
-        'sort_as_null': ['', 'No answer', 'No Answer', 'N/A', 'NA'],
-        'column_selectable': False,
-        'row_selectable': False,
-        'cell_selectable': False,
-        'page_action': 'none',
-        'editable': False,
-    }
-
-def generate_data_styles(df: pd.DataFrame) -> List[Dict[str, Any]]:
-    """Generate conditional data styles."""
-    # Get unique line names from data
-    line_names = {row['insurer'] for row in df.to_dict('records') 
-                 if row.get('is_section_header')}
-
-    styles = [
-        # Base cell background
-        {'if': {'column_id': col for col in df.columns},
-         'backgroundColor': TABLE_THEME['colors']['cell_bg']},
-        
-        # Section header styling for line names
-        *[{'if': {'filter_query': f'{{insurer}} = "{line_name}"'},
-           'backgroundColor': '#E5E7EB',
-           'fontWeight': 'bold',
-           'borderTop': '2px solid #E5E7EB',
-           'borderBottom': '2px solid #E5E7EB',
-           'paddingLeft': '8px',
-           'fontSize': '10px',
-           'color': '#374151',
-           'height': '15px'} 
-          for line_name in line_names],
-        
-        {'if': {'column_id': 'N', 'filter_query': '{N} contains "(+"'},
-         'background': 'linear-gradient(90deg, transparent 0%, transparent calc(50% - 2ch), rgba(0, 255, 0, 0.15) calc(50% + 1.5ch), rgba(0, 255, 0, 0.15) calc(50% + 2.5ch), transparent calc(50% + 3ch), transparent 100%)'
-        },
-         
-        *[{'if': {'filter_query': f'{{insurer}} contains "{insurer}"'},
-           **style} for insurer, style in SPECIAL_INSURERS.items()],
-           
-        *[{'if': {'column_id': col, 'filter_query': f'{{{col}}} {op} 0'},
-           'color': TABLE_THEME['colors']['success' if op == '>' else 'danger'],
-           'fontWeight': TABLE_THEME['typography']['normal_weight'],
-           'backgroundColor': TABLE_THEME['colors']['qtoq_bg']}
-          for col in df.columns if '_q_to_q_change' in col
-          for op in ['>', '<']]
-    ]
-    
-    # Add negative rank change styling
-    for i in range(1, 10):
-        styles.append({
-            'if': {'column_id': 'N', 'filter_query': f'{{N}} contains "(-{i}"'},
-'background': 'linear-gradient(90deg, transparent 0%, transparent calc(50% - 1ch), rgba(255, 0, 0, 0.15) calc(50% + 1.5ch), rgba(255, 0, 0, 0.15) calc(50% + 2.5ch), transparent calc(50% + 3ch), transparent 100%)'
-        })
-    
-    return styles
-
-def generate_cell_styles(columns: List[str]) -> List[Dict[str, Any]]:
-    """Generate conditional cell styles."""
-    styles = []
-    for col in columns:
-        col_type = (
-            'rank' if col == PLACE_COL else
-            'insurer' if col == INSURER_COL else
-            'change' if 'q_to_q_change' in col else
-            'defaults'
-        )
-        styles.append({
-            'if': {'column_id': col},
-            **{k: TABLE_THEME['columns'][col_type][k] 
-               for k in ['width', 'min_width', 'max_width', 'text_align']}
-        })
-    return styles
-
-def generate_header_styles(columns: List[str]) -> List[Dict[str, Any]]:
-    """Generate conditional header styles."""
-    return [
-        *[{'if': {'column_id': col, 'header_index': idx},
-           'textAlign': 'left' if col == INSURER_COL else 'center',
-           'verticalAlign': 'center',
-           'height': '100%',
-           'backgroundColor': '#F9FAFB',
-           'color': TABLE_THEME['colors']['header_text'],
-           'fontWeight': TABLE_THEME['typography']['bold_weight'],
-          } for col in IDENTIFIER_COLS for idx in [0, 1]],
-          
-        *[{'if': {'column_id': col, 'header_index': idx},
-           'fontWeight': TABLE_THEME['typography']['bold_weight' if idx == 0 else 'normal_weight'],
-           'textAlign': 'center',
-           'backgroundColor': get_header_background(col, idx)
-          } for col in columns if col not in IDENTIFIER_COLS
-          for idx in [0, 1]]
-    ]
-
-def get_header_background(col: str, idx: int) -> str:
-    """Get background color for header based on column type and index."""
-
-    if any(x in col for x in ['market_share', 'market_share_q_to_q_change']):
-        return '#F0FDF4'
-    if any(x in col for x in ['q_to_q_change']) or (
-        col not in IDENTIFIER_COLS and 
-        not any(x in col for x in ['market_share', 'market_share_q_to_q_change'])
-    ):
-        return '#EFF6FF'
-    return 'inherit'
-
-def generate_responsive_css() -> List[Dict[str, str]]:
-    """Generate CSS for responsive table layout."""
-    return [
-        {
-            'selector': '.dash-table-container',
-            'rule': 'max-width: 100%; width: 100%; margin: 0; padding: 0;'
-        },
-        {
-            'selector': '.dash-spreadsheet',
-            'rule': 'max-width: 100%; width: 100%;'
-        },
-        {
-            'selector': '.dash-cell',
-            'rule': 'max-width: 100%; width: auto;'
-        },
-        {
-            'selector': '.dash-table-container',
-            'rule': 'max-width: 100%; width: 100%; margin: 0; padding: 0;'
-        },
-        {
-            'selector': '.dash-spreadsheet',
-            'rule': 'max-width: 100%; width: 100%;'
-        },
-        {
-            'selector': '.dash-cell',
-            'rule': 'max-width: 100%; width: auto; height: auto !important; max-height: 15px !important; line-height: 15px !important;'
-        },
-        {
-            'selector': '.dash-header',
-            'rule': 'height: auto !important; max-height: 15px !important; line-height: 15px !important;'
-        }
-    ]
+    return table_config

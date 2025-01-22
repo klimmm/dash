@@ -3,7 +3,6 @@
     padding-right: 15px;
     padding-left: 15px;
     margin-right: auto;
-    margin-left: auto;
     
 }
 
@@ -53,7 +52,6 @@
 }
 
 .main-filter-column {
-    margin-left: 0;
     padding: 0 !important;
     max-width: 100%;
     border: 0.2px solid #e9ecef;
