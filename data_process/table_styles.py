@@ -25,12 +25,12 @@ class RowType(Enum):
 # Dimension constants
 DIMENSIONS = {
     'row': {
-        'height': '13px',
-        'padding': '0.1rem',
-        'font_size': '0.75rem',
+        'height': '15px',
+        'padding': '0.4rem',
+        'font_size': '0.875rem',
     },
     'widths': {
-        'rank': {'min': '50px', 'max': '60px'},
+        'rank': {'min': '50px', 'max': '50px'},
         'insurer': {'min': '175px', 'max': '200px'},
         'default': {'min': 'none', 'max': 'auto'}
     }
@@ -65,16 +65,14 @@ BASE_STYLES = {
     'cell': {
         'fontFamily': 'Arial, -apple-system, system-ui, sans-serif',
         'fontSize': DIMENSIONS['row']['font_size'],
-        'padding': '0',
+        'padding': DIMENSIONS['row']['padding'],
         'whiteSpace': 'nowrap',
         'overflow': 'hidden',
         'textOverflow': 'ellipsis',
         'boxSizing': 'border-box',
         'borderSpacing': '0',
         'borderCollapse': 'collapse',
-        'borderWidth': '0.2px',
-        'width': '100%',
-        'maxWidth': '100%',
+        'borderWidth': '0.1px',
         'height': DIMENSIONS['row']['height'],
         'minHeight': DIMENSIONS['row']['height'],
         'maxHeight': DIMENSIONS['row']['height'],
@@ -86,7 +84,7 @@ BASE_STYLES = {
         'fontWeight': '600',
         'textAlign': 'center',
         'whiteSpace': 'normal',
-        'padding': DIMENSIONS['row']['padding'],
+        'padding': '0rem',
         'height': DIMENSIONS['row']['height'],
         'minHeight': DIMENSIONS['row']['height'],
         'maxHeight': DIMENSIONS['row']['height'],
@@ -98,15 +96,15 @@ BASE_STYLES = {
 COLUMN_CONFIGS = {
     ColumnType.RANK: {
         'width': 'fit-content',
-        'minWidth': DIMENSIONS['widths']['rank']['min'],
-        'maxWidth': DIMENSIONS['widths']['rank']['max'],
+        'minWidth': '45px',
+        'maxWidth': '50px',
         'textAlign': 'center',
         'column_id': 'N'
     },
     ColumnType.INSURER: {
         'width': 'fit-content',
-        'minWidth': DIMENSIONS['widths']['insurer']['min'],
-        'maxWidth': DIMENSIONS['widths']['insurer']['max'],
+        'minWidth': '175px',
+        'maxWidth': '200px',
         'textAlign': 'left',
         'column_id': 'insurer'
     },
@@ -130,8 +128,8 @@ ROW_CONFIGS = {
     RowType.SECTION_HEADER: {
         'backgroundColor': COLORS['section_bg'],
         'fontWeight': 'bold',
-        'borderTop': f'2px solid {COLORS["section_bg"]}',
-        'borderBottom': f'2px solid {COLORS["section_bg"]}',
+        'borderTop': f'1px solid {COLORS["section_bg"]}',
+        'borderBottom': f'1px solid {COLORS["section_bg"]}',
         'paddingLeft': '8px',
         'fontSize': DIMENSIONS['row']['font_size'],
         'color': COLORS['section_text'],
@@ -235,10 +233,9 @@ def _create_style_conditions(df: pd.DataFrame) -> Dict[str, List[StyleDict]]:
                 'if': {'column_id': col, 'header_index': idx},
                 'textAlign': 'left' if col_type == ColumnType.INSURER else 'center',
                 'verticalAlign': 'middle',
-                'height': '100%',
                 'backgroundColor': COLORS['row_bg'],
-                "borderTop": f"1px solid '#e9ecef'" if idx == 0 else "0px",
-                "borderBottom": f"1px solid '#e9ecef'" if idx == 2 else "0px",                
+                "borderTop": f"0.1px solid '#e9ecef'" if idx == 0 else "0px",
+                "borderBottom": f"0.1px solid '#e9ecef'" if idx == 2 else "0px",                
                 'color': '#000000' if idx == 1 else 'transparent',
                 'fontWeight': 'bold',
             } for idx in range(3)])
@@ -287,8 +284,9 @@ def generate_table_config(
         f'min-height: {DIMENSIONS["row"]["height"]} !important; '
         f'max-height: {DIMENSIONS["row"]["height"]} !important; '
         f'line-height: {DIMENSIONS["row"]["height"]} !important; '
-        'padding: 0 !important; '
         'margin: 0 !important; '
+        'borderWidth: 0.1px !important; '
+
     )
 
     content_rules = (
@@ -297,18 +295,16 @@ def generate_table_config(
         f'min-height: {DIMENSIONS["row"]["height"]} !important; '
         f'max-height: {DIMENSIONS["row"]["height"]} !important; '
         f'line-height: {DIMENSIONS["row"]["height"]} !important; '
-        'padding: 0 !important; '
-        'margin: 0 !important; '
         'overflow: hidden !important; '
         'text-overflow: ellipsis !important; '
         'white-space: nowrap !important;'
     )
     
     css_rules = [
-        {'selector': '.dash-table-container', 'rule': 'max-width: 100%; width: 100%; margin: 0; padding: 0; border-spacing: 0 !important;'},
+        {'selector': '.dash-table-container', 'rule': 'max-width: 100%; width: fit-content; margin: 0; padding: 0; border-spacing: 0 !important;'},
         {'selector': '.dash-spreadsheet', 'rule': 'max-width: 100%; width: 100%; border-collapse: collapse !important;'},
         {'selector': '.dash-spreadsheet tr', 'rule': dimension_rules},
-        {'selector': '.dash-cell', 'rule': f'max-width: 100%; width: auto; {dimension_rules}'},
+
         {'selector': '.dash-header', 'rule': dimension_rules},
         {'selector': '.dash-cell-value', 'rule': content_rules},
         {'selector': '.dash-header-cell-value', 'rule': content_rules},
