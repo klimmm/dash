@@ -188,3 +188,17 @@ outputs/
 constants/mappings/insurance_lines_162_rev-or.json
 constants/mappings/modified_insurance.json
 **/repomix-output.txt
+data_process/calculate_metrics-Copy1.py
+various.txt
+untitled.py
+serve.py
+project_structure.txt
+config/memory_monitor.py
+config/custom_profile.py
+c.py
+assets/styles/layout_hierarchy_css.md
+assets/assets_structure.txt
+application/market_analysis_component.py
+application/market_callbacks.py
+application/market_cards.py
+application/market_component.py
