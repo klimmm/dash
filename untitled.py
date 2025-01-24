@@ -1,84 +1,3 @@
-import os
-import logging
-from typing import List, Dict, Any
-
-import dash
-import dash_bootstrap_components as dbc
-import pandas as pd
-from dash import Dash
-from dash.dependencies import Input, Output, State
-from dash.exceptions import PreventUpdate
-
-from application import (
-    APP_TITLE, PORT, DEBUG_MODE,
-    create_app_layout, get_logger,
-    setup_logging, track_callback, track_callback_end, memory_monitor,
-    insurance_lines_tree, get_required_metrics, calculate_metrics,
-    process_insurers_data, filter_by_date_range_and_period_type,
-    add_growth_rows, add_market_share_rows,
-    category_structure_162, category_structure_158, get_categories_by_level,
-    FilterComponents, get_metric_options, get_premium_loss_state
-)
-from data_store import InsuranceDataStore
-
-# Initialize logging
-logger = get_logger(__name__)
-setup_logging(console_level=logging.INFO, file_level=logging.DEBUG)
-
-
-def create_app(data_store: InsuranceDataStore) -> dash.Dash:
-    """Create and configure Dash application"""
-    app = dash.Dash(
-        __name__,
-        url_base_pathname="/",
-        assets_folder='assets',
-        assets_ignore='.ipynb_checkpoints/*',
-        external_stylesheets=[dbc.themes.BOOTSTRAP],
-        suppress_callback_exceptions=True,
-        update_title=None
-    )
-
-    app.title = APP_TITLE
-    app.layout = create_app_layout(
-        data_store.initial_quarter_options,
-        data_store.initial_insurer_options
-    )
-
-    _setup_callbacks(app, data_store)
-
-    return app
-
-
-def _setup_callbacks(app: dash.Dash, data_store: InsuranceDataStore):
-    """Configure all application callbacks"""
-    from application import (
-        setup_buttons_callbacks, setup_debug_callbacks,
-        setup_insurance_lines_callbacks,
-        setup_sidebar_callbacks,
-        setup_resize_observer_callback, setup_ui_callbacks
-    )
-
-    callbacks = [
-        setup_buttons_callbacks,
-        setup_debug_callbacks,
-        (setup_insurance_lines_callbacks, insurance_lines_tree),
-        setup_sidebar_callbacks,
-        setup_resize_observer_callback,
-        setup_ui_callbacks
-    ]
-
-    for callback in callbacks:
-        if isinstance(callback, tuple):
-            callback[0](app, *callback[1:])
-        else:
-            callback(app)
-
-    _setup_filter_update_callbacks(
-        app,
-        data_store.quarter_options['0420162'],
-        data_store.quarter_options['0420158']
-    )
-    _setup_data_processing_callback(app, data_store)
 
 
 def _setup_filter_update_callbacks(app: Dash, quarter_options_162, quarter_options_158) -> None:
@@ -91,17 +10,31 @@ def _setup_filter_update_callbacks(app: Dash, quarter_options_162, quarter_optio
          Output('insurance-line-dropdown', 'options'),
          Output('premium-loss-checklist-container', 'children'),
          Output('filter-state-store', 'data')],
-        [Input('reporting-form', 'data'),
+        [
+         Input('reporting-form', 'data'),
          Input('primary-y-metric', 'value'),
          Input('secondary-y-metric', 'value'),
          Input('premium-loss-checklist', 'value'),
          Input('insurance-lines-state', 'data'),
-         Input('period-type', 'data')],
+         Input('period-type', 'data'),
+         Input('end-quarter', 'value')],
         [State('show-data-table', 'data'),
          State('filter-state-store', 'data')],  # Add filter state store state
         prevent_initial_call=True
     )
-    def update_options(reporting_form, primary_metric, secondary_metric, current_values, lines, period_type, show_table, current_filter_state):
+    def update_options(
+            reporting_form,
+            primary_metric,
+            secondary_metric,
+            current_values,
+            lines, 
+            period_type,
+            end_quarter,
+            num_periods_selected: int,
+            show_table, 
+            current_filter_state,
+            line_type: List[str] = None
+    ):
         """
         @API_STABILITY: BACKWARDS_COMPATIBLE
         """
@@ -129,13 +62,43 @@ def _setup_filter_update_callbacks(app: Dash, quarter_options_162, quarter_optio
             # Use validated metrics for selected_metrics
             readonly, enforced_values = get_premium_loss_state(selected_metrics, reporting_form)
             values = enforced_values if enforced_values is not None else current_values
-
+            premium_loss_checklist = values or []
             component = FilterComponents.create_component(
                 'checklist',
                 id='premium-loss-checklist',
                 readonly=readonly,
                 value=values
             )
+
+            df = data_store.get_dataframe(reporting_form)
+            end_quarter_ts = pd.Period(end_quarter, freq='Q').to_timestamp(how='end')
+
+            mask = df['year_quarter'] <= end_quarter_ts
+            if line_type:
+                mask &= df['line_type'].isin(line_type)
+
+            df = df[mask]
+
+            group_cols = [col for col in df.columns if col not in ('line_type', 'value')]
+            df = df.groupby(group_cols, observed=True)['value'].sum().reset_index()
+
+            df = (df[df['linemain'].isin(lines)]
+                   .pipe(lambda x: x[x['metric'].isin(
+                       get_required_metrics(
+                           selected_metrics, premium_loss_checklist
+                       )
+                   )])
+                   .pipe(filter_by_date_range_and_period_type,
+                         period_type=period_type))
+            periods = sorted(df['year_quarter'].unique(), reverse=True)
+
+            periods_to_keep = periods[:min(num_periods_selected, len(periods)) + 1]
+            df = df[df['year_quarter'].isin(periods_to_keep)]
+
+
+
+            
+
             # Update filter state with new values
             filter_state = current_filter_state or {}
             updated_filter_state = {
@@ -150,6 +113,7 @@ def _setup_filter_update_callbacks(app: Dash, quarter_options_162, quarter_optio
                 'period_type': period_type,
             }
             logger.debug(f"component: {[component]}")
+
             output = (
                 metric_options['primary_y_metric_options'],
                 primary_metric_value[0],
@@ -210,27 +174,27 @@ def _setup_data_processing_callback(app: dash.Dash, data_store: InsuranceDataSto
                 return output
 
             # Get and filter base data
-            df = data_store.get_dataframe(filter_state['reporting_form'])
+            # df = data_store.get_dataframe(filter_state['reporting_form'])
 
-            end_quarter_ts = pd.Period(end_quarter, freq='Q').to_timestamp(how='end')
+            # end_quarter_ts = pd.Period(end_quarter, freq='Q').to_timestamp(how='end')
 
             # Apply filters
-            mask = df['year_quarter'] <= end_quarter_ts
+            '''mask = df['year_quarter'] <= end_quarter_ts
             if line_type:
                 mask &= df['line_type'].isin(line_type)
 
-            df = df[mask]
+            df = df[mask]'''
 
             # Group data
-            group_cols = [col for col in df.columns if col not in ('line_type', 'value')]
+            '''group_cols = [col for col in df.columns if col not in ('line_type', 'value')]
             df = df.groupby(group_cols, observed=True)['value'].sum().reset_index()
 
             if df.empty:
                 output = {'df': [], 'prev_ranks': {}}
-                return output
+                return output'''
 
             # Apply filters and calculate metrics
-            df = (df[df['linemain'].isin(filter_state['selected_lines'])]
+           ''' df = (df[df['linemain'].isin(filter_state['selected_lines'])]
                    .pipe(lambda x: x[x['metric'].isin(
                        get_required_metrics(
                            filter_state['selected_metrics'],
@@ -238,20 +202,20 @@ def _setup_data_processing_callback(app: dash.Dash, data_store: InsuranceDataSto
                        )
                    )])
                    .pipe(filter_by_date_range_and_period_type,
-                         period_type=filter_state['period_type']))
+                         period_type=filter_state['period_type']))'''
 
-            if df.empty:
+            '''if df.empty:
                 output = {'df': [], 'prev_ranks': {}}
-                return output
+                return output'''
 
             # Process periods
-            periods = sorted(df['year_quarter'].unique(), reverse=True)
-            if not periods:
+            # periods = sorted(df['year_quarter'].unique(), reverse=True)
+            '''if not periods:
                 output = {'df': [], 'prev_ranks': {}}
-                return output
+                return output'''
 
-            periods_to_keep = periods[:min(num_periods_selected, len(periods)) + 1]
-            df = df[df['year_quarter'].isin(periods_to_keep)]
+            '''periods_to_keep = periods[:min(num_periods_selected, len(periods)) + 1]
+            df = df[df['year_quarter'].isin(periods_to_keep)]'''
 
             # Process insurers
             latest_quarter = df['year_quarter'].max()
@@ -317,23 +281,3 @@ def _setup_data_processing_callback(app: dash.Dash, data_store: InsuranceDataSto
 
         finally:
             track_callback_end('main', 'process_data', start_time, result=output)
-
-
-def main():
-    """Application entry point"""
-    try:
-        print("Starting application initialization...")
-        data_store = InsuranceDataStore()
-        app = create_app(data_store)
-
-        port = int(os.environ.get("PORT", PORT))
-        print(f"Starting server on port {port}...")
-        app.run_server(debug=DEBUG_MODE, port=port, host='0.0.0.0')
-
-    except Exception as e:
-        print(f"Error during startup: {e}")
-        raise
-
-
-if __name__ == '__main__':
-    main()

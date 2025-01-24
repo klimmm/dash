@@ -10,6 +10,7 @@ def create_stores() -> List[html.Div]:
     """Create store components for app state management."""
     return [
         html.Div(id="_hidden-init-trigger", style={"display": "none"}),
+        dcc.Store(id='grouped-df-store', storage_type='memory'),
         dcc.Store(id="show-data-table", data=True),
         dcc.Store(id="processed-data-store"),
         dcc.Store(id="filter-state-store"),

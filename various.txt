@@ -13,3 +13,17 @@ repomix --ignore "constants/,charting/,outputs/,logs/,**/*.csv,**/*.ipynb,**/*.l
 
 find . -name ".ipynb_checkpoints"
 find . -type d -name ".ipynb_checkpoints" -exec rm -rf {} +
+
+autopep8 --in-place --select=W293 app.py
+autopep8 --in-place --select=W291 app.py
+
+
+I need to start a new chat because the chat is too long and it's using my limits too much so:
+**Please create a prompt for a new chat that includes all context needed to CONCISE GOAL** Remember that in the new chat you will not have access to any of the information you have here
+**Write a prompt for a new chat that includes absolutely anything and everything that could be important.
+Choose carefully based on my goals but when in doubt, include more information**. For example: X, Y
+You can use a placeholder for EXAMPLE OF CODE OR DOC that I should replace with the actual contents
+Remember I will input this prompt as the first prompt in the new chat. That's all it will have. *Review our conversation history carefully* and write a great starting prompt
+**My number one goal for the next chat is to: GOAL IN 2
+SENTENCE**
+**Write the perfect initial prompt to achieve that**

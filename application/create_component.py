@@ -85,6 +85,7 @@ class FilterComponents:
                 'buttons': [
                     {"label": "1", "value": "period-1", "style": {}},
                     {"label": "2", "value": "period-2", "style": {}},
+                    {"label": "3", "value": "period-3", "style": {}},
                     {"label": "4", "value": "period-4", "style": {}},
                     {"label": "5", "value": "period-5", "style": {}}
                 ],
@@ -290,7 +291,7 @@ class FilterComponents:
             if container_id 
             else component
         )
-        logger.warning(f"wrapped_component{wrapped_component}")
+        logger.debug(f"wrapped_component{wrapped_component}")
         if vertical:
             return html.Div([
                 html.Label(label_text, className=StyleConstants.FILTER["LABEL"]),

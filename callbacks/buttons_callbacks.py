@@ -16,7 +16,7 @@ button_period_main = "btn-custom btn-period"
 button_period_main_active = "btn-custom btn-period active"
 
 
-def setup_period_type_callbacks(app: dash.Dash) -> None:
+def setup_buttons_callbacks(app: dash.Dash) -> None:
     """Setup callbacks for period filter"""
 
     @app.callback(
@@ -45,7 +45,7 @@ def setup_period_type_callbacks(app: dash.Dash) -> None:
         current_state
     ):
         ctx = dash.callback_context
-        start_time = track_callback('app.period_filter', 'update_period', ctx)
+        start_time = track_callback('app.buttons_callbacks', 'update_period_type', ctx)
 
         button_map = {
             'btn-ytd': 'ytd',
@@ -70,7 +70,7 @@ def setup_period_type_callbacks(app: dash.Dash) -> None:
         if not ctx.triggered:
             period_type_text = translate(current_state)
             output = (*button_classes, no_update, period_type_text)
-            track_callback_end('app.period_filter', 'update_period_type', start_time, result=output)
+            track_callback_end('app.buttons_callbacks', 'update_period_type', start_time, result=output)
             return output
 
         try:
@@ -93,7 +93,7 @@ def setup_period_type_callbacks(app: dash.Dash) -> None:
                 logger.debug(f"'date_type_state: {new_state}")
 
                 output = (*button_classes, new_state, period_type_text)
-                track_callback_end('app.period_filter', 'update_period_type', start_time, result=output)
+                track_callback_end('app.buttons_callbacks', 'update_period_type', start_time, result=output)
                 return output
 
         except Exception as e:
@@ -114,15 +114,15 @@ def setup_period_type_callbacks(app: dash.Dash) -> None:
             State('reporting-form', 'data')
         ]
     )
-    def update_period_type(
+    def update_reporting_form(
         form_0420158_clicks, form_0420162_clicks,
         current_state
     ):
         
-        logger.warning(f"reporting form current state {current_state}")
-        logger.warning(f"DEFAULT_REPORTING_FORM: {DEFAULT_REPORTING_FORM}")  # Add this
+        logger.debug(f"reporting form current state {current_state}")
+        logger.debug(f"DEFAULT_REPORTING_FORM: {DEFAULT_REPORTING_FORM}")  # Add this
         ctx = dash.callback_context
-        start_time = track_callback('app.period_filter', 'update_period', ctx)
+        start_time = track_callback('app.buttons_callbacks', 'update_reporting_form', ctx)
         button_map = {
             'btn-0420158': '0420158',
             'btn-0420162': '0420162'  # Fixed typo here
@@ -135,7 +135,7 @@ def setup_period_type_callbacks(app: dash.Dash) -> None:
         
         # Set initial active button class
         for i, (btn_id, btn_val) in enumerate(button_map.items()):
-            logger.warning(f"Comparing {btn_val} with {active_main}")  # Add this
+            logger.debug(f"Comparing {btn_val} with {active_main}")  # Add this
             if btn_val == active_main:
                 button_classes[i] = button_period_main_active
                 break
@@ -143,7 +143,7 @@ def setup_period_type_callbacks(app: dash.Dash) -> None:
         # If no button clicked, return initial button classes but don't update state
         if not ctx.triggered:
             output = (*button_classes, dash.no_update)
-            track_callback_end('app.period_filter', 'update_period_type', start_time, result=output)
+            track_callback_end('app.buttons_callbacks', 'update_reporting_form', start_time, result=output)
             return output
             
         try:
@@ -160,7 +160,7 @@ def setup_period_type_callbacks(app: dash.Dash) -> None:
                 button_classes[button_index] = button_period_main_active
                 logger.debug(f"reporting_form_state: {new_state}")
                 output = (*button_classes, new_state)
-                track_callback_end('app.period_filter', 'update_period_type', start_time, result=output)
+                track_callback_end('app.buttons_callbacks', 'update_reporting_form', start_time, result=output)
                 return output
                 
         except Exception as e:
@@ -168,7 +168,7 @@ def setup_period_type_callbacks(app: dash.Dash) -> None:
             
         # Default return if nothing else matches - update buttons but not state
         output = (*button_classes, dash.no_update)
-        track_callback_end('app.period_filter', 'update_period_type', start_time, result=output)
+        track_callback_end('app.buttons_callbacks', 'update_reporting_form', start_time, result=output)
         return output
     
     @app.callback(
@@ -187,13 +187,13 @@ def setup_period_type_callbacks(app: dash.Dash) -> None:
             State('toggle-selected-qtoq', 'data')
         ]
     )
-    def update_metric_toggles(
+    def update_ms_dynamic_toggles(
         market_share_clicks, qtoq_clicks,
         market_share_state, qtoq_state
     ):
-        logger.warning(f"xxx toggle states - market share: {market_share_state}, qtoq: {qtoq_state}")
+        logger.debug(f"xxx toggle states - market share: {market_share_state}, qtoq: {qtoq_state}")
         ctx = dash.callback_context
-        start_time = track_callback('app.metric_toggles', 'update_toggles', ctx)
+        start_time = track_callback('app.buttons_callbacks', 'update_ms_dynamic_toggles', ctx)
         
         button_map = {
             'btn-market-share': ('market-share', 0),  # (id, index in button_classes)
@@ -214,13 +214,13 @@ def setup_period_type_callbacks(app: dash.Dash) -> None:
         # If no button clicked, return initial states
         if not ctx.triggered:
             output = (*button_classes, dash.no_update, dash.no_update)
-            track_callback_end('app.metric_toggles', 'update_toggles', start_time, result=output)
+            track_callback_end('app.buttons_callbacks', 'update_ms_dynamic_toggles', start_time, result=output)
             return output
             
         try:
             triggered = ctx.triggered[0]["prop_id"].split(".")[0]
-            logger.warning(f"update_metric_toggles triggered by {triggered}")
-            logger.warning(f"market_share_state {market_share_state}")
+            logger.debug(f"update_metric_toggles triggered by {triggered}")
+            logger.debug(f"market_share_state {market_share_state}")
             if triggered in button_map:
                 _, button_index = button_map[triggered]
                 
@@ -239,9 +239,9 @@ def setup_period_type_callbacks(app: dash.Dash) -> None:
                     else:
                         button_classes[button_index] = button_period_main_active
                         qtoq_state = ['show']
-                logger.warning(f"market_share_state after {market_share_state}")
+                logger.debug(f"market_share_state after {market_share_state}")
                 output = (*button_classes, market_share_state, qtoq_state)
-                track_callback_end('app.metric_toggles', 'update_toggles', start_time, result=output)
+                track_callback_end('app.buttons_callbacks', 'update_ms_dynamic_toggles', start_time, result=output)
                 return output
                 
         except Exception as e:
@@ -249,7 +249,7 @@ def setup_period_type_callbacks(app: dash.Dash) -> None:
             
         # Default return if nothing else matches
         output = (*button_classes, market_share_state, qtoq_state)
-        track_callback_end('app.metric_toggles', 'update_toggles', start_time, result=output)
+        track_callback_end('app.buttons_callbacks', 'update_ms_dynamic_toggles', start_time, result=output)
         return output
     
         
@@ -268,11 +268,11 @@ def setup_period_type_callbacks(app: dash.Dash) -> None:
         State('number-of-insurers', 'data'),
         prevent_initial_call=False
     )
-    def update_top_insurers_value(n_clicks_5, n_clicks_10, n_clicks_20, state):
+    def update_number_insurers(n_clicks_5, n_clicks_10, n_clicks_20, state):
         """Update the number of insurers based on button clicks"""
         ctx = dash.callback_context
-        logger.warning(f"number of clicked {n_clicks_5}, {n_clicks_10}, {n_clicks_20}")
-        start_time = track_callback('app.metric_toggles', 'update_toggles', ctx)
+        logger.debug(f"number of clicked {n_clicks_5}, {n_clicks_10}, {n_clicks_20}")
+        start_time = track_callback('app.buttons_callbacks', 'update_number_insurers', ctx)
     
         # Define button styling classes
     
@@ -301,12 +301,12 @@ def setup_period_type_callbacks(app: dash.Dash) -> None:
     
         if not ctx.triggered:
             output = (*button_classes, dash.no_update)
-            track_callback_end('app.metric_toggles', 'update_toggles', start_time, result=output)
+            track_callback_end('app.buttons_callbacks', 'update_number_insurers', start_time, result=output)
             return output
     
         try:
             triggered = ctx.triggered[0]["prop_id"].split(".")[0]
-            logger.warning(f"update_metric_toggles triggered by {triggered}")
+            logger.debug(f"update_metric_toggles triggered by {triggered}")
             
             if triggered in button_map:
                 _, button_index = button_map[triggered]
@@ -317,7 +317,7 @@ def setup_period_type_callbacks(app: dash.Dash) -> None:
                 button_classes[button_index] = button_period_main_active
                 
                 output = (*button_classes, state)
-                track_callback_end('app.metric_toggles', 'update_toggles', start_time, result=output)
+                track_callback_end('app.buttons_callbacks', 'update_number_insurers', start_time, result=output)
                 return output
     
         except Exception as e:
@@ -328,6 +328,7 @@ def setup_period_type_callbacks(app: dash.Dash) -> None:
         [
             Output("btn-period-1", "className"),
             Output("btn-period-2", "className"),
+            Output("btn-period-3", "className"),
             Output("btn-period-4", "className"),
             Output("btn-period-5", "className"),
             Output('number-of-periods-data-table', 'data'),
@@ -335,17 +336,18 @@ def setup_period_type_callbacks(app: dash.Dash) -> None:
         [
             Input('btn-period-1', 'n_clicks'),
             Input('btn-period-2', 'n_clicks'),
+            Input('btn-period-3', 'n_clicks'),
             Input('btn-period-4', 'n_clicks'),
             Input('btn-period-5', 'n_clicks')
         ],
         State('number-of-periods-data-table', 'data'),
         prevent_initial_call=False
     )
-    def update_periods_data_table_value(n_clicks_1, n_clicks_2, n_clicks_4, n_clicks_5, state):
+    def update_number_periods(n_clicks_1, n_clicks_2, n_clicks_3, n_clicks_4, n_clicks_5, state):
         """Update the number of periods based on button clicks"""
         ctx = dash.callback_context
-        logger.warning(f"number of clicked {n_clicks_1}, {n_clicks_2}, {n_clicks_4}, {n_clicks_5}")
-        start_time = track_callback('app.metric_toggles', 'update_periods', ctx)
+        logger.debug(f"number of clicked {n_clicks_1}, {n_clicks_2}, {n_clicks_3}, {n_clicks_4}, {n_clicks_5}")
+        start_time = track_callback('app.buttons_callbacks', 'update_number_periods', ctx)
     
         # Define button styling classes
         button_period_main = StyleConstants.BTN["PERIOD"]
@@ -353,17 +355,19 @@ def setup_period_type_callbacks(app: dash.Dash) -> None:
         button_map = {
             'btn-period-1': ('period-1', 0),
             'btn-period-2': ('period-2', 1),
-            'btn-period-4': ('period-4', 2),
-            'btn-period-5': ('period-5', 3)
+            'btn-period-3': ('period-3', 2),
+            'btn-period-4': ('period-4', 3),
+            'btn-period-5': ('period-5', 4)
         }
     
         # Initialize button classes
-        button_classes = [button_period_main for _ in range(4)]
+        button_classes = [button_period_main for _ in range(5)]
         
         # Set active button based on current state
         value_map = {
             'btn-period-1': 1,
             'btn-period-2': 2,
+            'btn-period-3': 3,
             'btn-period-4': 4,
             'btn-period-5': 5
         }
@@ -376,23 +380,23 @@ def setup_period_type_callbacks(app: dash.Dash) -> None:
     
         if not ctx.triggered:
             output = (*button_classes, dash.no_update)
-            track_callback_end('app.metric_toggles', 'update_periods', start_time, result=output)
+            track_callback_end('app.buttons_callbacks', 'update_number_periods', start_time, result=output)
             return output
     
         try:
             triggered = ctx.triggered[0]["prop_id"].split(".")[0]
-            logger.warning(f"update_periods triggered by {triggered}")
+            logger.debug(f"update_periods triggered by {triggered}")
             
             if triggered in button_map:
                 _, button_index = button_map[triggered]
                 state = value_map.get(triggered, 2)  # Default to 2 periods if something goes wrong
                 
                 # Update button classes based on new state
-                button_classes = [button_period_main for _ in range(4)]
+                button_classes = [button_period_main for _ in range(5)]
                 button_classes[button_index] = button_period_main_active
                 
                 output = (*button_classes, state)
-                track_callback_end('app.metric_toggles', 'update_periods', start_time, result=output)
+                track_callback_end('app.buttons_callbacks', 'update_number_periods', start_time, result=output)
                 return output
     
         except Exception as e:

@@ -1,108 +1,13 @@
 from config.logging_config import get_logger
+from callbacks.metrics import METRIC_CALCULATIONS, FORM_METRICS
+from constants.filter_options import METRICS_OPTIONS
+from typing import List, Dict, Any, Optional, Tuple
+import json
+from dataclasses import dataclass
+from config.default_values import DEFAULT_PRIMARY_METRICS, DEFAULT_PRIMARY_METRICS_158
+
 
 logger = get_logger(__name__)
-
-METRIC_CALCULATIONS = {
-    # Basic metrics (calculated first)
-    'net_balance': (
-        ['ceded_losses', 'ceded_premiums'],
-        lambda d: d.get('ceded_losses', 0) - d.get('ceded_premiums', 0)
-    ),
-    'total_premiums': (
-        ['direct_premiums', 'inward_premiums'],
-        lambda d: d.get('direct_premiums', 0) + d.get('inward_premiums', 0)
-    ),
-    'net_premiums': (
-        ['direct_premiums', 'inward_premiums', 'ceded_premiums'],
-        lambda d: d.get('direct_premiums', 0) + d.get('inward_premiums', 0) - d.get('ceded_premiums', 0)
-    ),
-    'total_losses': (
-        ['direct_losses', 'inward_losses'],
-        lambda d: d.get('direct_losses', 0) + d.get('inward_losses', 0)
-    ),
-    'net_losses': (
-        ['direct_losses', 'inward_losses', 'ceded_losses'],
-        lambda d: d.get('direct_losses', 0) + d.get('inward_losses', 0) - d.get('ceded_losses', 0)
-    ),
-    'gross_result': (
-        ['direct_premiums', 'inward_premiums', 'direct_losses', 'inward_losses'],
-        lambda d: (d.get('direct_premiums', 0) + d.get('inward_premiums', 0)) - 
-                 (d.get('direct_losses', 0) + d.get('inward_losses', 0))
-    ),
-    'net_result': (
-        ['direct_premiums', 'inward_premiums', 'direct_losses', 'inward_losses', 
-         'ceded_premiums', 'ceded_losses'],
-        lambda d: (d.get('direct_premiums', 0) + d.get('inward_premiums', 0) - d.get('ceded_premiums', 0)) - 
-                 (d.get('direct_losses', 0) + d.get('inward_losses', 0) - d.get('ceded_losses', 0))
-    ),
-    # Ratio metrics (calculated after basic metrics)
-    'average_sum_insured': (
-        ['sums_end', 'contracts_end'],
-        lambda d: (d.get('sums_end', 0) / 10) / (d.get('contracts_end', 1) * 1000) / 1000
-    ),
-    'average_new_sum_insured': (
-        ['new_sums', 'new_contracts'],
-        lambda d: (d.get('new_sums', 0) / 10) / (d.get('new_contracts', 1) * 1000) / 1000
-    ),
-    'average_new_premium': (
-        ['direct_premiums', 'new_contracts'],
-        lambda d: d.get('direct_premiums', 0) / (d.get('new_contracts', 1) * 1000)
-    ),
-    'average_loss': (
-        ['direct_losses', 'claims_settled'],
-        lambda d: d.get('direct_losses', 0) / (d.get('claims_settled', 1) * 1000)
-    ),
-    'average_rate': (
-        ['new_sums', 'direct_premiums'],
-        lambda d: d.get('direct_premiums', 0) / d.get('new_sums', 1)
-    ),
-    'ceded_premiums_ratio': (
-        ['ceded_premiums', 'total_premiums'],
-        lambda d: d.get('ceded_premiums', 0) / d.get('total_premiums', 1)
-    ),
-    'ceded_losses_ratio': (
-        ['ceded_losses', 'total_losses'],
-        lambda d: d.get('ceded_losses', 0) / d.get('total_losses', 1)
-    ),
-    'ceded_losses_to_ceded_premiums_ratio': (
-        ['ceded_losses', 'ceded_premiums'],
-        lambda d: d.get('ceded_losses', 0) / d.get('ceded_premiums', 1)
-    ),
-    'direct_loss_ratio': (
-        ['direct_losses', 'direct_premiums'],
-        lambda d: d.get('direct_losses', 0) / d.get('direct_premiums', 1)
-    ),
-    'inward_loss_ratio': (
-        ['inward_losses', 'inward_premiums'],
-        lambda d: d.get('inward_losses', 0) / d.get('inward_premiums', 1)
-    ),
-    'gross_loss_ratio': (
-        ['total_losses', 'total_premiums'],
-        lambda d: d.get('total_losses', 0) / d.get('total_premiums', 1)
-    ),
-    'net_loss_ratio': (
-        ['net_losses', 'net_premiums'],
-        lambda d: d.get('net_losses', 0) / d.get('net_premiums', 1)
-    ),
-    'effect_on_loss_ratio': (
-        ['total_losses', 'net_losses', 'total_premiums', 'net_premiums'],
-        lambda d: (d.get('total_losses', 0) / d.get('total_premiums', 1)) -
-                 (d.get('net_losses', 0) / d.get('net_premiums', 1))
-    ),
-    'ceded_ratio_diff': (
-        ['ceded_losses', 'total_losses', 'ceded_premiums', 'total_premiums'],
-        lambda d: (d.get('ceded_losses', 0) / d.get('total_losses', 1)) -
-                 (d.get('ceded_premiums', 0) / d.get('total_premiums', 1))
-    ),
-    'premiums_interm_ratio': (
-        ['direct_premiums', 'premiums_interm'],
-        lambda d: d.get('premiums_interm', 0) / d.get('direct_premiums', 1)
-    ),
-    'commissions_rate': (
-        ['premiums_interm', 'commissions_interm'],
-        lambda d: d.get('commissions_interm', 0) / d.get('premiums_interm', 1)
-    )
-}
 
 def can_calculate_metric(metric_name, available_fields, metrics_dict, calculated_metrics=None, depth=0):
     """
@@ -240,6 +145,7 @@ def get_available_metrics(available_fields, metrics_dict=METRIC_CALCULATIONS):
 
     return available_metrics
 
+
 def explain_metric_calculation(metric_name, available_fields, metrics_dict=METRIC_CALCULATIONS):
     """
     Explain how a metric can be calculated, showing the dependency chain
@@ -281,30 +187,125 @@ def explain_metric_calculation(metric_name, available_fields, metrics_dict=METRI
     
     return _explain_recursive(metric_name)
 
-# Test the implementation
-available_fields = ['direct_premiums', 'direct_losses', 'commissions_interm']
-logger.debug(f"Starting test with {available_fields}")
+def get_premium_loss_state(metrics: List[str], reporting_form: str) -> Tuple[bool, Optional[List[str]]]:
+    if not metrics:
+        return True, ['direct']
 
-available_metrics = get_available_metrics(available_fields)
-
-# Print available metrics with their dependencies
-logger.debug(f"available fields {available_fields}")
-logger.debug(f"available_metrics {available_metrics}")
-
-
-logger.debug(f"\nFinal available metrics:")
-
-for metric in available_metrics:
-    required_fields = METRIC_CALCULATIONS[metric][0]
-    logger.debug(f"\n- {metric} (requires: {', '.join(required_fields)})")
+    is_form_158 = reporting_form == '0420158'
+    states = {
+        ('total_premiums', 'total_losses'): 
+            (True, ['direct', 'inward']) if is_form_158 else (False, ['direct', 'inward']),
+        ('ceded_premiums', 'ceded_losses', 'ceded_premiums_ratio',
+         'ceded_losses_to_ceded_premiums_ratio', 'net_premiums', 'net_losses'):
+            (True, ['direct', 'inward']),
+        ('inward_premiums', 'inward_losses'): 
+            (True, ['inward']),
+        ('direct_premiums', 'direct_losses'): (True, ['direct'])
+    }
     
-    # Show which fields are optional vs required
-    calc_function = METRIC_CALCULATIONS[metric][1]
-    calc_str = str(calc_function)
-    optional_fields = [field for field in required_fields 
-                      if f"get('{field}', 0)" in calc_str]
-    if optional_fields:
-        logger.debug(f"  Optional fields (default to 0): {', '.join(optional_fields)}")
+    result_bool = False  # Change initial value to False
+    result_states = set()
+    
+    # Check each metric in the input list
+    for metric in metrics:
+        found = False
+        for metrics_group, (bool_state, state_list) in states.items():
+            if metric in metrics_group:
+                found = True
+                # Update the boolean state
+                result_bool = result_bool or bool_state
+                # Always add states to the result set if they exist
+                if state_list:
+                    result_states.update(state_list)
+                break
+        if not found:
+            result_states.add('direct')
+    
+    # If no states were collected, use default
+    if not result_states:
+        result_states.add('direct')
 
-# Example of detailed explanation for a specific metric
-logger.debug(f"\nDetailed explanation for ceded_premiums_ratio:")
+    logger.debug(f"metric: {metric}")
+    logger.debug(f"readonly: {result_bool}")
+    logger.debug(f"values: {sorted(list(result_states))}")
+    return result_bool, sorted(list(result_states))
+
+
+def get_metric_options(
+    reporting_form: str,
+    selected_primary_metrics: Optional[List[str]] = None,
+    selected_secondary_metrics: Optional[List[str]] = None
+) -> Dict[str, List[Dict[str, Any]]]:
+    # 1. Initialize and normalize inputs
+    allowed_basic_metrics = FORM_METRICS.get(reporting_form, set())
+    available_calculated_metrics = set(get_available_metrics(allowed_basic_metrics))  # Convert to set explicitly
+    selected_primary_metrics = [selected_primary_metrics] if isinstance(selected_primary_metrics, str) else (selected_primary_metrics or [])
+    selected_secondary_metrics = [selected_secondary_metrics] if isinstance(selected_secondary_metrics, str) else (selected_secondary_metrics or [])
+
+
+    # 2. Determine default metrics sets
+    primary_metric_set = allowed_basic_metrics.copy()
+    secondary_metric_set = available_calculated_metrics.copy()
+
+    # 3. Handle selected primary metrics that are in secondary set
+    for metric in selected_primary_metrics:
+        if metric in secondary_metric_set:
+            primary_metric_set.add(metric)
+            secondary_metric_set.remove(metric)
+            
+    # 4. Validate primary metrics
+    valid_primary_metrics = [
+        metric for metric in selected_primary_metrics 
+        if metric in primary_metric_set
+    ] or None
+
+    # 5. Handle selected secondary metrics based on primary validation
+    if not valid_primary_metrics and selected_secondary_metrics:
+        # If no valid primary metrics, collect eligible secondary metrics
+        valid_primary_metrics = []
+        metrics_to_remove = []
+        
+        for metric in selected_secondary_metrics:
+            if metric in primary_metric_set or metric in secondary_metric_set:
+                valid_primary_metrics.append(metric)
+                metrics_to_remove.append(metric)
+                primary_metric_set.add(metric)
+                secondary_metric_set.discard(metric)
+        
+        # Remove processed metrics from selected_secondary_metrics
+        for metric in metrics_to_remove:
+            selected_secondary_metrics.remove(metric)
+    else:
+        # If we have valid primary metrics, move appropriate metrics to secondary
+        for metric in selected_secondary_metrics:
+            if metric in primary_metric_set:
+                primary_metric_set.remove(metric)
+                secondary_metric_set.add(metric)
+
+    valid_primary_metrics = valid_primary_metrics if valid_primary_metrics is not None else DEFAULT_PRIMARY_METRICS if reporting_form == '0420162' else DEFAULT_PRIMARY_METRICS_158
+
+    # 6. Validate secondary metrics
+    valid_secondary_metrics = [
+        metric for metric in selected_secondary_metrics 
+        if metric in secondary_metric_set
+    ] or None
+
+    valid_secondary_metrics = valid_secondary_metrics if valid_secondary_metrics is not None else []
+
+    # 7. Create options based on the metric sets
+    primary_options = [
+        opt for opt in METRICS_OPTIONS 
+        if opt['value'] in primary_metric_set
+    ]
+
+    secondary_options = [
+        opt for opt in METRICS_OPTIONS 
+        if opt['value'] in secondary_metric_set
+    ]
+
+    return {
+        'primary_y_metric_options': primary_options,
+        'secondary_y_metric_options': secondary_options,
+        'primary_metric': valid_primary_metrics,
+        'secondary_metric': valid_secondary_metrics
+    }

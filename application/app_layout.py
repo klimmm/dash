@@ -4,7 +4,6 @@ from typing import List, Optional
 from application.components.insurance_lines_tree import create_lines_checklist_buttons, create_debug_footer
 from application.create_component import FilterComponents
 from application.filters import create_filters
-from application.market_component import create_market_analysis_component
 from application.navbar_and_stores import create_navbar, create_stores
 from application.style_config import StyleConstants
 
@@ -56,9 +55,6 @@ def create_app_layout(
                             )
                         ], className=StyleConstants.CONTAINER["DATA_TABLE"]),
                     ], md=12),
-                    dbc.Col([
-                        create_market_analysis_component()
-                    ], style={"display": "none"}, md=2)
                 ])
             ], className=StyleConstants.LAYOUT),
             html.Div([
