@@ -1,6 +1,6 @@
 import os
 import logging
-from typing import List, Dict, Any
+from typing import List
 
 import dash
 import dash_bootstrap_components as dbc
@@ -26,20 +26,21 @@ logger = get_logger(__name__)
 setup_logging(console_level=logging.INFO, file_level=logging.DEBUG)
 
 
+app = dash.Dash(
+    __name__,
+    url_base_pathname="/",
+    assets_folder='assets',
+    assets_ignore='.ipynb_checkpoints/*',
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
+    suppress_callback_exceptions=True,
+    update_title=None
+)
+server = app.server  # Add this line
 
 
 def create_app(data_store: InsuranceDataStore) -> dash.Dash:
     """Create and configure Dash application"""
-    app = dash.Dash(
-        __name__,
-        url_base_pathname="/",
-        assets_folder='assets',
-        assets_ignore='.ipynb_checkpoints/*',
-        external_stylesheets=[dbc.themes.BOOTSTRAP],
-        suppress_callback_exceptions=True,
-        update_title=None
-    )
-    server = app.server
+
     app.title = APP_TITLE
     app.layout = create_app_layout(
         data_store.initial_quarter_options,
@@ -274,7 +275,6 @@ def main():
         print("Starting application initialization...")
         data_store = InsuranceDataStore()
         app = create_app(data_store)
-
         port = int(os.environ.get("PORT", PORT))
         print(f"Starting server on port {port}...")
         app.run_server(debug=DEBUG_MODE, port=port, host='0.0.0.0')
