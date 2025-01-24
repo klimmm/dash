@@ -1,7 +1,7 @@
 import dash_bootstrap_components as dbc
 from dash import dcc, html
 from typing import List, Optional
-from application.components.insurance_lines_tree import create_lines_checklist_buttons, create_debug_footer
+from application.insurance_lines_tree import create_lines_checklist_buttons, create_debug_footer
 from application.create_component import FilterComponents
 from application.filters import create_filters
 from application.navbar_and_stores import create_navbar, create_stores

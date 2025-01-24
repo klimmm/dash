@@ -1,7 +1,7 @@
 from dash import dcc, html
 import dash_bootstrap_components as dbc
 from typing import List
-from application.components.insurance_lines_tree import initial_state
+from application.insurance_lines_tree import initial_state
 from application.style_config import StyleConstants
 from config.default_values import DEFAULT_REPORTING_FORM, DEFAULT_NUMBER_OF_PERIODS, DEFAULT_NUMBER_OF_INSURERS, DEFAULT_PERIOD_TYPE, DEFAULT_SHOW_MARKET_SHARE, DEFAULT_SHOW_CHANGES
 

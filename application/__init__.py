@@ -11,7 +11,7 @@ from functools import lru_cache
 from typing import Dict, Any, List
 from application.app_layout import create_app_layout
 from application.create_component import FilterComponents
-from application.components.insurance_lines_tree import insurance_lines_tree, InsuranceLinesTree
+from application.insurance_lines_tree import insurance_lines_tree, InsuranceLinesTree
 from callbacks.app_layout_callbacks import (
     setup_debug_callbacks,
     setup_resize_observer_callback,
