@@ -25,33 +25,6 @@ from data_store import InsuranceDataStore
 logger = get_logger(__name__)
 setup_logging(console_level=logging.INFO, file_level=logging.DEBUG)
 
-
-app = dash.Dash(
-    __name__,
-    url_base_pathname="/",
-    assets_folder='assets',
-    assets_ignore='.ipynb_checkpoints/*',
-    external_stylesheets=[dbc.themes.BOOTSTRAP],
-    suppress_callback_exceptions=True,
-    update_title=None
-)
-server = app.server  # Add this line
-
-
-def create_app(data_store: InsuranceDataStore) -> dash.Dash:
-    """Create and configure Dash application"""
-
-    app.title = APP_TITLE
-    app.layout = create_app_layout(
-        data_store.initial_quarter_options,
-        data_store.initial_insurer_options
-    )
-
-    _setup_callbacks(app, data_store)
-
-    return app
-
-
 def _setup_callbacks(app: dash.Dash, data_store: InsuranceDataStore):
     """Configure all application callbacks"""
     from application import (
@@ -82,6 +55,7 @@ def _setup_callbacks(app: dash.Dash, data_store: InsuranceDataStore):
         data_store.quarter_options['0420158'],
         data_store
     )
+
 
 def _setup_filter_update_callbacks(app: Dash, quarter_options_162, quarter_options_158, data_store) -> None:
     @app.callback(
@@ -269,20 +243,43 @@ def _setup_filter_update_callbacks(app: Dash, quarter_options_162, quarter_optio
             track_callback_end('app.callbacks.filter_update_callbacks', 'update_options', start_time, error=str(e))
             raise
 
+
 def main():
     """Application entry point"""
     try:
-        print("Starting application initialization...")
-        data_store = InsuranceDataStore()
-        app = create_app(data_store)
+        print("Starting server on port {port}...")
         port = int(os.environ.get("PORT", PORT))
-        print(f"Starting server on port {port}...")
         app.run_server(debug=DEBUG_MODE, port=port, host='0.0.0.0')
-
     except Exception as e:
         print(f"Error during startup: {e}")
         raise
 
+# Now initialize the application after all functions are defined
+print("Starting application initialization...")
+data_store = InsuranceDataStore()
+
+app = dash.Dash(
+    __name__,
+    url_base_pathname="/",
+    assets_folder='assets',
+    assets_ignore='.ipynb_checkpoints/*',
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
+    suppress_callback_exceptions=True,
+    update_title=None
+)
+
+# Configure the app
+app.title = APP_TITLE
+app.layout = create_app_layout(
+    data_store.initial_quarter_options,
+    data_store.initial_insurer_options
+)
+
+# Setup callbacks
+_setup_callbacks(app, data_store)
+
+# Create server instance
+server = app.server
 
 if __name__ == '__main__':
     main()
