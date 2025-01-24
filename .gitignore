@@ -202,3 +202,4 @@ application/market_analysis_component.py
 application/market_callbacks.py
 application/market_cards.py
 application/market_component.py
+combapp.py
