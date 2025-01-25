@@ -3,7 +3,7 @@
     padding-right: 15px;
     padding-left: 15px;
     margin-right: auto;
-    
+    min-width: 430px;
     
 }
 
@@ -48,6 +48,10 @@
     overflow: visible;
 }
 
+.sidebar-col.row {
+    max-width: 830px;
+}
+    
 .sidebar-col.collapsed {
     width: 100%;
     max-width: 100%;

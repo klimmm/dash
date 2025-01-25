@@ -111,7 +111,7 @@ class FilterComponents:
                 'dynamic': True
             },
             'end-quarter': {
-                'options': [],
+                'options': [{'label': '2024Q3', 'value': '2024Q3'}],
                 'value': DEFAULT_END_QUARTER,
                 'placeholder': "Select quarter...",
                 'clearable': False

@@ -41,6 +41,7 @@
 .filter-row {
     display: flex;
     width: 100%;
+    max-width: 430px;
     border: 0;
     margin: 0 !important;
     align-items: center;
@@ -180,7 +181,6 @@ input[autocomplete="off"][role="combobox"] {
     overflow: hidden !important;
     clip: rect(0, 0, 0, 0) !important;
     white-space: nowrap !important;
-    border: 0.1px solid blue;
 }
 
 /* Menu styling */
@@ -221,7 +221,7 @@ input[autocomplete="off"][role="combobox"] {
 
 .dd-control .Select-value {
 
-p    background: #e9ecef;
+    background: #e9ecef;
 
 
 }
@@ -239,7 +239,6 @@ p    background: #e9ecef;
     margin: 0 !important;
     padding: 0 !important;
     font-size: var(--font-size-xs) !important;
-    border: 0.1px solid blue;
     display: flex;
     align-items: center !important;
 }

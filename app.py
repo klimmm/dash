@@ -204,14 +204,14 @@ def process_data_part1(
             'insurer_options': insurer_options,
             'num_periods': num_periods  # Add this if needed for calculations
         }
-
+        
         result = (
             end_quarter_options,
             insurance_line_dropdown_options,
             [checklist_component],
             intermediate_data  # Pass as is, without additional nesting
         )
-
+        logger.warning(f"end_quarter_options{end_quarter_options}")
         track_callback_end('main', 'process_data_part1', start_time, result=result)
         memory_monitor.log_memory("end_process_data_part1", logger)
         return result
