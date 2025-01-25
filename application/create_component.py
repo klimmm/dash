@@ -104,7 +104,7 @@ class FilterComponents:
                 'placeholder': "Доп. показатель...",
             },
             'selected-insurers': {
-                'options': [],
+                'options': [{'label': 'Весь рынок', 'value': 'total'}],
                 'value': DEFAULT_INSURER,
                 'multi': False,
                 'clearable': False,
