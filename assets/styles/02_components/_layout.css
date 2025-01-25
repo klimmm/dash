@@ -4,15 +4,23 @@
     padding-left: 15px;
     margin-right: auto;
     
+    
 }
+
+
 
 .main-navbar {    
 }
 
+.card-body {
+    margin-left: 5px;
+    
+}
 /* Base container styles */
 .layout-wrapper {
     width: 100%;
     display: flex;
+
     flex-direction: column;
     position: relative;
     padding: 0;
@@ -20,11 +28,11 @@
 }
 
 .main-filters-row {
-    border: 0.2px solid red;
+    border-top: 0.2px solid red;
 }
 
 .reporting-controls-row {
-    border: 0.2px solid red;
+    border-top: 0.2px solid red;
 }
 
 /* Sidebar styles */
@@ -32,8 +40,8 @@
     width: 100%;
     max-width: 100%;
     border: 0; 
-    border: 1px solid #e9ecef;
     border: 0; 
+    border-collapse: collapse;
     padding: 0 !important;
     margin: 0 !important;
     position: relative;
@@ -54,12 +62,12 @@
 .main-filter-column {
     padding: 0 !important;
     max-width: 100%;
-    border: 0.2px solid #e9ecef;
+    border-collapse: collapse;
     border: 0;
 }
 
 .datatable-container {
-    width: 100%;
+    width: fit-content;
     max-width: none;
     border: 1px solid #ccc;
     height: calc(100% - var(--titles-height));
@@ -67,7 +75,8 @@
     font-family: var(--font-family-sans);
     font-size: var(--table-font-size);
     overflow-x: hidden;
-    margin: 0;
+    margin-left: 1px;
+    border: 0;
 }
 
 .titles-container {

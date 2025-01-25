@@ -41,3 +41,52 @@
     color: var(--color-text-inverse);
     border-color: var(--color-blue-600);
 }
+/* Common button base styles */
+.btn-metric-add,
+.btn-metric-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.75rem;
+    padding: 0 !importatnt;
+    padding-block-end: 0.1rem !important;
+    padding-block-start: 0.1rem !important;
+    padding-inline-end: 0.1rem !important;
+    padding-inline-start: 0.1rem !important;
+    max-width: 1.8rem;
+    min-width: 1.8rem;
+    max-height: 1.8rem;
+    min-height: 1.8rem;
+    margin-left: 0.25rem !important;
+    margin-right: 0.25rem !important;
+    background-color: transparent;
+    border: none;
+    transition: all 0.15s ease-in-out;
+}
+
+.btn-metric-add:focus,
+.btn-metric-remove:focus {
+    outline: none;
+}
+
+/* Add Button */
+.btn-metric-add {
+    color: #007bff;  /* Bootstrap blue */
+    font-size: 2rem;
+    font-weight: 400;
+}
+
+.btn-metric-add:hover {
+    background-color: rgba(0, 123, 255, 0.1);  /* Light blue background */
+}
+
+/* Remove Button */
+.btn-metric-remove {
+    color: #dc3545;  /* Bootstrap red */
+    font-size: 1.5rem;
+    font-weight: 400;
+}
+
+.btn-metric-remove:hover {
+    background-color: rgba(220, 53, 69, 0.1);  /* Light red background */
+}

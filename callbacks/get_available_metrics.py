@@ -187,12 +187,14 @@ def explain_metric_calculation(metric_name, available_fields, metrics_dict=METRI
     
     return _explain_recursive(metric_name)
 
-def get_premium_loss_state(metrics: List[str], reporting_form: str) -> Tuple[bool, Optional[List[str]]]:
-    if not metrics:
+
+def get_checklist_config(selected_metrics: List[str], reporting_form: str) -> Tuple[bool, Optional[List[str]]]:
+    if not selected_metrics:
         return True, ['direct']
 
     is_form_158 = reporting_form == '0420158'
-    states = {
+    
+    metric_configs = {
         ('total_premiums', 'total_losses'): 
             (True, ['direct', 'inward']) if is_form_158 else (False, ['direct', 'inward']),
         ('ceded_premiums', 'ceded_losses', 'ceded_premiums_ratio',
@@ -200,35 +202,32 @@ def get_premium_loss_state(metrics: List[str], reporting_form: str) -> Tuple[boo
             (True, ['direct', 'inward']),
         ('inward_premiums', 'inward_losses'): 
             (True, ['inward']),
-        ('direct_premiums', 'direct_losses'): (True, ['direct'])
+        ('direct_premiums', 'direct_losses'): 
+            (True, ['direct'])
     }
     
-    result_bool = False  # Change initial value to False
-    result_states = set()
+    checklist_mode = False
+    allowed_types = set()
     
-    # Check each metric in the input list
-    for metric in metrics:
-        found = False
-        for metrics_group, (bool_state, state_list) in states.items():
-            if metric in metrics_group:
-                found = True
-                # Update the boolean state
-                result_bool = result_bool or bool_state
-                # Always add states to the result set if they exist
-                if state_list:
-                    result_states.update(state_list)
+    for metric in selected_metrics:
+        metric_found = False
+        for metric_group, (is_readonly, type_list) in metric_configs.items():
+            if metric in metric_group:
+                metric_found = True
+                checklist_mode = checklist_mode or is_readonly
+                allowed_types.update(type_list)
                 break
-        if not found:
-            result_states.add('direct')
+        if not metric_found:
+            allowed_types.add('direct')
     
-    # If no states were collected, use default
-    if not result_states:
-        result_states.add('direct')
+    if not allowed_types:
+        allowed_types.add('direct')
 
     logger.debug(f"metric: {metric}")
-    logger.debug(f"readonly: {result_bool}")
-    logger.debug(f"values: {sorted(list(result_states))}")
-    return result_bool, sorted(list(result_states))
+    logger.debug(f"readonly: {checklist_mode}")
+    logger.debug(f"values: {sorted(list(allowed_types))}")
+    
+    return checklist_mode, sorted(list(allowed_types))
 
 
 def get_metric_options(
@@ -282,7 +281,7 @@ def get_metric_options(
                 primary_metric_set.remove(metric)
                 secondary_metric_set.add(metric)
 
-    valid_primary_metrics = valid_primary_metrics if valid_primary_metrics is not None else DEFAULT_PRIMARY_METRICS if reporting_form == '0420162' else DEFAULT_PRIMARY_METRICS_158
+    primary_metric_value = valid_primary_metrics if valid_primary_metrics is not None else DEFAULT_PRIMARY_METRICS if reporting_form == '0420162' else DEFAULT_PRIMARY_METRICS_158
 
     # 6. Validate secondary metrics
     valid_secondary_metrics = [
@@ -290,22 +289,17 @@ def get_metric_options(
         if metric in secondary_metric_set
     ] or None
 
-    valid_secondary_metrics = valid_secondary_metrics if valid_secondary_metrics is not None else []
+    secondary_metric_value = valid_secondary_metrics if valid_secondary_metrics is not None else []
 
     # 7. Create options based on the metric sets
-    primary_options = [
+    primary_metric_options = [
         opt for opt in METRICS_OPTIONS 
         if opt['value'] in primary_metric_set
     ]
 
-    secondary_options = [
+    secondary_metric_options = [
         opt for opt in METRICS_OPTIONS 
         if opt['value'] in secondary_metric_set
     ]
 
-    return {
-        'primary_y_metric_options': primary_options,
-        'secondary_y_metric_options': secondary_options,
-        'primary_metric': valid_primary_metrics,
-        'secondary_metric': valid_secondary_metrics
-    }
+    return primary_metric_options, secondary_metric_options, primary_metric_value, secondary_metric_value

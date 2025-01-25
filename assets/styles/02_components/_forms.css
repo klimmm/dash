@@ -46,7 +46,7 @@
     align-items: center;
     min-height: 2.5rem !important;
     padding-right: 0;
-    border: 1px solid #ccc;
+    border-top: 1px solid #e9ecef;
     
 }
 
@@ -270,6 +270,7 @@ input[autocomplete="off"] {
 input[aria-activedescendant="react-select-4--value"] {
     display: none !important;
 }
+
 
 /* Multi-value wrapper */
 .Select-multi-value-wrapper {

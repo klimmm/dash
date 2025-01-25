@@ -49,8 +49,8 @@ def create_filters() -> html.Div:
                     {
                         'label': 'Бизнес:',
                         'component_type': 'checklist',
-                        'component_id': 'premium-loss-checklist',
-                        'container_id': 'premium-loss-checklist-container',
+                        'component_id': 'business-type-checklist',
+                        'container_id': 'business-type-checklist-container',
                         'label_width': 3,
                         'component_width': 9
                     },
@@ -140,7 +140,7 @@ def create_filters() -> html.Div:
                     {
                         'label': 'Показатель:',
                         'component_type': 'dropdown',
-                        'component_id': 'primary-y-metric',
+                        'component_id': 'primary-metric',
                         'label_width': 4,
                         'component_width': 8
                     },
@@ -154,13 +154,13 @@ def create_filters() -> html.Div:
         """Helper function to create filter columns based on configuration"""
         columns = []
         column_widths = config.get('column_widths', {'xs': 12, 'sm': 6, 'md': 6})
-        
+
         for col_data in config['columns']:
             component = components.create_component(
                 col_data['component_type'],
                 col_data['component_id']
             )
-            
+
             filter_row = components.create_filter_row(
                 label_text=col_data['label'],
                 component=component,
@@ -169,7 +169,7 @@ def create_filters() -> html.Div:
                 component_id=col_data['component_id'],
                 container_id=col_data.get('container_id')
             )
-            
+
             column = dbc.Col(
                 filter_row,
                 **column_widths,

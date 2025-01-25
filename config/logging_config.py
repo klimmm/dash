@@ -117,6 +117,7 @@ def setup_logging(console_level=logging.DEBUG, file_level=logging.DEBUG,
             'get_y_ranges': logging.WARNING,
         },
         'constants': logging.WARNING,
+        'callbacks': logging.WARNING,
         'data_process': logging.WARNING,
         'fsevents': fsevents_level,
     }
@@ -245,6 +246,18 @@ def track_callback_end(logger_name: str, callback_name: str,
     # Log slow callback warning separately
     if execution_time > 1000:
         logger.warning(f"Slow callback detected: {callback_name} took {execution_time:.2f}ms")
+
+def callback_error_handler(func):
+    """Decorator to handle callback errors uniformly"""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            logger.error(f"Error in {func.__name__}: {str(e)}", exc_info=True)
+            raise
+    return wrapper
+
 
 
 @dataclass

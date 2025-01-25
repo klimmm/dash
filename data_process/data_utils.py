@@ -35,10 +35,10 @@ def get_categories_by_level(category_structure, level=1, indent_char="  "):
         # Check if category exists in structure
         if code not in category_structure:
             return []
-            
+
         if max_level is not None and current_level > max_level:
             return []
-            
+
         result = []
         # Add current category
         label = category_structure[code].get('label', f"Category {code}")
@@ -48,7 +48,7 @@ def get_categories_by_level(category_structure, level=1, indent_char="  "):
             'label': f"{indentation}{cleaned_label}",
             'value': code
         })
-        
+
         # Add children if within max_level
         if max_level is None or current_level < max_level:
             # Safely get children, defaulting to empty list if none exist
@@ -57,14 +57,14 @@ def get_categories_by_level(category_structure, level=1, indent_char="  "):
             for child in children:
                 if child in category_structure:  # Extra safety check
                     result.extend(traverse_categories(child, current_level + 1, max_level))
-                
+
         return result
 
     # Verify root category exists
     root = "все линии"
     if root not in category_structure:
         return []  # Return empty list if root category doesn't exist
-        
+
     # Start with root category and traverse
     return traverse_categories(root, 0, level)
 

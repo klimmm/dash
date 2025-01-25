@@ -32,16 +32,5 @@
   border: 0
 }
 
-@media (max-width: 768px) {
-  
-  .table-cell,
-  .table-header {
-    font-size: var(--font-size-xs);
-    padding: calc(var(--space-2) * 0.75);
-  }
-  
-  .table-cell--text {
-    max-width: 150px;
-  }
-}
+
 

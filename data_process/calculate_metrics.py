@@ -126,7 +126,7 @@ def get_metric_dependencies(metric: str) -> Set[str]:
     """
     if metric not in METRIC_CALCULATIONS:
         return set()
-    
+
     deps = set(METRIC_CALCULATIONS[metric][0])
     for dep in list(deps):  # Convert to list to avoid modifying set during iteration
         deps.update(get_metric_dependencies(dep))
@@ -149,11 +149,11 @@ def get_required_metrics(selected_metrics: List[str], premium_loss_selection: Op
         metric[:-len(suffix)] if any(metric.endswith(s) for s in suffix_list) else metric
         for metric in selected_metrics
     ]
-    
+
     required = set(clean_metrics)
     for metric in clean_metrics:
         required.update(get_metric_dependencies(metric))
-    
+
     return required
 
 def get_calculation_order(metrics: Set[str]) -> List[str]:
@@ -167,20 +167,20 @@ def get_calculation_order(metrics: Set[str]) -> List[str]:
     """
     ordered = []
     metrics_set = set(metrics)
-    
+
     while metrics_set:
         # Find metrics with no remaining dependencies or base metrics
         available = {m for m in metrics_set 
                     if m not in METRIC_CALCULATIONS or 
                     all(dep not in metrics_set for dep in METRIC_CALCULATIONS[m][0])}
-        
+
         if not available:
             logger.debug(f"Circular dependency detected in remaining metrics: {metrics_set}")
             break
-            
+
         ordered.extend(sorted(available))  # Sort for deterministic ordering
         metrics_set -= available
-    
+
     return ordered
 
 def calculate_metrics(
@@ -200,10 +200,10 @@ def calculate_metrics(
         DataFrame with calculated metrics added
     """
     logger.debug(f"Starting calculation for {len(selected_metrics)} selected metrics")
-    
+
     # Get all required metrics including dependencies
     required_metrics = get_required_metrics(selected_metrics)
-    
+
     # Filter based on premium_loss_selection if provided
     if premium_loss_selection:
         if 'direct' not in premium_loss_selection:
@@ -212,15 +212,15 @@ def calculate_metrics(
         if 'inward' not in premium_loss_selection:
             required_metrics.discard('inward_premiums')
             required_metrics.discard('inward_losses')
-    
+
     # Get proper calculation order
     calculation_order = get_calculation_order(required_metrics)
     logger.debug(f"Calculation order determined: {calculation_order}")
-    
+
     # Process each group separately
     grouping_cols = [col for col in df.columns if col not in ['metric', 'value']]
     result_frames = []
-    
+
     for _, group in df.groupby(grouping_cols):
         metrics_dict = dict(zip(group['metric'], group['value']))
         base_dict = {col: group[col].iloc[0] for col in grouping_cols}
@@ -228,7 +228,7 @@ def calculate_metrics(
         logger.debug(f"metrics_dict: {metrics_dict}")
         # Calculate metrics in determined order
         for metric in calculation_order:
-            
+
             if metric in metrics_dict:
                 logger.debug(f"Skipping existing metric: {metric}")
                 continue
@@ -249,13 +249,16 @@ def calculate_metrics(
             except Exception as e:
                 logger.debug(f"Error calculating {metric}: {str(e)}")
                 continue
-        
+
         if new_rows:
             result_frames.append(pd.DataFrame(new_rows))
-    
+
     # Combine results
     if result_frames:
         result_df = pd.concat([df] + result_frames, ignore_index=True)
-        return result_df.drop_duplicates(subset=grouping_cols + ['metric'], keep='last')
-    
+        result_df = result_df.drop_duplicates(subset=grouping_cols + ['metric'], keep='last')
+        result_df = result_df[result_df['metric'].isin(selected_metrics)]
+        return result_df
+
+    df = df[df['metric'].isin(selected_metrics)]
     return df

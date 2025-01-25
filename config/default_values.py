@@ -7,7 +7,7 @@ DEFAULT_REPORTING_FORM = '0420162'
 
 # default_values.py
 DEFAULT_CHECKED_LINES = ["все линии"]
-DEFAULT_PRIMARY_METRICS = ['direct_premiums']
+DEFAULT_PRIMARY_METRICS = 'direct_premiums'
 DEFAULT_PRIMARY_METRICS_158 = ['total_premiums']
 DEFAULT_INSURER = 'total'
 DEFAULT_NUMBER_OF_INSURERS = 20
@@ -15,11 +15,10 @@ DEFAULT_NUMBER_OF_PERIODS = 2
 DEFAULT_PRIMARY_METRICS_INWARD = ['ceded_premiums', 'inward_premiums']
 DEFAULT_SECONDARY_METRICS = []
 
-DEFAULT_PREMIUM_LOSS_TYPES = ['direct']
+DEFAULT_BUSINESS_TYPE = ['direct']
 
 DEFAULT_SHOW_MARKET_SHARE = ['show']
 DEFAULT_SHOW_CHANGES= []
-
 
 
 # Main period selector buttons (YTD, YoY, QoQ, etc.)

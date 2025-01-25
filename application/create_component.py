@@ -9,44 +9,27 @@ from data_process.data_utils import (
     category_structure_158,
     get_categories_by_level
 )
-from constants.filter_options import VALUE_METRICS_OPTIONS, PREMIUM_LOSS_OPTIONS
+from constants.filter_options import VALUE_METRICS_OPTIONS, BUSINESS_TYPE_OPTIONS
 from config.default_values import (
     DEFAULT_PRIMARY_METRICS,
     DEFAULT_SECONDARY_METRICS,
     DEFAULT_CHECKED_LINES,
     DEFAULT_END_QUARTER,
     DEFAULT_REPORTING_FORM,
-    DEFAULT_PREMIUM_LOSS_TYPES,
+    DEFAULT_BUSINESS_TYPE,
     DEFAULT_INSURER
 )
 from config.logging_config import get_logger
 
 logger = get_logger(__name__)
 
-@dataclass
-class ComponentConfig:
-    """Configuration for UI components"""
-    id: str
-    options: List[Dict[str, Any]]
-    value: Any
-    placeholder: str = ""
-    clearable: bool = True
-    required: bool = True
-    multi: bool = False
-    switch: bool = False
-    inline: bool = False
-    type: str = "text"
-    min: Optional[int] = None
-    max: Optional[int] = None
-    step: Optional[int] = None
-
-
-
 class FilterComponents:
     """Filter component configurations and creation methods"""
+    
+    # Class-level constants
     BASE_STYLE = {"fontSize": "0.85rem"}
     
-    # Define component configurations as class variable
+    # Component configurations
     COMPONENT_CONFIGS = {
         'button-groups': {
             'period-type': {
@@ -106,12 +89,13 @@ class FilterComponents:
                 'value': DEFAULT_CHECKED_LINES,
                 'placeholder': "Select a category..."
             },
-            'primary-y-metric': {
+            'primary-metric': {
                 'options': VALUE_METRICS_OPTIONS,
                 'value': DEFAULT_PRIMARY_METRICS,
                 'multi': False,
                 'clearable': False,
-                'placeholder': "Select primary metric"
+                'placeholder': "Select primary metric",
+                'dynamic': True
             },
             'secondary-y-metric': {
                 'options': [],
@@ -133,21 +117,9 @@ class FilterComponents:
             }
         },
         'checklists': {
-            'premium-loss-checklist': {
-                'options': PREMIUM_LOSS_OPTIONS,
-                'value': DEFAULT_PREMIUM_LOSS_TYPES,
-                'switch': True,
-                'inline': True
-            },
-            'toggle-selected-market-share': {
-                'options': [{"label": "", "value": "show"}],
-                'value': ['show'],
-                'switch': True,
-                'inline': True
-            },
-            'toggle-selected-qtoq': {
-                'options': [{"label": "", "value": "show"}],
-                'value': ['show'],
+            'business-type-checklist': {
+                'options': BUSINESS_TYPE_OPTIONS,
+                'value': DEFAULT_BUSINESS_TYPE,
                 'switch': True,
                 'inline': True
             }
@@ -161,32 +133,17 @@ class FilterComponents:
                 'value': 'insurers',
                 'inline': True
             }
-        },
-        'inputs': {
-            'number-of-insurers': {
-                'value': 10,
-                'type': 'number',
-                'required': True,
-                'min': 1,
-                'max': 999,
-                'step': 1
-            },
-            'number-of-periods-data-table': {
-                'value': 2,
-                'type': 'number',
-                'required': True,
-                'min': 1,
-                'max': 999,
-                'step': 1
-            }
         }
     }
 
     @classmethod
-    def update_dropdown_options(cls, dropdown_id: str, new_options: list) -> None:
+    def update_dropdown_options(cls, dropdown_id: str, new_options: List[Dict[str, Any]]) -> None:
         """Update options for a specific dropdown component"""
         if dropdown_id in cls.COMPONENT_CONFIGS['dropdowns']:
             cls.COMPONENT_CONFIGS['dropdowns'][dropdown_id]['options'] = new_options
+            logger.debug(f"Updated options for {dropdown_id}: {new_options}")
+        else:
+            logger.warning(f"Attempted to update unknown dropdown: {dropdown_id}")
 
     @classmethod
     def create_component(cls, component_type: str, id: Optional[str] = None, **kwargs) -> Any:
@@ -194,8 +151,11 @@ class FilterComponents:
         # Map component types to their config group
         group_mapping = {
             "radioitems": "radioitems",
-            "button-group": "button-groups"
+            "button-group": "button-groups",
+            "dropdown": "dropdowns",
+            "checklist": "checklists"
         }
+        
         component_group = group_mapping.get(component_type, f"{component_type}s")
         
         # Get base config and merge with kwargs
@@ -206,12 +166,14 @@ class FilterComponents:
             # Handle callable options
             if callable(base_config.get('options')):
                 base_config['options'] = base_config['options']()
-                
+        
         config = {**base_config, **kwargs}
         
         # Component factory mapping
-        component_factories = {
-            "dropdown": lambda: dcc.Dropdown(
+        if component_type == "dropdown":
+            if config.get('dynamic'):
+                return cls._create_dynamic_dropdown(id, config)
+            return dcc.Dropdown(
                 id=id,
                 options=config.get('options', []),
                 value=config.get('value'),
@@ -219,50 +181,86 @@ class FilterComponents:
                 placeholder=translate(config.get('placeholder', '')),
                 clearable=config.get('clearable', True),
                 className=StyleConstants.FORM["DD"]
-            ),
-            "checklist": lambda: dbc.Checklist(
+            )
+        
+        elif component_type == "checklist":
+            style = {**cls.BASE_STYLE, "margin": 0}
+            if config.get('readonly'):
+                style.update({'pointerEvents': 'none', 'opacity': 0.5})
+                
+            return dbc.Checklist(
                 id=id,
                 options=config.get('options', []),
                 value=config.get('value', []),
                 switch=config.get('switch', False),
                 inline=config.get('inline', False),
-                style={**cls.BASE_STYLE, "margin": 0, 
-                       **({'pointerEvents': 'none', 'opacity': 0.5} if config.get('readonly') else {})},
+                style=style,
                 className=StyleConstants.FORM["CHECKLIST"]
-            ),
-            "radioitems": lambda: dbc.RadioItems(
+            )
+            
+        elif component_type == "radioitems":
+            return dbc.RadioItems(
                 id=id,
                 options=config.get('options', []),
                 value=config.get('value'),
                 inline=config.get('inline', False),
                 className=StyleConstants.FORM["CHECKLIST"]
-            ),
-            "input": lambda: dcc.Input(
-                id=id,
-                type=config.get('type', 'text'),
-                min=config.get('min'),
-                max=config.get('max'),
-                step=config.get('step'),
-                value=config.get('value'),
-                required=config.get('required', True),
-                className=StyleConstants.FORM["INPUT"]
-            ),
-            "button-group": lambda: html.Div([
+            )
+            
+        elif component_type == "button-group":
+            buttons = config.get('buttons', [])
+            className = config.get('className', StyleConstants.BTN["PERIOD"])
+            
+            return html.Div([
                 dbc.Row([
                     dbc.ButtonGroup([
                         dbc.Button(
                             button["label"],
                             id=f"btn-{button['value']}",
-                            className=config.get('className', StyleConstants.BTN["PERIOD"]),
+                            className=className,
                             style=button.get("style", {})
-                        )
-                        for button in config.get('buttons', [])
+                        ) for button in buttons
                     ])
                 ], className=StyleConstants.UTILS["MB_0"])
             ])
-        }
-        
-        return component_factories.get(component_type, lambda: None)()
+            
+        return None
+
+    @classmethod
+    def _create_dynamic_dropdown(cls, id: str, config: Dict[str, Any]) -> html.Div:
+        """Create a dynamic dropdown with add button"""
+        return html.Div([
+            html.Div(
+                className="d-flex align-items-center w-100 mb-1 pr-1",
+                children=[
+                    html.Div(
+                        className="dash-dropdown flex-grow-1",
+                        children=[
+                            dcc.Dropdown(
+                                id=id,
+                                options=config.get('options', []),
+                                value=config.get('value'),
+                                multi=config.get('multi', False),
+                                placeholder=translate(config.get('placeholder', '')),
+                                clearable=config.get('clearable', True),
+                                className=StyleConstants.FORM["DD"]
+                            )
+                        ]
+                    ),
+                    html.Button(
+                        "+",
+                        id=f"{id}-add-btn",
+                        className=f"{StyleConstants.BTN['ADD']}"
+                    )
+                ]
+            ),
+            html.Div(
+                id=f"{id}-container",
+                children=[],
+                className="dynamic-dropdowns-container w-100 py-0 pr-1"
+            ),
+            dcc.Store(id=f"{id}-all-values", data=[])
+        ], className="w-100 pt-1")
 
     @staticmethod
     def create_filter_row(
@@ -274,24 +272,13 @@ class FilterComponents:
         component_id: Optional[str] = None,
         container_id: Optional[str] = None
     ) -> html.Div:
-        """Create a filter row with label and component
-        
-        Args:
-            label_text: Text for the label
-            component: The component to include in the row
-            label_width: Width of label column (1-12)
-            component_width: Width of component column (1-12)
-            vertical: Whether to stack label and component vertically
-            component_id: ID of the component for styling
-            container_id: If provided, wraps component in a div with this ID
-        """
-        # Wrap component in container if container_id is provided
+        """Create a filter row with label and component"""
         wrapped_component = (
             html.Div(id=container_id, children=[component]) 
             if container_id 
             else component
         )
-        logger.debug(f"wrapped_component{wrapped_component}")
+        
         if vertical:
             return html.Div([
                 html.Label(label_text, className=StyleConstants.FILTER["LABEL"]),
@@ -306,7 +293,47 @@ class FilterComponents:
             dbc.Col(
                 wrapped_component,
                 width=component_width,
-                className=StyleConstants.FLEX["START"] if component_id == "premium-loss-checklist" 
+                className=StyleConstants.FLEX["START"] if component_id == "business-type-checklist"
                 else StyleConstants.FLEX["END"]
             )
         ], className=StyleConstants.FILTER["ROW_NO_MARGIN"])
+
+def create_metric_dropdown(index: int, options: List[Dict], value: Optional[str]) -> html.Div:
+    """
+    Create a metric dropdown with remove button aligned horizontally
+    
+    Args:
+        index: Index for the dropdown
+        options: List of dropdown options
+        value: Current selected value
+        
+    Returns:
+        html.Div: Container with horizontally aligned dropdown and remove button
+    """
+    return html.Div(
+        className="d-flex align-items-center w-100 mb-1 pr-1",
+        children=[
+            # Dropdown wrapper
+            html.Div(
+                className="dash-dropdown flex-grow-1",
+                children=[
+                    dcc.Dropdown(
+                        id={'type': 'dynamic-primary-metric', 'index': index},
+                        options=options,
+                        value=value,
+                        multi=False,
+                        clearable=False,
+                        placeholder="Select primary metric",
+                        className=StyleConstants.FORM["DD"]
+                    )
+                ]
+            ),
+            # Remove button using the new style
+            html.Button(
+                "✕",
+                id={'type': 'remove-primary-metric-btn', 'index': index},
+                className=StyleConstants.BTN["REMOVE"],
+                n_clicks=0
+            )
+        ]
+    )

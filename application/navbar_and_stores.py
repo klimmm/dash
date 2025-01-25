@@ -22,8 +22,8 @@ def create_stores() -> List[html.Div]:
         dcc.Store(id='toggle-selected-market-share', data=DEFAULT_SHOW_MARKET_SHARE),
         dcc.Store(id='toggle-selected-qtoq', data=DEFAULT_SHOW_CHANGES),
         dcc.Store(id='number-of-insurers', data=DEFAULT_NUMBER_OF_INSURERS),
-        dcc.Store(id='number-of-periods-data-table', data=DEFAULT_NUMBER_OF_PERIODS)  # Default value of 2
-# Default value of 10
+        dcc.Store(id='number-of-periods-data-table', data=DEFAULT_NUMBER_OF_PERIODS)
+
     ]
 
 

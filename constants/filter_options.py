@@ -8,7 +8,7 @@ BASE_OPTIONS = {
         '0420162': {'label': '0420162', 'type': 'value'}, # 0420162 «Сведения о деятельности страховщика»
         '0420158': {'label': '0420158', 'type': 'value'} # 0420158 «Отчет о структуре финансового результата по учетным группам»'
     },
-    'PREMIUM_LOSS': {
+    'BUSINESS_TYPE': {
         'direct': {'label': 'Direct', 'type': 'value'},
         'inward': {'label': 'Inward', 'type': 'value'}
     }
@@ -119,7 +119,7 @@ def create_dropdown_options(
 # Generate dropdown options
 LINEMAIN_OPTIONS = create_dropdown_options({})  # Empty dict as per original
 REPORTING_FORM_OPTIONS = create_dropdown_options(BASE_OPTIONS['REPORTING_FORM'])
-PREMIUM_LOSS_OPTIONS = create_dropdown_options(BASE_OPTIONS['PREMIUM_LOSS'])
+BUSINESS_TYPE_OPTIONS = create_dropdown_options(BASE_OPTIONS['BUSINESS_TYPE'])
 
 # Filtered metric options
 VALUE_METRICS = {k: v for k, v in METRICS.items() if v['type'] == 'value'}

@@ -7,6 +7,7 @@ from application.filters import create_filters
 from application.navbar_and_stores import create_navbar, create_stores
 from application.style_config import StyleConstants
 
+
 def create_app_layout(
     initial_quarter_options: Optional[List[dict]] = None, 
     initial_insurer_options: Optional[List[dict]] = None

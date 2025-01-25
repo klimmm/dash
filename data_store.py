@@ -36,6 +36,8 @@ class InsuranceDataStore:
                 df = pd.read_csv(file_path, dtype=self._dtype_map)
                 df['year_quarter'] = pd.to_datetime(df['year_quarter'])
                 df['metric'] = df['metric'].fillna(0)
+                group_cols = [col for col in df.columns if col not in ('line_type', 'value')]
+                df = df.groupby(group_cols, observed=True)['value'].sum().reset_index()
                 self.datasets[form_id] = df.sort_values('year_quarter', ascending=True)
                 logger.debug(f"Dataset {form_id} loaded in {time.time() - start_time:.2f}s")
             except Exception as e:
@@ -52,7 +54,7 @@ class InsuranceDataStore:
         for form_id in self.datasets:
             df = self.datasets[form_id]
             form_name = f'0420{form_id}'
-
+            logger.info(f"year_quarter_unique {df['year_quarter'].unique()}")
             # Quarter options
             periods = pd.PeriodIndex(df['year_quarter'].dt.to_period('Q')).unique()
             self.quarter_options[form_name] = [
