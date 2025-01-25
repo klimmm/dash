@@ -22,6 +22,8 @@ from callbacks.buttons_callbacks import setup_buttons_callbacks
 from callbacks.get_available_metrics import get_metric_options, get_checklist_config
 from callbacks.insurance_lines_callbacks import setup_insurance_lines_callbacks
 from callbacks.ui_callbacks import setup_ui_callbacks
+from callbacks.update_metric_callbacks import setup_sync_metrics_callback, setup_metric_callbacks, setup_insurers_callbacks, setup_sync_insurers_callback
+
 from config.default_values import (
     DEFAULT_REPORTING_FORM,
     DEFAULT_SECONDARY_METRICS,

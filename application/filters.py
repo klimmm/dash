@@ -90,8 +90,8 @@ def create_filters() -> html.Div:
                         'label': 'Отчетность:',
                         'component_type': 'button-group',
                         'component_id': 'reporting-form',
-                        'label_width': 5,
-                        'component_width': 7
+                        'label_width': 3,
+                        'component_width': 9
                     },                    
                     {
                         'label': 'Тип данных:',
@@ -127,22 +127,22 @@ def create_filters() -> html.Div:
                         'label': 'Страховщик:',
                         'component_type': 'dropdown',
                         'component_id': 'selected-insurers',
-                        'label_width': 4,
-                        'component_width': 8
+                        'label_width': 3,
+                        'component_width': 9
                     },
                     {
                         'label': 'Вид страхования:',
                         'component_type': 'dropdown',
                         'component_id': 'insurance-line-dropdown',
-                        'label_width': 4,
-                        'component_width': 8
+                        'label_width': 3,
+                        'component_width': 9
                     },
                     {
                         'label': 'Показатель:',
                         'component_type': 'dropdown',
                         'component_id': 'primary-metric',
-                        'label_width': 4,
-                        'component_width': 8
+                        'label_width': 3,
+                        'component_width': 9
                     },
 
                 ]

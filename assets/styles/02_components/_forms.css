@@ -2,7 +2,7 @@
 
 /* Form Control */
 .form-control-custom {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     height: var(--input-height-xs);
     padding: var(--space-2);
     border: 0;
@@ -13,7 +13,7 @@
 
 /* Input Variants */
 .input-short {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     width: 80px;
     text-align: center;
     padding: var(--space-1);
@@ -26,7 +26,7 @@
 }
 
 .filter-label {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     color: var(--color-text-default);
     font-weight: var(--font-weight-semibold);
     display: flex;
@@ -47,6 +47,8 @@
     min-height: 2.5rem !important;
     padding-right: 0;
     border-top: 1px solid #e9ecef;
+    border-bottom: 1px solid #e9ecef;
+    border-collapse: collapse !important;
     
 }
 
@@ -81,7 +83,7 @@
 
 /* Period Filter Specific */
 .period-type__text {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     color: var(--color-text-secondary);
     min-height: 1.9rem !important;
     max-height: 1.9rem !important;
@@ -95,7 +97,7 @@
 }
 
 .period-type__description {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
     margin-top: var(--space-1);
 }
@@ -141,7 +143,7 @@
 /* Base dropdown */
 .dash-dropdown {
     all: unset;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     width: 100%;
     height: 100%;
 }
@@ -149,9 +151,10 @@
 /* Control container */
 .dd-control {
     position: relative;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     padding: 0;
     margin-bottom: 0;
+    margin-top: 0.2rem;
     height: 2rem;
     line-height: 1.25;
     display: flex;
@@ -174,20 +177,17 @@ input[autocomplete="off"][role="combobox"] {
     width: 1px !important;
     height: 1px !important;
     padding: 0 !important;
-    margin: -1px !important;
     overflow: hidden !important;
     clip: rect(0, 0, 0, 0) !important;
     white-space: nowrap !important;
-    border: 0 !important;
+    border: 0.1px solid blue;
 }
 
 /* Menu styling */
 .dd-control .Select-menu-outer,
 .Select-menu-outer {
-    border-radius: 0;
     padding: 0;
-    border: 0;
-    font-size: var(--font-size-wm);
+    font-size: var(--font-size-xs);
     background: var(--color-surface-primary);
     line-height: 1.2;
     z-index: 1000;
@@ -212,8 +212,34 @@ input[autocomplete="off"][role="combobox"] {
 .Select-value-label {
     margin: 0;
     padding: 0 !important;
-    font-size: var(--font-size-sm);
-    height: 2rem;
+    font-size: var(--font-size-xs);
+    height: 100%;
+    display: flex;
+    align-items: center !important;
+    
+}
+
+.dd-control .Select-value {
+
+p    background: #e9ecef;
+
+
+}
+
+.dd-control .Select-value-label {
+
+
+}
+
+
+
+.Select-input,
+.Select-placeholder {
+    height: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: var(--font-size-xs) !important;
+    border: 0.1px solid blue;
     display: flex;
     align-items: center !important;
 }
@@ -239,12 +265,14 @@ input[autocomplete="off"][role="combobox"] {
 }
 
 .Select-arrow {
+    border-top-width: 0px;
+    border-bottom-width: 0px;
 }
 
 /* Placeholder styling */
 .dd-control .Select-placeholder,
 .Select-placeholder {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     display: flex;
     align-items: center;
     padding: 0;
@@ -269,6 +297,27 @@ input[autocomplete="off"] {
 
 input[aria-activedescendant="react-select-4--value"] {
     display: none !important;
+}
+.VirtualizedSelectSelectedOption,
+.VirtualizedSelectFocusedOption,
+.VirtualizedSelectOption {
+    height: 20px !important;  /* or whatever height you prefer */
+    line-height: 20px !important;
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+    
+}
+
+/* Adjust the container's height for virtualized scrolling */
+.ReactVirtualized__Grid__innerScrollContainer {
+    max-height: none !important;
+}
+
+
+
+
+.flex-grow-1 {
+
 }
 
 

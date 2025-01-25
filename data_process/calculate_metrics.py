@@ -134,14 +134,15 @@ def get_metric_dependencies(metric: str) -> Set[str]:
     logger.debug(f"deps {deps}")
     return deps
 
-def get_required_metrics(selected_metrics: List[str], premium_loss_selection: Optional[List[str]] = None) -> Set[str]:
+def get_required_metrics(selected_metrics: List[str], premium_loss_selection: Optional[List[str]] = None) -> List[str]:
     """
     Determine all required metrics based on selected metrics and their dependencies.
+    Returns them with selected metrics first, followed by their dependencies grouped by parent metric.
     
     Args:
         selected_metrics: List of metrics to calculate
     Returns:
-        Set of all required metrics including dependencies
+        List of all required metrics with selected metrics first, then grouped dependencies
     """
     # Strip metric suffixes for processing
     suffix_list = ['_market_share_q_to_q_change', '_q_to_q_change', '_market_share']
@@ -150,11 +151,18 @@ def get_required_metrics(selected_metrics: List[str], premium_loss_selection: Op
         for metric in selected_metrics
     ]
 
-    required = set(clean_metrics)
+    ordered_metrics = []
+    # First add selected metrics
+    ordered_metrics.extend(clean_metrics)
+    
+    # Then add dependencies for each selected metric in order
     for metric in clean_metrics:
-        required.update(get_metric_dependencies(metric))
-
-    return required
+        deps = sorted(get_metric_dependencies(metric))
+        for dep in deps:
+            if dep not in ordered_metrics:
+                ordered_metrics.append(dep)
+    
+    return ordered_metrics
 
 def get_calculation_order(metrics: Set[str]) -> List[str]:
     """
@@ -202,7 +210,7 @@ def calculate_metrics(
     logger.debug(f"Starting calculation for {len(selected_metrics)} selected metrics")
 
     # Get all required metrics including dependencies
-    required_metrics = get_required_metrics(selected_metrics)
+    required_metrics = set(get_required_metrics(selected_metrics))
 
     # Filter based on premium_loss_selection if provided
     if premium_loss_selection:

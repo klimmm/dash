@@ -107,7 +107,8 @@ class FilterComponents:
                 'options': [],
                 'value': DEFAULT_INSURER,
                 'multi': False,
-                'clearable': False
+                'clearable': False,
+                'dynamic': True
             },
             'end-quarter': {
                 'options': [],
@@ -180,7 +181,9 @@ class FilterComponents:
                 multi=config.get('multi', False),
                 placeholder=translate(config.get('placeholder', '')),
                 clearable=config.get('clearable', True),
-                className=StyleConstants.FORM["DD"]
+                className=StyleConstants.FORM["DD"],
+                optionHeight=18
+
             )
         
         elif component_type == "checklist":
@@ -231,7 +234,7 @@ class FilterComponents:
         """Create a dynamic dropdown with add button"""
         return html.Div([
             html.Div(
-                className="d-flex align-items-center w-100 mb-1 pr-1",
+                className="d-flex align-items-center w-100",
                 children=[
                     html.Div(
                         className="dash-dropdown flex-grow-1",
@@ -243,7 +246,8 @@ class FilterComponents:
                                 multi=config.get('multi', False),
                                 placeholder=translate(config.get('placeholder', '')),
                                 clearable=config.get('clearable', True),
-                                className=StyleConstants.FORM["DD"]
+                                className=StyleConstants.FORM["DD"],
+                                optionHeight=18,
                             )
                         ]
                     ),
@@ -260,7 +264,7 @@ class FilterComponents:
                 className="dynamic-dropdowns-container w-100 py-0 pr-1"
             ),
             dcc.Store(id=f"{id}-all-values", data=[])
-        ], className="w-100 pt-1")
+        ], className="w-100")
 
     @staticmethod
     def create_filter_row(
@@ -311,7 +315,7 @@ def create_metric_dropdown(index: int, options: List[Dict], value: Optional[str]
         html.Div: Container with horizontally aligned dropdown and remove button
     """
     return html.Div(
-        className="d-flex align-items-center w-100 mb-1 pr-1",
+        className="d-flex align-items-center w-100",
         children=[
             # Dropdown wrapper
             html.Div(

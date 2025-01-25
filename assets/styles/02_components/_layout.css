@@ -68,6 +68,7 @@
 
 .datatable-container {
     width: fit-content;
+    margin-top: 2rem;
     max-width: none;
     border: 1px solid #ccc;
     height: calc(100% - var(--titles-height));

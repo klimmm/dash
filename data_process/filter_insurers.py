@@ -75,7 +75,7 @@ def _process_line_data(
         (~line_df['insurer'].isin(excluded_insurers))
     ]
 
-    if selected_insurers == 'total':
+    if 'total' in selected_insurers:
         top_insurers = (
             latest_line_df.groupby('insurer', observed=True)['value']
             .sum()

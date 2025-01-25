@@ -13,6 +13,7 @@ def create_stores() -> List[html.Div]:
         dcc.Store(id='grouped-df-store', storage_type='memory'),
         dcc.Store(id="show-data-table", data=True),
         dcc.Store(id="processed-data-store"),
+        dcc.Store(id="intermediate-data-store"),
         dcc.Store(id="filter-state-store"),
         dcc.Store(id='insurance-lines-state', data=initial_state),
         dcc.Store(id='expansion-state', data={'states': {}, 'all_expanded': False}),

@@ -1,30 +1,13 @@
 import dash_bootstrap_components as dbc
 from dash import dcc, html
-from typing import List, Optional
 from application.insurance_lines_tree import create_lines_checklist_buttons, create_debug_footer
-from application.create_component import FilterComponents
 from application.filters import create_filters
 from application.navbar_and_stores import create_navbar, create_stores
 from application.style_config import StyleConstants
 
 
-def create_app_layout(
-    initial_quarter_options: Optional[List[dict]] = None, 
-    initial_insurer_options: Optional[List[dict]] = None
-) -> List:
+def create_app_layout():
     try:
-        components = FilterComponents()
-        if initial_quarter_options:
-            components.update_dropdown_options(
-                'end-quarter',
-                [{'label': q, 'value': q} for q in [q['value'] for q in initial_quarter_options]]
-            )
-        if initial_insurer_options:
-            components.update_dropdown_options(
-                'selected-insurers',
-                initial_insurer_options 
-            )
-
         return dbc.Container([
             *create_stores(),
             create_navbar(),

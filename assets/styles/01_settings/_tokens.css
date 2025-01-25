@@ -1,5 +1,5 @@
 :root {
-    font-size: 11px;  /* This makes 1rem = 14px */
+    font-size: 10px;  /* This makes 1rem = 14px */
 
 
     
@@ -35,7 +35,7 @@
     --font-size-base: 1rem;
     --font-size-md: 1.125rem;
     --font-size-sm: 0.875rem;
-    --font-size-xs: 0.75rem;
+    --font-size-xs: 0.80rem;
     --font-size-xxs: 0.6rem;
 
     --font-weight-semibold: 600;
