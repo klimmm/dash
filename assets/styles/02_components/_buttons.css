@@ -1,3 +1,4 @@
+/* Base button styles */
 .btn-custom {
     height: var(--button-height-sm);
     padding: 0;
@@ -8,67 +9,126 @@
     align-items: center;
     justify-content: center;
     border: 1px solid transparent;
-    color: var(--color-text-default);
+    color: #e8e8e8;
 }
 
-.btn-sidebar-toggle-show {
-    width: 50%;
-    margin: 0 !important;
-    background-color: #F0FDF4;
-    
-}
-
-
-.btn-sidebar-toggle-hide {
-    width: 50%;
-    margin: 0 !important;
-    background-color: #F0FDF4;
-}
-
+/* Period button specific styles */
+.btn-group-control,
 .btn-period {
     height: var(--button-height-xxs);
     padding: 0 var(--space-2);
     font-size: var(--font-size-xs);
     min-width: var(--button-height-xs);
     border-radius: var(--radius-md);
-    background-color: var(--color-surface-secondary);
-    color: var(--color-text-default);
-    border: 1px solid var(--color-border-weak);
+    background-color: #f5f5f5;
+    color: #333333;
+    border: 1px solid #e0e0e0;
+    transition: all 0.2s ease-in-out;
 }
 
-.btn-period.active {
-    background-color: var(--color-blue-600);
-    font-size: var(--font-size-xs);
-    color: var(--color-text-inverse);
-    border-color: var(--color-blue-600);
+/* Primary button state */
+.btn-group-control.btn-primary,
+.btn-period.btn-primary {
+    background-color: #f5f5f5;
+    color: #333333;
+    border-color: #e0e0e0;
 }
+
+/* Active state - increased specificity to ensure it takes precedence */
+.btn-group-control.btn-primary.active,
+.btn-group-control.btn-primary.active:hover,
+.btn-group-control.btn-primary.active:focus,
+.btn-period.btn-primary.active,
+.btn-period.btn-primary.active:hover,
+.btn-period.btn-primary.active:focus {
+    background-color: #4a4a4a;
+    color: #ffffff;
+    border-color: #4a4a4a;
+}
+
+/* Hover and focus states - only apply to non-active buttons */
+.btn-group-control.btn-primary:not(.active):hover,
+.btn-group-control.btn-primary:not(.active):focus,
+
+.btn-period.btn-primary:not(.active):hover,
+.btn-period.btn-primary:not(.active):focus {
+    background-color: #e8e8e8;
+    color: #333333;
+    border-color: #d3d3d3;
+}
+
+
+/* Sidebar toggle buttons base styles */
+.btn-sidebar-toggle-show,
+.btn-sidebar-toggle-hide {
+    width: 50%;
+    margin: 0 !important;
+    color: #333333;
+    border: 1px solid #e0e0e0;
+    transition: all 0.2s ease-in-out;
+    margin-bottom: 1rem;
+}
+
+/* Default state for show button */
+.btn-sidebar-toggle-show {
+    background-color: #f5f5f5;
+}
+
+/* Default state for hide button */
+.btn-sidebar-toggle-hide {
+    background-color: #f5f5f5;
+}
+
+/* Active states */
+.btn-sidebar-toggle-show.active,
+.btn-sidebar-toggle-show.active:hover,
+.btn-sidebar-toggle-show.active:focus,
+.btn-sidebar-toggle-hide.active,
+.btn-sidebar-toggle-hide.active:hover,
+.btn-sidebar-toggle-hide.active:focus {
+    background-color: #4a4a4a;
+    color: #ffffff;
+    border-color: #4a4a4a;
+}
+
+/* Hover and focus states for non-active buttons */
+.btn-sidebar-toggle-show:not(.active):hover,
+.btn-sidebar-toggle-show:not(.active):focus,
+.btn-sidebar-toggle-hide:not(.active):hover,
+.btn-sidebar-toggle-hide:not(.active):focus {
+    background-color: #e8e8e8;
+    color: #333333;
+    border-color: #d3d3d3;
+}
+
+
 /* Common button base styles */
+
 .btn-metric-add,
 .btn-metric-remove {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 1.75rem;
     padding: 0 !importatnt;
     padding-block-end: 0.1rem !important;
     padding-block-start: 0.1rem !important;
     padding-inline-end: 0.1rem !important;
     padding-inline-start: 0.1rem !important;
-    max-width: 1.8rem;
-    min-width: 1.8rem;
-    max-height: 1.8rem;
-    min-height: 1.8rem;
+    max-width: 1.5rem;
+    min-width: 1.5rem;
+    max-height: 1.5rem;
+    min-height: 1.5rem;
     margin-left: 0.25rem !important;
     margin-right: 0.25rem !important;
     background-color: transparent;
     border: none;
     transition: all 0.15s ease-in-out;
 }
-.btn-group-control {
-    font-size: var(--font-size-xs);
-    
-}
 
+.fas,
+.fas.fa-plus {
+    font-size: 1rem;
+}
 
 
 .btn-metric-add:focus,
@@ -79,7 +139,7 @@
 /* Add Button */
 .btn-metric-add {
     color: #007bff;  /* Bootstrap blue */
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 400;
 }
 
@@ -90,7 +150,7 @@
 /* Remove Button */
 .btn-metric-remove {
     color: #dc3545;  /* Bootstrap red */
-    font-size: 1.3rem;
+    font-size: 1rem;
     font-weight: 400;
 }
 

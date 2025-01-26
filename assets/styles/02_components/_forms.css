@@ -45,7 +45,7 @@
     border: 0;
     margin: 0 !important;
     align-items: center;
-    min-height: 2.5rem !important;
+    min-height: 2rem !important;
     padding-right: 0;
     border-top: 1px solid #e9ecef;
     border-bottom: 1px solid #e9ecef;
@@ -155,7 +155,6 @@
     font-size: var(--font-size-sm);
     padding: 0;
     margin-bottom: 0;
-    margin-top: 0.2rem;
     height: 2rem;
     line-height: 1.25;
     display: flex;
@@ -164,10 +163,39 @@
 
 /* Value, placeholder and control heights */
 .dd-control .Select-value,
-.dd-control .Select-placeholder,
 .dd-control .Select-control {
     height: 2rem;
 }
+
+.dd-control .Select-placeholder {
+    height: 100% important!;
+}
+
+
+
+.Select-input,
+.Select-placeholder {
+    height: 100%;
+    margin: 0;
+    padding: 0 !important;
+    font-size: var(--font-size-sm) !important;
+    display: flex;
+    align-items: center !important;
+}
+/* Placeholder styling */
+.dd-control .Select-placeholder,
+.Select-placeholder {
+    font-size: var(--font-size-sm);
+    display: flex;
+    align-items: center;
+    padding: 0;
+}
+
+
+
+
+
+
 
 /* Input handling - Make invisible but functional */
 .dd-control .Select-input,
@@ -183,15 +211,6 @@ input[autocomplete="off"][role="combobox"] {
     white-space: nowrap !important;
 }
 
-/* Menu styling */
-.dd-control .Select-menu-outer,
-.Select-menu-outer {
-    padding: 0;
-    font-size: var(--font-size-sm);
-    background: var(--color-surface-primary);
-    line-height: 1.2;
-    z-index: 1000;
-}
 
 /* Option styling */
 .dd-control .Select-option,
@@ -201,10 +220,6 @@ input[autocomplete="off"][role="combobox"] {
     line-height: 2rem;
 }
 
-.VirtualizedSelectOption {
-    height: 24px !important;
-    padding: 0;
-}
 
 /* Value and label styling */
 .dd-control .Select-value,
@@ -222,6 +237,7 @@ input[autocomplete="off"][role="combobox"] {
 .dd-control .Select-value {
 
     background: #e9ecef;
+    
 
 
 }
@@ -233,29 +249,6 @@ input[autocomplete="off"][role="combobox"] {
 
 
 
-.Select-input,
-.Select-placeholder {
-    height: 100%;
-    margin: 0 !important;
-    padding: 0 !important;
-    font-size: var(--font-size-sm) !important;
-    display: flex;
-    align-items: center !important;
-}
-
-.Select-value-label[role="option"][aria-selected="true"] {
-    padding: 0 !important;
-}
-
-/* Control styling */
-.Select-control {
-    height: 2rem !important;
-    padding: 0 !important;
-    border: 0;
-    cursor: pointer;
-    position: relative;
-    z-index: 1;
-}
 
 /* Arrow styling */
 .Select-arrow-zone,
@@ -268,15 +261,7 @@ input[autocomplete="off"][role="combobox"] {
     border-bottom-width: 0px;
 }
 
-/* Placeholder styling */
-.dd-control .Select-placeholder,
-.Select-placeholder {
-    font-size: var(--font-size-sm);
-    display: flex;
-    align-items: center;
-    padding: 0;
-    height: 2rem;
-}
+
 
 /* Value icon */
 .Select-value-icon {
@@ -297,19 +282,61 @@ input[autocomplete="off"] {
 input[aria-activedescendant="react-select-4--value"] {
     display: none !important;
 }
+
+
+.Select-placeholder {
+    margin-left: 1rem !important;
+}
+
+.Select-value-label[role="option"][aria-selected="true"] {
+    margin-left: 1rem;
+}
+
+/* Control styling */
+.Select-control {
+    height: 1.7rem !important;
+    padding: 0 !important;
+    border: 0;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+    margin-left: 1rem !important;
+    
+}
+
+/* Menu styling */
+.dd-control .Select-menu-outer,
+.Select-menu-outer {
+    padding: 0;
+    font-size: var(--font-size-sm);
+    background: var(--color-surface-primary);
+    line-height: 1.2;
+    z-index: 1000;
+    width: calc(100% - 1rem);
+    margin-left: 1rem !important;
+    margin-right: 1rem !important;
+}
+
+
 .VirtualizedSelectSelectedOption,
 .VirtualizedSelectFocusedOption,
 .VirtualizedSelectOption {
     height: 20px !important;  /* or whatever height you prefer */
+    width: auto;
     line-height: 20px !important;
-    padding-top: 0px !important;
-    padding-bottom: 0px !important;
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+    padding-left: 0rem !important;
+    margin-left: 1rem !important;
+    margin-bottom: 0 !important;
+    
     
 }
 
 /* Adjust the container's height for virtualized scrolling */
 .ReactVirtualized__Grid__innerScrollContainer {
     max-height: none !important;
+    
 }
 
 

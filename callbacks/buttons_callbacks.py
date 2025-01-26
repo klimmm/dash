@@ -20,84 +20,95 @@ logger = get_logger(__name__)
 button_period_main = "btn-custom btn-period"
 button_period_main_active = "btn-custom btn-period active"
 
+button_group_control = "btn-custom btn-group-control"
+button_group_control_active = "btn-custom btn-group-control active"
+
+
 def setup_buttons_callbacks(app: dash.Dash) -> None:
     """Setup callbacks for period filter with new button IDs"""
 
     @app.callback(
         [
-            Output("expanded-btn-period-type-ytd", "className"),
-            Output("expanded-btn-period-type-yoy-q", "className"),
-            Output("expanded-btn-period-type-yoy-y", "className"),
-            Output("expanded-btn-period-type-qoq", "className"),
-            Output("expanded-btn-period-type-mat", "className"),
+            Output("btn-period-type-ytd", "className"),
+            Output("btn-period-type-yoy-q", "className"),
+            Output("btn-period-type-yoy-y", "className"),
+            Output("btn-period-type-qoq", "className"),
+            Output("btn-period-type-mat", "className"),
             Output('period-type', 'data'),
             Output('period-type-text', 'children')
         ],
         [
-            Input("expanded-btn-period-type-ytd", "n_clicks"),
-            Input("expanded-btn-period-type-yoy-q", "n_clicks"),
-            Input("expanded-btn-period-type-yoy-y", "n_clicks"),
-            Input("expanded-btn-period-type-qoq", "n_clicks"),
-            Input("expanded-btn-period-type-mat", "n_clicks")
+            Input("btn-period-type-ytd", "n_clicks"),
+            Input("btn-period-type-yoy-q", "n_clicks"),
+            Input("btn-period-type-yoy-y", "n_clicks"),
+            Input("btn-period-type-qoq", "n_clicks"),
+            Input("btn-period-type-mat", "n_clicks")
         ],
         [State('period-type', 'data')]
     )
     def update_period_type(ytd_clicks, yoy_q_clicks, yoy_y_clicks, qoq_clicks, mat_clicks, current_state):
         ctx = dash.callback_context
         start_time = track_callback('app.buttons_callbacks', 'update_period_type', ctx)
-
+        
+        # Add debug logging
+        logger.debug(f"Callback triggered")
+        logger.debug(f"Context triggered: {ctx.triggered}")
+        logger.debug(f"Current state: {current_state}")
+        
         button_map = {
-            'expanded-btn-period-type-ytd': 'ytd',
-            'expanded-btn-period-type-yoy-q': 'yoy_q',
-            'expanded-btn-period-type-yoy-y': 'yoy_y',
-            'expanded-btn-period-type-qoq': 'qoq',
-            'expanded-btn-period-type-mat': 'mat'
+            'btn-period-type-ytd': 'ytd',
+            'btn-period-type-yoy-q': 'yoy_q',
+            'btn-period-type-yoy-y': 'yoy_y',
+            'btn-period-type-qoq': 'qoq',
+            'btn-period-type-mat': 'mat'
         }
-
-        # Rest of the function remains the same, just use new button IDs
+        
+        # Initialize button classes based on current state
         current_state = current_state if current_state else DEFAULT_PERIOD_TYPE
-        button_classes = [button_period_main for _ in range(5)]
-        active_main = current_state
-
-        for i, (btn_id, btn_val) in enumerate(button_map.items()):
-            if btn_val == active_main:
-                button_classes[i] = button_period_main_active
-                break
-
+        button_classes = [button_group_control for _ in range(5)]
+        
+        # If no button was clicked, maintain current state
         if not ctx.triggered:
+            # Set active class based on current state
+            for i, (btn_id, btn_val) in enumerate(button_map.items()):
+                if btn_val == current_state:
+                    button_classes[i] = button_group_control_active
             period_type_text = translate(current_state)
-            output = (*button_classes, no_update, period_type_text)
-            track_callback_end('app.buttons_callbacks', 'update_period_type', start_time, result=output)
-            return output
-
+            return (*button_classes, current_state, period_type_text)
+        
         try:
             triggered = ctx.triggered[0]["prop_id"].split(".")[0]
-            logger.debug(f"update_period triggered by {triggered}")
-
+            logger.debug(f"Button clicked: {triggered}")
+            
             if triggered in button_map:
-                button_classes = [button_period_main for _ in range(5)]
                 new_state = button_map[triggered]
                 button_index = list(button_map.keys()).index(triggered)
-                button_classes[button_index] = button_period_main_active
+                
+                # Update button classes
+                button_classes = [button_group_control for _ in range(5)]
+                button_classes[button_index] = button_group_control_active
+                
                 period_type_text = translate(new_state)
-
-                output = (*button_classes, new_state, period_type_text)
-                track_callback_end('app.buttons_callbacks', 'update_period_type', start_time, result=output)
-                return output
-
+                logger.debug(f"New state: {new_state}")
+                logger.debug(f"Button classes: {button_classes}")
+                
+                return (*button_classes, new_state, period_type_text)
         except Exception as e:
             logger.error(f"Error in update_period: {e}")
             raise
+    
+        # If we get here, return no update
+        return [dash.no_update] * 7
 
     @app.callback(
         [
-            Output("expanded-btn-reporting-form-0420158", "className"),
-            Output("expanded-btn-reporting-form-0420162", "className"),
+            Output("btn-reporting-form-0420158", "className"),
+            Output("btn-reporting-form-0420162", "className"),
             Output('reporting-form', 'data'),
         ],
         [
-            Input("expanded-btn-reporting-form-0420158", "n_clicks"),
-            Input("expanded-btn-reporting-form-0420162", "n_clicks")
+            Input("btn-reporting-form-0420158", "n_clicks"),
+            Input("btn-reporting-form-0420162", "n_clicks")
         ],
         [State('reporting-form', 'data')]
     )
@@ -106,8 +117,8 @@ def setup_buttons_callbacks(app: dash.Dash) -> None:
         start_time = track_callback('app.buttons_callbacks', 'update_reporting_form', ctx)
 
         button_map = {
-            'expanded-btn-reporting-form-0420158': '0420158',
-            'expanded-btn-reporting-form-0420162': '0420162'
+            'btn-reporting-form-0420158': '0420158',
+            'btn-reporting-form-0420162': '0420162'
         }
 
         # Rest of the function remains the same, just use new button IDs
@@ -143,14 +154,14 @@ def setup_buttons_callbacks(app: dash.Dash) -> None:
 
     @app.callback(
         [
-            Output("expanded-btn-metric-toggles-market-share", "className"),
-            Output("expanded-btn-metric-toggles-qtoq", "className"),
+            Output("btn-metric-toggles-market-share", "className"),
+            Output("btn-metric-toggles-qtoq", "className"),
             Output('toggle-selected-market-share', 'data'),
             Output('toggle-selected-qtoq', 'data'),
         ],
         [
-            Input("expanded-btn-metric-toggles-market-share", "n_clicks"),
-            Input("expanded-btn-metric-toggles-qtoq", "n_clicks")
+            Input("btn-metric-toggles-market-share", "n_clicks"),
+            Input("btn-metric-toggles-qtoq", "n_clicks")
         ],
         [
             State('toggle-selected-market-share', 'data'),
@@ -162,19 +173,19 @@ def setup_buttons_callbacks(app: dash.Dash) -> None:
         start_time = track_callback('app.buttons_callbacks', 'update_ms_dynamic_toggles', ctx)
 
         button_map = {
-            'expanded-btn-metric-toggles-market-share': ('market-share', 0),
-            'expanded-btn-metric-toggles-qtoq': ('qtoq', 1)
+            'btn-metric-toggles-market-share': ('market-share', 0),
+            'btn-metric-toggles-qtoq': ('qtoq', 1)
         }
 
         # Rest of the function remains the same, just use new button IDs
         market_share_state = market_share_state if market_share_state else []
         qtoq_state = qtoq_state if qtoq_state else []
-        button_classes = [button_period_main for _ in range(2)]
+        button_classes = [button_group_control for _ in range(2)]
 
         if market_share_state == ['show']:
-            button_classes[0] = button_period_main_active
+            button_classes[0] = button_group_control_active
         if qtoq_state == ['show']:
-            button_classes[1] = button_period_main_active
+            button_classes[1] = button_group_control_active
 
         if not ctx.triggered:
             output = (*button_classes, dash.no_update, dash.no_update)
@@ -186,19 +197,19 @@ def setup_buttons_callbacks(app: dash.Dash) -> None:
             if triggered in button_map:
                 _, button_index = button_map[triggered]
                 
-                if triggered == 'expanded-btn-metric-toggles-market-share':
+                if triggered == 'btn-metric-toggles-market-share':
                     if market_share_state == ['show']:
-                        button_classes[button_index] = button_period_main
+                        button_classes[button_index] = button_group_control
                         market_share_state = []
                     else:
-                        button_classes[button_index] = button_period_main_active
+                        button_classes[button_index] = button_group_control_active
                         market_share_state = ['show']
                 else:
                     if qtoq_state == ['show']:
-                        button_classes[button_index] = button_period_main
+                        button_classes[button_index] = button_group_control
                         qtoq_state = []
                     else:
-                        button_classes[button_index] = button_period_main_active
+                        button_classes[button_index] = button_group_control_active
                         qtoq_state = ['show']
 
                 output = (*button_classes, market_share_state, qtoq_state)
@@ -211,15 +222,15 @@ def setup_buttons_callbacks(app: dash.Dash) -> None:
 
     @app.callback(
         [
-            Output("expanded-btn-top-insurers-top-5", "className"),
-            Output("expanded-btn-top-insurers-top-10", "className"),
-            Output("expanded-btn-top-insurers-top-20", "className"),
+            Output("btn-top-insurers-top-5", "className"),
+            Output("btn-top-insurers-top-10", "className"),
+            Output("btn-top-insurers-top-20", "className"),
             Output('number-of-insurers', 'data'),
         ],
         [
-            Input("expanded-btn-top-insurers-top-5", "n_clicks"),
-            Input("expanded-btn-top-insurers-top-10", "n_clicks"),
-            Input("expanded-btn-top-insurers-top-20", "n_clicks")
+            Input("btn-top-insurers-top-5", "n_clicks"),
+            Input("btn-top-insurers-top-10", "n_clicks"),
+            Input("btn-top-insurers-top-20", "n_clicks")
         ],
         State('number-of-insurers', 'data'),
         prevent_initial_call=False
@@ -229,15 +240,15 @@ def setup_buttons_callbacks(app: dash.Dash) -> None:
         start_time = track_callback('app.buttons_callbacks', 'update_number_insurers', ctx)
 
         button_map = {
-            'expanded-btn-top-insurers-top-5': ('top-5', 0),
-            'expanded-btn-top-insurers-top-10': ('top-10', 1),
-            'expanded-btn-top-insurers-top-20': ('top-20', 2)
+            'btn-top-insurers-top-5': ('top-5', 0),
+            'btn-top-insurers-top-10': ('top-10', 1),
+            'btn-top-insurers-top-20': ('top-20', 2)
         }
 
         value_map = {
-            'expanded-btn-top-insurers-top-5': 5,
-            'expanded-btn-top-insurers-top-10': 10,
-            'expanded-btn-top-insurers-top-20': 20
+            'btn-top-insurers-top-5': 5,
+            'btn-top-insurers-top-10': 10,
+            'btn-top-insurers-top-20': 20
         }
 
         button_classes = [button_period_main for _ in range(3)]
@@ -274,19 +285,19 @@ def setup_buttons_callbacks(app: dash.Dash) -> None:
 
     @app.callback(
         [
-            Output("expanded-btn-periods-data-table-period-1", "className"),
-            Output("expanded-btn-periods-data-table-period-2", "className"),
-            Output("expanded-btn-periods-data-table-period-3", "className"),
-            Output("expanded-btn-periods-data-table-period-4", "className"),
-            Output("expanded-btn-periods-data-table-period-5", "className"),
+            Output("btn-periods-data-table-period-1", "className"),
+            Output("btn-periods-data-table-period-2", "className"),
+            Output("btn-periods-data-table-period-3", "className"),
+            Output("btn-periods-data-table-period-4", "className"),
+            Output("btn-periods-data-table-period-5", "className"),
             Output('number-of-periods-data-table', 'data'),
         ],
         [
-            Input("expanded-btn-periods-data-table-period-1", "n_clicks"),
-            Input("expanded-btn-periods-data-table-period-2", "n_clicks"),
-            Input("expanded-btn-periods-data-table-period-3", "n_clicks"),
-            Input("expanded-btn-periods-data-table-period-4", "n_clicks"),
-            Input("expanded-btn-periods-data-table-period-5", "n_clicks")
+            Input("btn-periods-data-table-period-1", "n_clicks"),
+            Input("btn-periods-data-table-period-2", "n_clicks"),
+            Input("btn-periods-data-table-period-3", "n_clicks"),
+            Input("btn-periods-data-table-period-4", "n_clicks"),
+            Input("btn-periods-data-table-period-5", "n_clicks")
         ],
         State('number-of-periods-data-table', 'data'),
         prevent_initial_call=False
@@ -296,28 +307,28 @@ def setup_buttons_callbacks(app: dash.Dash) -> None:
         start_time = track_callback('app.buttons_callbacks', 'update_number_periods', ctx)
 
         button_map = {
-            'expanded-btn-periods-data-table-period-1': ('period-1', 0),
-            'expanded-btn-periods-data-table-period-2': ('period-2', 1),
-            'expanded-btn-periods-data-table-period-3': ('period-3', 2),
-            'expanded-btn-periods-data-table-period-4': ('period-4', 3),
-            'expanded-btn-periods-data-table-period-5': ('period-5', 4)
+            'btn-periods-data-table-period-1': ('period-1', 0),
+            'btn-periods-data-table-period-2': ('period-2', 1),
+            'btn-periods-data-table-period-3': ('period-3', 2),
+            'btn-periods-data-table-period-4': ('period-4', 3),
+            'btn-periods-data-table-period-5': ('period-5', 4)
         }
 
         value_map = {
-            'expanded-btn-periods-data-table-period-1': 1,
-            'expanded-btn-periods-data-table-period-2': 2,
-            'expanded-btn-periods-data-table-period-3': 3,
-            'expanded-btn-periods-data-table-period-4': 4,
-            'expanded-btn-periods-data-table-period-5': 5
+            'btn-periods-data-table-period-1': 1,
+            'btn-periods-data-table-period-2': 2,
+            'btn-periods-data-table-period-3': 3,
+            'btn-periods-data-table-period-4': 4,
+            'btn-periods-data-table-period-5': 5
         }
 
-        button_classes = [button_period_main for _ in range(5)]
+        button_classes = [button_group_control for _ in range(5)]
         
         # Set initial active button based on state
         for button_id, value in value_map.items():
             if state == value:
                 _, index = button_map[button_id]
-                button_classes[index] = button_period_main_active
+                button_classes[index] = button_group_control_active
 
         if not ctx.triggered:
             output = (*button_classes, dash.no_update)
@@ -331,8 +342,8 @@ def setup_buttons_callbacks(app: dash.Dash) -> None:
                 _, button_index = button_map[triggered]
                 state = value_map.get(triggered, 2)  # Default to 2 periods
                 
-                button_classes = [button_period_main for _ in range(5)]
-                button_classes[button_index] = button_period_main_active
+                button_classes = [button_group_control for _ in range(5)]
+                button_classes[button_index] = button_group_control_active
                 
                 output = (*button_classes, state)
                 track_callback_end('app.buttons_callbacks', 'update_number_periods', start_time, result=output)

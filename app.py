@@ -14,7 +14,7 @@ from application import (
     insurance_lines_tree, get_required_metrics,
     filter_year_quarter, filter_by_period_type,
     category_structure_162, category_structure_158, get_categories_by_level,
-    FilterComponentFactory, get_checklist_config, 
+    get_checklist_config, ChecklistComponent,
     DATA_FILE_158, DATA_FILE_162, map_insurer
 )
 from application import (
@@ -81,6 +81,7 @@ app.index_string = '''
         <title>{%title%}</title>
         {%favicon%}
         {%css%}
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
         <link rel="stylesheet" type="text/css" href="/assets/styles/main.css">
     </head>
     <body>
@@ -170,7 +171,7 @@ def prepare_data(
         checklist_values = allowed_types or current_checklist_values
         business_type_checklist = checklist_values or []
 
-        checklist_component = FilterComponentFactory.create_checklist(
+        checklist_component = ChecklistComponent.create_checklist(
             id='business-type-checklist',
             options=['direct', 'inward'],
             value=checklist_values,

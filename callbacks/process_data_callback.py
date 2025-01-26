@@ -17,8 +17,7 @@ def setup_process_data_callback(app: dash.Dash):
         [Output('filter-state-store', 'data'),
          Output('processed-data-store', 'data')],
         [Input('intermediate-data-store', 'data'),
-         Input('selected-insurers', 'value'),
-         Input({'type': 'dynamic-selected-insurers', 'index': ALL}, 'value'),
+         Input('selected-insurers-all-values', 'data'),
          Input('number-of-insurers', 'data')],
         [State('show-data-table', 'data'),
          State('filter-state-store', 'data')]
@@ -26,7 +25,6 @@ def setup_process_data_callback(app: dash.Dash):
     def process_data(
             intermediate_data: Dict,
             selected_insurers: str,
-            selected_dynamic_insurers: List[str],
             number_of_insurers: int,
             show_data_table: bool,
             current_filter_state: Dict,
@@ -45,8 +43,6 @@ def setup_process_data_callback(app: dash.Dash):
                 logger.error(f"Invalid intermediate_data type: {type(intermediate_data)}")
                 raise PreventUpdate
             logger.debug(f"selected_insurers {selected_insurers}")
-            logger.debug(f"selected_dynamic_insurers {selected_dynamic_insurers}")
-            selected_insurers = (selected_dynamic_insurers or []) + [selected_insurers]
 
             # Reconstruct DataFrame from intermediate data
             df = pd.DataFrame.from_records(intermediate_data.get('df', []))
@@ -56,7 +52,7 @@ def setup_process_data_callback(app: dash.Dash):
             period_type = intermediate_data.get('period_type', '')
             num_periods_selected = intermediate_data.get('num_periods_selected', 0)
             logger.debug(f"selected_insurers {selected_insurers}")
-            logger.warning(f"yq before process_insurers_data {df['year_quarter'].unique()}")
+            logger.debug(f"yq before process_insurers_data {df['year_quarter'].unique()}")
             # Process insurers data
             df, prev_ranks, num_insurers = process_insurers_data(
                 df=df,
@@ -66,16 +62,16 @@ def setup_process_data_callback(app: dash.Dash):
                 selected_metrics=all_metrics,
                 number_of_insurers=number_of_insurers
             )
-            logger.warning(f"yq unique process_insurers_data {df['year_quarter'].unique()}")
+            logger.debug(f"yq unique process_insurers_data {df['year_quarter'].unique()}")
             # Step 1: Calculate metrics
             df = df.pipe(calculate_metrics, all_metrics, business_type_checklist)
-            logger.warning(f"yq unique calculate_metrics {df['year_quarter'].unique()}")
+            logger.debug(f"yq unique calculate_metrics {df['year_quarter'].unique()}")
             # Step 2: Add market share rows 
             df = df.pipe(add_market_share_rows, selected_insurers, all_metrics, show_data_table)
-            logger.warning(f"yq add_market_share_rows {df['year_quarter'].unique()}")
+            logger.debug(f"yq add_market_share_rows {df['year_quarter'].unique()}")
             # Step 3: Add growth rows
             df = df.pipe(add_growth_rows, selected_insurers, show_data_table, num_periods_selected, period_type)
-            logger.warning(f"yq add_growth_rows {df['year_quarter'].unique()}")
+            logger.debug(f"yq add_growth_rows {df['year_quarter'].unique()}")
             df['year_quarter'] = df['year_quarter'].dt.strftime('%Y-%m-%d')
 
             # Update filter state

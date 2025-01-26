@@ -10,8 +10,8 @@ from dash.exceptions import PreventUpdate
 from functools import lru_cache
 from memory_profiler import profile
 from typing import Dict, Any, List
+from application.checklist_components import ChecklistComponent
 from application.app_layout import create_app_layout
-from application.filters import FilterComponentFactory, create_metric_dropdown
 from application.insurance_lines_tree import insurance_lines_tree, InsuranceLinesTree
 from callbacks.app_layout_callbacks import (
     setup_debug_callbacks,

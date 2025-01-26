@@ -1,48 +1,95 @@
-from typing import List, Tuple, Dict
+from typing import List, Dict, Optional
 import json
 import dash
-from dash import Dash, ALL
+from dash import Dash, html, dcc, ALL
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
-from config.logging_config import get_logger, track_callback, track_callback_end
-from application.filters import create_insurer_dropdown
+from config.logging_config import get_logger
+from application.dropdown_components import StyleConstants
 from data_process.data_utils import map_insurer
-
+from application.button_components import ButtonStyleConstants
 
 logger = get_logger(__name__)
 
-def setup_sync_insurers_callback(app: Dash) -> None:
-    """Setup callback for syncing metric values"""
 
-    @app.callback(
-        Output('selected-insurers-all-values', 'data'),
-        [Input('selected-insurers', 'value'),
-         Input({'type': 'dynamic-selected-insurers', 'index': ALL}, 'value')]
+def create_insurer_dropdown(
+    index: int,
+    value: Optional[str] = None,
+    options: List[Dict[str, str]] = None,
+    is_add_button: bool = False,
+    is_remove_button: bool = True
+) -> html.Div:
+
+    button_props = {
+        'add': {
+            'icon_class': "fas fa-plus",
+            'button_id': "selected-insurers-add-btn",
+            'button_class': ButtonStyleConstants.BTN["ADD"]
+        },
+        'remove': {
+            'icon_class': "fas fa-xmark",
+            'button_id': {'type': 'remove-selected-insurers-btn', 'index': str(index)},
+            'button_class': ButtonStyleConstants.BTN["REMOVE"]
+        }
+    }
+
+    return html.Div(
+        className="d-flex align-items-center w-100",
+        children=[
+            html.Div(
+                className="dash-dropdown flex-grow-1",
+                children=[
+                    dcc.Dropdown(
+                        id={'type': 'dynamic-selected-insurers', 'index': index},
+                        options=options,
+                        value=value,
+                        multi=False,
+                        clearable=False,
+                        placeholder="Select insurer",
+                        className=StyleConstants.FORM["DD"],
+                        optionHeight=18,
+                        searchable=False
+                    )
+                ]
+            ),
+            html.Button(
+                children=html.I(className=button_props['remove']['icon_class']), 
+                id=button_props['remove']['button_id'],
+                className=button_props['remove']['button_class'],
+                n_clicks=0
+            ) if is_remove_button else html.Div(
+                className=button_props['remove']['button_class'],
+                style={'visibility': 'hidden'}
+            ),
+            html.Button(
+                children=html.I(className=button_props['add']['icon_class']),
+                id=button_props['add']['button_id'],
+                className=button_props['add']['button_class'],
+                n_clicks=0
+            ) if is_add_button else html.Div(
+                className=button_props['add']['button_class'],
+                style={'visibility': 'hidden'}
+            ),
+        ]
     )
-    def sync_metric_values(main_value: str, dynamic_values: List[str]) -> List[str]:
-        return [main_value] + [v for v in dynamic_values if v is not None]
+
 
 def setup_insurers_callbacks(app: Dash) -> None:
     @app.callback(
-        [Output('selected-insurers', 'options'),
-         Output('selected-insurers', 'value'),
-         Output('selected-insurers-container', 'children')],
-        [Input('selected-insurers', 'value'),
-         Input({'type': 'dynamic-selected-insurers', 'index': ALL}, 'value'),
+        Output('selected-insurers-container', 'children'),
+        [Input({'type': 'dynamic-selected-insurers', 'index': ALL}, 'value'),
          Input('selected-insurers-add-btn', 'n_clicks'),
          Input({'type': 'remove-selected-insurers-btn', 'index': ALL}, 'n_clicks'),
          Input('intermediate-data-store', 'data')],
-        [State('selected-insurers-container', 'children')],
+        [State('selected-insurers-container', 'children')]
     )
-    def update_metric_selections(
-        selected_insurer: str,
-        selected_dynamic_insurers: List[str],
+    def update_insurers_selections(
+        selected_insurers: List[str],
         add_insurer_clicks: int,
         remove_insurer_clicks: List[int],
         intermediate_data: Dict,
         existing_dropdowns: List
-    ) -> Tuple:
-        """Update metric dropdowns based on user interactions"""
+    ) -> List:
         ctx = dash.callback_context
         if not ctx.triggered:
             raise PreventUpdate
@@ -50,75 +97,130 @@ def setup_insurers_callbacks(app: Dash) -> None:
         try:
             insurer_options = intermediate_data.get('insurer_options', [])
 
-            logger.debug(f"insurer_options {insurer_options}")
-            logger.debug(f"selected_insurer {selected_insurer}")
-            logger.debug(f"selected_dynamic_insurers {selected_dynamic_insurers}")
-            # Initialize dropdowns if None
-            existing_dropdowns = existing_dropdowns or []
-            selected_dynamic_insurers = [v for v in (selected_dynamic_insurers or []) if v is not None]
-            all_selected_insurers = (selected_dynamic_insurers or []) + [selected_insurer]
+            # Initialize if needed
+            if not existing_dropdowns:
+                return [create_insurer_dropdown(
+                    index=0,
+                    options=insurer_options,
+                    is_add_button=True,
+                    is_remove_button=False
+                )]
 
-            # Handle remove button click
-            if '.n_clicks' in ctx.triggered[0]['prop_id'] and '"type":"remove-selected-insurers-btn"' in ctx.triggered[0]['prop_id']:
-                component_id = json.loads(ctx.triggered[0]['prop_id'].split('.')[0])
-                removed_index = component_id['index']
+            # Clean up selected insurers
+            selected_insurers = [v for v in (selected_insurers or []) if v is not None]
 
-                if ctx.triggered[0]['value'] is not None:
-                    selected_dynamic_insurers = [v for i, v in enumerate(selected_dynamic_insurers) if i != removed_index]
-                    existing_dropdowns = [
-                        d for i, d in enumerate(existing_dropdowns) if i != removed_index
+            trigger_id = ctx.triggered[0]['prop_id']
+
+            if '.n_clicks' in trigger_id and 'intermediate-data-store' not in trigger_id:
+                if 'remove-selected-insurers-btn' in trigger_id:
+                    # Prevent removing if it's the last dropdown
+                    if len(existing_dropdowns) <= 1:
+                        raise PreventUpdate
+
+                    component_id = json.loads(trigger_id.split('.')[0])
+                    removed_index = int(component_id['index'])
+
+                    # Check if removing a dropdown with the only selected value
+                    has_value_at_index = removed_index < len(selected_insurers) and selected_insurers[removed_index] is not None
+                    other_values = [v for i, v in enumerate(selected_insurers) if i != removed_index and v is not None]
+
+                    if has_value_at_index and not other_values:
+                        # If removing the only selected value, move it to the remaining empty dropdown
+                        value_to_preserve = selected_insurers[removed_index]
+                        # Remove the dropdown at the specified index
+                        existing_dropdowns.pop(removed_index)
+                        # Find the first empty dropdown
+                        empty_index = next((i for i, v in enumerate(selected_insurers) if v is None), 0)
+                        # Create updated dropdowns list with preserved value
+                        return [
+                            create_insurer_dropdown(
+                                index=i,
+                                options=insurer_options,
+                                value=value_to_preserve if i == empty_index else None,
+                                is_add_button=(i == len(existing_dropdowns) - 1),
+                                is_remove_button=(len(existing_dropdowns) > 1)
+                            ) for i in range(len(existing_dropdowns))
+                        ]
+                    else:
+                        # Normal removal process
+                        existing_dropdowns.pop(removed_index)
+                        if removed_index < len(selected_insurers):
+                            selected_insurers.pop(removed_index)
+
+                    # Recreate all dropdowns with updated indices
+                    return [
+                        create_insurer_dropdown(
+                            index=i,
+                            options=insurer_options,
+                            value=selected_insurers[i] if i < len(selected_insurers) else None,
+                            is_add_button=(i == len(existing_dropdowns) - 1),
+                            is_remove_button=(len(existing_dropdowns) > 1)
+                        ) for i in range(len(existing_dropdowns))
                     ]
 
-            # Handle add button click
-            if 'selected-insurers-add-btn' in ctx.triggered[0]['prop_id']:
-                new_selected_insurers_dropdown = create_insurer_dropdown(
-                    index=len(existing_dropdowns),
-                    options=[opt for opt in insurer_options if opt['value'] not in all_selected_insurers],
-                    value=None
-                )
-                existing_dropdowns.append(new_selected_insurers_dropdown)
+                if 'selected-insurers-add-btn' in trigger_id:
+                    # Update last dropdown to remove add button
+                    if existing_dropdowns:
+                        last_index = len(existing_dropdowns) - 1
+                        existing_dropdowns[last_index] = create_insurer_dropdown(
+                            index=last_index,
+                            options=insurer_options,
+                            value=selected_insurers[last_index] if last_index < len(selected_insurers) else None,
+                            is_add_button=False,
+                            is_remove_button=True
+                        )
 
-            # Update existing dropdowns
-            updated_selected_insurers_dropdowns = []
+                    # Add new dropdown with add button
+                    filtered_options = [
+                        opt for opt in insurer_options 
+                        if ('value' in opt and opt['value'] not in selected_insurers)
+                    ]
+                    new_dropdown = create_insurer_dropdown(
+                        index=len(existing_dropdowns),
+                        options=filtered_options,
+                        value=None,
+                        is_add_button=True,
+                        is_remove_button=True
+                    )
+                    existing_dropdowns.append(new_dropdown)
+
+            # Update existing dropdowns with filtered options
+            updated_dropdowns = []
             for i, _ in enumerate(existing_dropdowns):
-                current_selected_insurer = selected_dynamic_insurers[i] if i < len(selected_dynamic_insurers) else None
-                other_insurers_selected = [v for v in all_selected_insurers if v != current_selected_insurer]
+                current_selected = selected_insurers[i] if i < len(selected_insurers) else None
+                other_selected = [v for j, v in enumerate(selected_insurers) if j != i and v is not None]
 
-                insurer_dropdown_options = [
+                dropdown_options = [
                     opt for opt in insurer_options 
-                    if opt['value'] not in other_insurers_selected
+                    if opt['value'] not in other_selected
                 ]
 
-                if current_selected_insurer and not any(opt['value'] == current_selected_insurer for opt in insurer_dropdown_options):
-                    insurer_dropdown_options.append({
-                        'label': map_insurer(current_selected_insurer),
-                        'value': current_selected_insurer
+                if current_selected and not any(opt['value'] == current_selected for opt in dropdown_options):
+                    dropdown_options.append({
+                        'label': map_insurer(current_selected),
+                        'value': current_selected
                     })
 
-                updated_selected_insurers_dropdowns.append(create_insurer_dropdown(
+                updated_dropdowns.append(create_insurer_dropdown(
                     index=i,
-                    options=insurer_dropdown_options,
-                    value=current_selected_insurer
+                    options=dropdown_options,
+                    value=current_selected,
+                    is_add_button=(i == len(existing_dropdowns) - 1),
+                    is_remove_button=(len(existing_dropdowns) > 1)
                 ))
 
-            # Filter primary metric options
-            filtered_selected_insurer_options = [
-                opt for opt in insurer_options 
-                if opt['value'] not in selected_dynamic_insurers
-            ]
-
-            if selected_insurer and not any(opt['value'] == selected_insurer for opt in filtered_selected_insurer_options):
-                filtered_selected_insurer_options.append({
-                    'label': map_insurer(selected_insurer),
-                    'value': selected_insurer
-                })
-
-            return (
-                filtered_selected_insurer_options,
-                selected_insurer,
-                updated_selected_insurers_dropdowns
-            )
+            return updated_dropdowns
 
         except Exception as e:
-            logger.error(f"Error in update_metric_dropdowns: {str(e)}", exc_info=True)
+            logger.error(f"Error in update_insurers_selections: {str(e)}", exc_info=True)
             raise
+
+
+def setup_sync_insurers_callback(app: Dash) -> None:
+    @app.callback(
+        Output('selected-insurers-all-values', 'data'),
+        [Input({'type': 'dynamic-selected-insurers', 'index': ALL}, 'value')]
+    )
+    def sync_metric_values(values: List[str]) -> List[str]:
+        values = [v for v in values if v is not None and v != '']
+        return values

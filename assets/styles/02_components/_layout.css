@@ -1,9 +1,9 @@
 .container-fluid {
     min-width: 100%;
-    padding-right: 15px;
+    padding-right: 0px;
     padding-left: 15px;
     margin-right: auto;
-    min-width: 430px;
+    min-width: 375px;
     
 }
 
@@ -13,7 +13,6 @@
 }
 
 .card-body {
-    margin-left: 5px;
     
 }
 /* Base container styles */
@@ -50,6 +49,7 @@
 
 .sidebar-col.row {
     max-width: 430px;
+    min-width: 375px;
 }
     
 .sidebar-col.collapsed {
@@ -65,7 +65,6 @@
 
 .main-filter-column {
     padding: 0 !important;
-    max-width: 100%;
     border-collapse: collapse;
     border: 0;
 }
@@ -75,8 +74,9 @@
     margin-top: 1rem;
     margin-bottom: 0;
     padding: 0;
+    width: 100%;
     max-width: 430px;
-    
+    min-width: 375px;
 
 }
 
@@ -90,7 +90,7 @@
     font-family: var(--font-family-sans);
     font-size: var(--table-font-size);
     overflow-x: hidden;
-    margin-left: 1px;
+    margin-left: 0px;
     border: 0;
 }
 

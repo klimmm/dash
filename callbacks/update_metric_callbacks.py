@@ -5,7 +5,7 @@ from dash import Dash, ALL
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from callbacks.get_available_metrics import get_available_metrics
-from application.filters import create_metric_dropdown
+from application.dropdown_components import create_dynamic_metric_dropdown
 from config.default_values import DEFAULT_PRIMARY_METRICS, DEFAULT_PRIMARY_METRICS_158
 from constants.filter_options import METRICS_OPTIONS
 from config.logging_config import get_logger, track_callback, track_callback_end
@@ -171,7 +171,7 @@ def setup_metric_callbacks(app: Dash) -> None:
 
             # Handle add button click
             if 'primary-metric-add-btn' in ctx.triggered[0]['prop_id']:
-                new_primary_metric_dropdown = create_metric_dropdown(
+                new_primary_metric_dropdown = create_dynamic_metric_dropdown(
                     index=len(existing_dropdowns),
                     options=[opt for opt in primary_metric_options if opt['value'] not in valid_selected_primary_metrics],
                     value=None
@@ -189,7 +189,7 @@ def setup_metric_callbacks(app: Dash) -> None:
                     if opt['value'] not in other_primary_metric_selected
                 ]
 
-                updated_primary_metric_dropdowns.append(create_metric_dropdown(
+                updated_primary_metric_dropdowns.append(create_dynamic_metric_dropdown(
                     index=i,
                     options=primary_metric_dropdown_options,
                     value=current_primary_metric
