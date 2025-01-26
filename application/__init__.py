@@ -11,7 +11,7 @@ from functools import lru_cache
 from memory_profiler import profile
 from typing import Dict, Any, List
 from application.app_layout import create_app_layout
-from application.create_component import FilterComponents, create_metric_dropdown
+from application.filters import FilterComponentFactory, create_metric_dropdown
 from application.insurance_lines_tree import insurance_lines_tree, InsuranceLinesTree
 from callbacks.app_layout_callbacks import (
     setup_debug_callbacks,
@@ -19,10 +19,12 @@ from callbacks.app_layout_callbacks import (
     setup_sidebar_callbacks
 )
 from callbacks.buttons_callbacks import setup_buttons_callbacks
-from callbacks.get_available_metrics import get_metric_options, get_checklist_config
+from callbacks.get_available_metrics import get_checklist_config
+from callbacks.update_insurer_callbacks import setup_insurers_callbacks, setup_sync_insurers_callback
 from callbacks.insurance_lines_callbacks import setup_insurance_lines_callbacks
 from callbacks.ui_callbacks import setup_ui_callbacks
-from callbacks.update_metric_callbacks import setup_sync_metrics_callback, setup_metric_callbacks, setup_insurers_callbacks, setup_sync_insurers_callback
+from callbacks.process_data_callback import setup_process_data_callback
+from callbacks.update_metric_callbacks import setup_sync_metrics_callback, setup_metric_callbacks, get_metric_options
 
 from config.default_values import (
     DEFAULT_REPORTING_FORM,

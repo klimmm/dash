@@ -49,7 +49,7 @@
 }
 
 .sidebar-col.row {
-    max-width: 830px;
+    max-width: 430px;
 }
     
 .sidebar-col.collapsed {
@@ -70,9 +70,19 @@
     border: 0;
 }
 
+
+.button-groups-row {
+    margin-top: 1rem;
+    margin-bottom: 0;
+    padding: 0;
+    max-width: 430px;
+    
+
+}
+
 .datatable-container {
     width: fit-content;
-    margin-top: 2rem;
+    margin-top: 0;
     max-width: none;
     border: 1px solid #ccc;
     height: calc(100% - var(--titles-height));

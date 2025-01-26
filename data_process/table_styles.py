@@ -20,7 +20,7 @@ class RowType(Enum):
 # Base style configurations
 BASE_STYLES = {
     'dimensions': {
-        'height': '0.9375rem',  # 15px
+        'height': '1.2rem',  # 15px
         'padding': '0.3rem',
         'font_size': '0.875rem',
         'section_padding': '0.5rem',  # 8px
@@ -95,10 +95,10 @@ STYLES = {
 
 # Simplified column configurations
 COLUMNS = {
-    ColumnType.RANK: {'width': '3.125rem', 'min': '2.8125rem', 'max': '3.125rem', 'align': 'center', 'id': 'N'},  # 50px, 45px, 50px
-    ColumnType.INSURER: {'width': '17rem', 'min': '17rem', 'max': '20rem', 'align': 'left', 'id': 'insurer'},  # 200px, 175px, 200px
-    ColumnType.CHANGE: {'width': '3.75rem', 'min': '3.75rem', 'max': '5rem', 'align': 'center', 'id': '_q_to_q_change'},  # 60px, 60px, 80px
-    ColumnType.DEFAULT: {'width': '3.75rem', 'min': '3.75rem', 'max': '5rem', 'align': 'right'}  # 60px, 60px, 80px
+    ColumnType.RANK: {'width': '3.5rem', 'min': '2.8125rem', 'max': '4rem', 'align': 'center', 'id': 'N'},  # 50px, 45px, 50px
+    ColumnType.INSURER: {'width': '23rem', 'min': '17rem', 'max': '25rem', 'align': 'left', 'id': 'insurer'},  # 200px, 175px, 200px
+    ColumnType.CHANGE: {'width': '6rem', 'min': '3.75rem', 'max': '6rem', 'align': 'center', 'id': '_q_to_q_change'},  # 60px, 60px, 80px
+    ColumnType.DEFAULT: {'width': '6rem', 'min': '3.75rem', 'max': '6rem', 'align': 'right'}  # 60px, 60px, 80px
 }
 
 def _get_base_style() -> Dict[str, Dict[str, Any]]:

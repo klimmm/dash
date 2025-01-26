@@ -77,7 +77,6 @@ class SidebarState:
     """Manages sidebar-related classes and states."""
     chart_cont_class: str
     sidebar_col_class: str
-    sidebar_col_2_class: str
     inner_btn_text: str
     inner_btn_class: str
 
@@ -87,7 +86,6 @@ class SidebarState:
         return cls(
             chart_cont_class = StyleConstants.CONTAINER["CHART"],
             sidebar_col_class=StyleConstants.SIDEBAR,
-            sidebar_col_2_class=StyleConstants.SIDEBAR,
             inner_btn_text="Hide Filters",
             inner_btn_class = StyleConstants.BTN["SIDEBAR_HIDE"]
         )
@@ -98,7 +96,6 @@ class SidebarState:
         return cls(
             chart_cont_class = StyleConstants.CONTAINER["CHART_COLLAPSED"],
             sidebar_col_class=StyleConstants.SIDEBAR_COLLAPSED,
-            sidebar_col_2_class=StyleConstants.SIDEBAR_COLLAPSED,
             inner_btn_text="Show Filters",
             inner_btn_class = StyleConstants.BTN["SIDEBAR_SHOW"]
         )
@@ -108,7 +105,6 @@ class SidebarState:
         return (
             self.chart_cont_class,
             self.sidebar_col_class,
-            self.sidebar_col_2_class,
             self.inner_btn_text,
             self.inner_btn_class
         )
@@ -121,7 +117,6 @@ def setup_sidebar_callbacks(app: dash.Dash) -> None:
         [
             Output("chart-container", "className"),
             Output("sidebar-col", "className"),
-            Output("sidebar-col-2", "className"),
             Output("toggle-sidebar-button-sidebar", "children"),
             Output("toggle-sidebar-button-sidebar", "className")
         ],

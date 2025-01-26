@@ -1,5 +1,7 @@
 import pandas as pd
-import logging
+from config.logging_config import get_logger
+logger = get_logger(__name__)
+
 
 def quarter_to_index(qstr: str) -> int:
     """Convert quarter string (e.g., '2024Q3') to integer index."""
@@ -33,13 +35,13 @@ def get_earliest_valid_date(df: pd.DataFrame, period_type: str, end_quarter: str
         return df[df['year_quarter'].dt.quarter == end_quarter_num]['year_quarter'].min()
 
     if period_type == 'ytd':
-        # logging.debug(f"period_type {period_type}")
+        logger.debug(f"period_type {period_type}")
         df_quarters = (df[df['year_quarter'].dt.quarter <= end_quarter_num]
                       .groupby(df['year_quarter'].dt.year)['year_quarter'].nunique())
 
-        # logging.debug(f"df_quarters {df_quarters}")
+        logger.debug(f"df_quarters {df_quarters}")
         complete_years = df_quarters[df_quarters == end_quarter_num].index
-        # logging.debug(f"complete_years {complete_years}")
+        logger.debug(f"complete_years {complete_years}")
         return pd.Timestamp(f"{min(complete_years)}-01-01") if len(complete_years) > 0 else None
 
     if period_type == 'yoy_y':
@@ -63,54 +65,59 @@ def get_earliest_valid_date(df: pd.DataFrame, period_type: str, end_quarter: str
 
     return None
 
-def filter_by_num_periods(df: pd.DataFrame, period_type: str, num_periods: int) -> pd.DataFrame:
+def filter_by_num_periods(df: pd.DataFrame, period_type: str, num_periods_selected: int) -> pd.DataFrame:
     """Filter DataFrame based on number of periods to show."""
     df = df.copy()
 
     if period_type == 'yoy_q':
         end_quarter = df['year_quarter'].dt.quarter.iloc[-1]
+        logger.warning(f"end_quarter {end_quarter}")
         quarters = df[df['year_quarter'].dt.quarter == end_quarter]['year_quarter']
-        num_periods_available = min(num_periods, len(quarters))
-        df = df[df['year_quarter'].isin(quarters.nlargest(num_periods_available + 1))]
-        periods = sorted(df['year_quarter'].unique())
-        num_periods_available = min(num_periods, len(quarters))
+        num_periods_available = len(quarters.unique())
+        num_periods_to_keep = min(num_periods_selected, num_periods_available - 1) + 1
+        logger.warning(f"num_periods_available {num_periods_available}")
+        logger.warning(f"num_periods_to_keep {num_periods_to_keep}")
+        logger.warning(f"periods before filter {set(sorted(df['year_quarter'].tolist()))}")
+        df = df[df['year_quarter'].isin(pd.Series(quarters.unique()).nlargest(num_periods_to_keep))]
 
     if period_type == 'ytd':
         years = df['year_quarter'].dt.year.unique()
-        df = df[df['year_quarter'].dt.year.isin(sorted(years)[-num_periods-1:])]
-        num_periods_available = min(num_periods, len(years))
+        num_periods_available = len(years)
+        num_periods_to_keep = min(num_periods_selected, num_periods_available - 1) + 1
+        df = df[df['year_quarter'].dt.year.isin(sorted(years)[-num_periods_to_keep:])]
 
     if period_type == 'yoy_y':
         periods = sorted(df['year_quarter'].unique())
-        max_periods = min(num_periods * 4, len(periods) - 4) + 4
-        df = df[df['year_quarter'].isin(periods[-max_periods:])]
-        num_periods_available = min(num_periods, len(periods) / 4)
+        num_periods_available = len(periods) / 4
+        num_periods_to_keep = min(num_periods_selected, num_periods_available - 1) + 1
+        df = df[df['year_quarter'].isin(periods[-int(num_periods_to_keep * 4):])] 
+
 
     if period_type == 'qoq':
-        periods = sorted(df['year_quarter'].unique(), reverse=True)  # Sort in descending order
-        num_periods_available = min(num_periods, len(periods))
-        selected_periods = periods[:num_periods_available + 1]  # Take the most recent periods
-        df = df[df['year_quarter'].isin(selected_periods)]
-        periods = sorted(df['year_quarter'].unique())
+        quarters = sorted(df['year_quarter'].unique(), reverse=True)
+        num_periods_available = len(quarters)
+        num_periods_to_keep = min(num_periods_selected, num_periods_available - 1) + 1
+        df = df[df['year_quarter'].isin(quarters[:num_periods_to_keep])]
 
     return df, num_periods_available
 
 
-def filter_year_quarter(df: pd.DataFrame, end_quarter: str, period_type: str, num_periods: int):
+def filter_year_quarter(df: pd.DataFrame, end_quarter: str, period_type: str, num_periods_selected: int):
     df = filter_by_end_quarter(df, end_quarter)
-    # logging.debug(f"period_type {period_type}")
-    # logging.debug(f"end_quarter {end_quarter}")
+    logger.warning(f"period_type {period_type}")
+    logger.warning(f"num_periods_selected {num_periods_selected}")
+    logger.warning(f"end_quarter {end_quarter}")
     earliest_date = get_earliest_valid_date(df, period_type, end_quarter)
-    # logging.debug(f"earliest_date {earliest_date}")
+    logger.warning(f"earliest_date {earliest_date}")
     if earliest_date is not None:
         df = df[df['year_quarter'] >= earliest_date]
-    # logging.debug(f"periods after earliest date {set(sorted(df['year_quarter'].tolist()))}")
-    df, num_periods_available = filter_by_num_periods (df, period_type, num_periods)
-    # logging.debug(f"periods after filter_by_num_periods {set(sorted(df['year_quarter'].tolist()))}")
+    logger.warning(f"periods after earliest date {set(sorted(df['year_quarter'].tolist()))}")
+    df, num_periods_available = filter_by_num_periods(df, period_type, num_periods_selected)
+    logger.warning(f"periods after filter_by_num_periods_selected {set(sorted(df['year_quarter'].tolist()))}")
     return df, round(num_periods_available)
 
 
-# Example usage
+'''# Example usage
 if __name__ == '__main__':
     dates = [
         '2019-04-01 00:00:00', '2019-07-01 00:00:00',
@@ -126,25 +133,25 @@ if __name__ == '__main__':
     print(f"dates in df: {sorted(df['year_quarter'].tolist())}")
     period_types = ['ytd', 'yoy_q', 'yoy_y', 'qoq']
     end_quarter_options = ['2023Q3', '2024Q1', '2024Q2', '2024Q3']
-    num_periods = 6
+    num_periods_selected = 6
 
 
     for end_quarter in end_quarter_options:
         print(f"\n{end_quarter}:")
         for period_type in period_types:
             print(f"\n{period_type}:")
-            df_filtered, num_periods_available = filter_year_quarter(df, end_quarter, period_type, num_periods)
+            df_filtered, num_periods_available = filter_year_quarter(df, end_quarter, period_type, num_periods_selected)
             print(f"num_periods_available: {num_periods_available}")
             print(f"Filtered dates: {sorted(df_filtered['year_quarter'].tolist())}")
 
-'''         earliest_date = get_earliest_valid_date(df_filtered, period_type, end_quarter)
+           earliest_date = get_earliest_valid_date(df_filtered, period_type, end_quarter)
             print(f"\n{period_type}:")
             print(f"Earliest valid date: {earliest_date}")
             
             if earliest_date is not None:
                 df_filtered = df_filtered[df_filtered['year_quarter'] >= earliest_date]
                 
-                df_filtered, num_periods_available = filter_by_num_periods(df_filtered, period_type, num_periods)
+                df_filtered, num_periods_available = filter_by_num_periods(df_filtered, period_type, num_periods_selected)
 
                 print(f"Number of rows: {len(df_filtered)}")
                 print(f"num_periods_available: {num_periods_available}")  

@@ -2,7 +2,7 @@
 
 /* Form Control */
 .form-control-custom {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-sm);
     height: var(--input-height-xs);
     padding: var(--space-2);
     border: 0;
@@ -13,7 +13,7 @@
 
 /* Input Variants */
 .input-short {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-sm);
     width: 80px;
     text-align: center;
     padding: var(--space-1);
@@ -26,7 +26,7 @@
 }
 
 .filter-label {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-sm);
     color: var(--color-text-default);
     font-weight: var(--font-weight-semibold);
     display: flex;
@@ -84,7 +84,7 @@
 
 /* Period Filter Specific */
 .period-type__text {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
     min-height: 1.9rem !important;
     max-height: 1.9rem !important;
@@ -98,7 +98,7 @@
 }
 
 .period-type__description {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
     margin-top: var(--space-1);
 }
@@ -144,7 +144,7 @@
 /* Base dropdown */
 .dash-dropdown {
     all: unset;
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-sm);
     width: 100%;
     height: 100%;
 }
@@ -152,7 +152,7 @@
 /* Control container */
 .dd-control {
     position: relative;
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-sm);
     padding: 0;
     margin-bottom: 0;
     margin-top: 0.2rem;
@@ -187,7 +187,7 @@ input[autocomplete="off"][role="combobox"] {
 .dd-control .Select-menu-outer,
 .Select-menu-outer {
     padding: 0;
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-sm);
     background: var(--color-surface-primary);
     line-height: 1.2;
     z-index: 1000;
@@ -212,7 +212,7 @@ input[autocomplete="off"][role="combobox"] {
 .Select-value-label {
     margin: 0;
     padding: 0 !important;
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-sm);
     height: 100%;
     display: flex;
     align-items: center !important;
@@ -238,7 +238,7 @@ input[autocomplete="off"][role="combobox"] {
     height: 100%;
     margin: 0 !important;
     padding: 0 !important;
-    font-size: var(--font-size-xs) !important;
+    font-size: var(--font-size-sm) !important;
     display: flex;
     align-items: center !important;
 }
@@ -271,7 +271,7 @@ input[autocomplete="off"][role="combobox"] {
 /* Placeholder styling */
 .dd-control .Select-placeholder,
 .Select-placeholder {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-sm);
     display: flex;
     align-items: center;
     padding: 0;

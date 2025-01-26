@@ -1,44 +1,103 @@
-from dash import dcc, html
-from typing import List, Tuple, Dict, Optional
+from typing import List, Tuple, Dict, Optional, Any
 import json
 import dash
 from dash import Dash, ALL
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
+from callbacks.get_available_metrics import get_available_metrics
+from application.filters import create_metric_dropdown
+from config.default_values import DEFAULT_PRIMARY_METRICS, DEFAULT_PRIMARY_METRICS_158
+from constants.filter_options import METRICS_OPTIONS
 from config.logging_config import get_logger, track_callback, track_callback_end
-from application.style_config import StyleConstants
-from callbacks.get_available_metrics import get_metric_options, get_checklist_config
 logger = get_logger(__name__)
 
 
-def create_metric_dropdown(index: int, options: List[Dict], value: Optional[str]) -> html.Div:
-    return html.Div(
-        className="d-flex align-items-center w-100 mb-1 pr-1",
-        children=[
-            html.Div(
-                className="dash-dropdown flex-grow-1",
-                children=[
-                    dcc.Dropdown(
-                        id={'type': 'dynamic-primary-metric', 'index': index},
-                        options=options,
-                        value=value,
-                        multi=False,
-                        clearable=False,
-                        placeholder="Select primary metric",
-                        className=StyleConstants.FORM["DD"],
-                        optionHeight=18,
+FORM_METRICS = {
+    '0420158': {'total_premiums', 'total_losses', 'ceded_premiums', 'ceded_losses',
+                'net_premiums', 'net_losses'
+               },
+    '0420162': {'direct_premiums', 'direct_losses', 'inward_premiums', 'inward_losses', 
+                'ceded_premiums', 'ceded_losses',
+                'new_sums', 'sums_end',
+                'new_contracts', 'contracts_end',
+                'premiums_interm', 'commissions_interm', 
+                'claims_settled', 'claims_reported'
+               }
+}
 
-                    )
-                ]
-            ),
-            html.Button(
-                "✕",
-                id={'type': 'remove-primary-metric-btn', 'index': index},
-                className=StyleConstants.BTN["REMOVE"],
-                n_clicks=0
-            )
-        ]
-    )
+
+def get_metric_options(
+    reporting_form: str,
+    selected_primary_metrics: Optional[List[str]] = None,
+    selected_secondary_metrics: Optional[List[str]] = None
+) -> Dict[str, List[Dict[str, Any]]]:
+    # 1. Initialize and normalize inputs
+    allowed_basic_metrics = FORM_METRICS.get(reporting_form, set())
+    available_calculated_metrics = set(get_available_metrics(allowed_basic_metrics))  # Convert to set explicitly
+    selected_primary_metrics = [selected_primary_metrics] if isinstance(selected_primary_metrics, str) else (selected_primary_metrics or [])
+    selected_secondary_metrics = [selected_secondary_metrics] if isinstance(selected_secondary_metrics, str) else (selected_secondary_metrics or [])
+
+    # 2. Determine default metrics sets
+    primary_metric_set = allowed_basic_metrics.copy()
+    secondary_metric_set = available_calculated_metrics.copy()
+
+    # 3. Handle selected primary metrics that are in secondary set
+    for metric in selected_primary_metrics:
+        if metric in secondary_metric_set:
+            primary_metric_set.add(metric)
+            secondary_metric_set.remove(metric)
+
+    # 4. Validate primary metrics
+    valid_primary_metrics = [
+        metric for metric in selected_primary_metrics 
+        if metric in primary_metric_set
+    ] or None
+
+    # 5. Handle selected secondary metrics based on primary validation
+    if not valid_primary_metrics and selected_secondary_metrics:
+        # If no valid primary metrics, collect eligible secondary metrics
+        valid_primary_metrics = []
+        metrics_to_remove = []
+
+        for metric in selected_secondary_metrics:
+            if metric in primary_metric_set or metric in secondary_metric_set:
+                valid_primary_metrics.append(metric)
+                metrics_to_remove.append(metric)
+                primary_metric_set.add(metric)
+                secondary_metric_set.discard(metric)
+
+        # Remove processed metrics from selected_secondary_metrics
+        for metric in metrics_to_remove:
+            selected_secondary_metrics.remove(metric)
+    else:
+        # If we have valid primary metrics, move appropriate metrics to secondary
+        for metric in selected_secondary_metrics:
+            if metric in primary_metric_set:
+                primary_metric_set.remove(metric)
+                secondary_metric_set.add(metric)
+
+    primary_metric_value = valid_primary_metrics if valid_primary_metrics is not None else DEFAULT_PRIMARY_METRICS if reporting_form == '0420162' else DEFAULT_PRIMARY_METRICS_158
+
+    # 6. Validate secondary metrics
+    valid_secondary_metrics = [
+        metric for metric in selected_secondary_metrics 
+        if metric in secondary_metric_set
+    ] or None
+
+    secondary_metric_value = valid_secondary_metrics if valid_secondary_metrics is not None else []
+
+    # 7. Create options based on the metric sets
+    primary_metric_options = [
+        opt for opt in METRICS_OPTIONS 
+        if opt['value'] in primary_metric_set
+    ]
+
+    secondary_metric_options = [
+        opt for opt in METRICS_OPTIONS 
+        if opt['value'] in secondary_metric_set
+    ]
+
+    return primary_metric_options, secondary_metric_options, primary_metric_value, secondary_metric_value
 
 
 def setup_sync_metrics_callback(app: Dash) -> None:
@@ -88,7 +147,7 @@ def setup_metric_callbacks(app: Dash) -> None:
 
             # Initialize dropdowns if None
             existing_dropdowns = existing_dropdowns or []
-            logger.warning(f"existing_dropdowns {existing_dropdowns}")
+            logger.debug(f"existing_dropdowns {existing_dropdowns}")
             selected_dynamic_metrics = [v for v in (selected_dynamic_metrics or []) if v is not None]
             all_selected_primary_metric = [selected_primary_metric] + selected_dynamic_metrics
 
@@ -148,138 +207,6 @@ def setup_metric_callbacks(app: Dash) -> None:
                 updated_primary_metric_dropdowns,
                 secondary_metric_options,
                 secondary_metric_value[0] if secondary_metric_value else []
-            )
-
-        except Exception as e:
-            logger.error(f"Error in update_metric_dropdowns: {str(e)}", exc_info=True)
-            raise
-
-
-
-def create_insurer_dropdown(index: int, options: List[Dict], value: Optional[str]) -> html.Div:
-    return html.Div(
-        className="d-flex align-items-center w-100 mb-1 pr-1",
-        children=[
-            html.Div(
-                className="dash-dropdown flex-grow-1",
-                children=[
-                    dcc.Dropdown(
-                        id={'type': 'dynamic-selected-insurers', 'index': index},
-                        options=options,
-                        value=value,
-                        multi=False,
-                        clearable=False,
-                        placeholder="Select insurer",
-                        className=StyleConstants.FORM["DD"],
-                        optionHeight=18
-
-                    )
-                ]
-            ),
-            html.Button(
-                "✕",
-                id={'type': 'remove-selected-insurers-btn', 'index': index},
-                className=StyleConstants.BTN["REMOVE"],
-                n_clicks=0
-            )
-        ]
-    )
-
-
-def setup_sync_insurers_callback(app: Dash) -> None:
-    """Setup callback for syncing metric values"""
-
-    @app.callback(
-        Output('selected-insurers-all-values', 'data'),
-        [Input('selected-insurers', 'value'),
-         Input({'type': 'dynamic-selected-insurers', 'index': ALL}, 'value')]
-    )
-    def sync_metric_values(main_value: str, dynamic_values: List[str]) -> List[str]:
-        return [main_value] + [v for v in dynamic_values if v is not None]
-
-def setup_insurers_callbacks(app: Dash) -> None:
-    @app.callback(
-        [Output('selected-insurers', 'options'),
-         Output('selected-insurers', 'value'),
-         Output('selected-insurers-container', 'children')],
-        [Input('selected-insurers', 'value'),
-         Input({'type': 'dynamic-selected-insurers', 'index': ALL}, 'value'),
-         Input('selected-insurers-add-btn', 'n_clicks'),
-         Input({'type': 'remove-selected-insurers-btn', 'index': ALL}, 'n_clicks'),
-         Input('intermediate-data-store', 'data')],
-        [State('selected-insurers-container', 'children')],
-    )
-    def update_metric_selections(
-        selected_insurer: str,
-        selected_dynamic_insurers: List[str],
-        add_insurer_clicks: int,
-        remove_insurer_clicks: List[int],
-        intermediate_data: Dict,
-        existing_dropdowns: List
-    ) -> Tuple:
-        """Update metric dropdowns based on user interactions"""
-        ctx = dash.callback_context
-        if not ctx.triggered:
-            raise PreventUpdate
-
-        try:
-            insurer_options = intermediate_data.get('insurer_options', [])
-
-            logger.warning(f"insurer_options {insurer_options}")
-            logger.warning(f"selected_insurer {selected_insurer}")
-            logger.warning(f"selected_dynamic_insurers {selected_dynamic_insurers}")
-            # Initialize dropdowns if None
-            existing_dropdowns = existing_dropdowns or []
-            selected_dynamic_insurers = [v for v in (selected_dynamic_insurers or []) if v is not None]
-            all_selected_insurers = (selected_dynamic_insurers or []) + [selected_insurer]
-
-            # Handle remove button click
-            if '.n_clicks' in ctx.triggered[0]['prop_id'] and '"type":"remove-selected-insurers-btn"' in ctx.triggered[0]['prop_id']:
-                component_id = json.loads(ctx.triggered[0]['prop_id'].split('.')[0])
-                removed_index = component_id['index']
-
-                if ctx.triggered[0]['value'] is not None:
-                    selected_dynamic_insurers = [v for i, v in enumerate(selected_dynamic_insurers) if i != removed_index]
-                    existing_dropdowns = [
-                        d for i, d in enumerate(existing_dropdowns) if i != removed_index
-                    ]
-
-            # Handle add button click
-            if 'selected-insurers-add-btn' in ctx.triggered[0]['prop_id']:
-                new_selected_insurers_dropdown = create_insurer_dropdown(
-                    index=len(existing_dropdowns),
-                    options=[opt for opt in insurer_options if opt['value'] not in all_selected_insurers],
-                    value=None
-                )
-                existing_dropdowns.append(new_selected_insurers_dropdown)
-
-            # Update existing dropdowns
-            updated_selected_insurers_dropdowns = []
-            for i, _ in enumerate(existing_dropdowns):
-                current_selected_insurer = selected_dynamic_insurers[i] if i < len(selected_dynamic_insurers) else None
-                other_insurers_selected = [v for v in all_selected_insurers if v != current_selected_insurer]
-
-                insurer_dropdown_options = [
-                    opt for opt in insurer_options 
-                    if opt['value'] not in other_insurers_selected
-                ]
-
-                updated_selected_insurers_dropdowns.append(create_insurer_dropdown(
-                    index=i,
-                    options=insurer_dropdown_options,
-                    value=current_selected_insurer
-                ))
-
-            # Filter primary metric options
-            filtered_selected_insurer_options = [
-                opt for opt in insurer_options 
-                if opt['value'] not in selected_dynamic_insurers
-            ]
-
-            return (
-                filtered_selected_insurer_options,
-                selected_insurer,
-                updated_selected_insurers_dropdowns
             )
 
         except Exception as e:
