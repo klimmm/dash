@@ -37,7 +37,7 @@ def setup_ui_callbacks(app):
         number_of_insurers: int
     ) -> List:
         """Update table based on processed data."""
-        memory_monitor.log_memory("before_process_ui", logger)
+        # memory_monitor.log_memory("before_process_ui", logger)
         start_time = track_callback('main', 'process_ui', dash.callback_context)
 
         try:
@@ -77,7 +77,8 @@ def setup_ui_callbacks(app):
                 number_of_insurers=number_of_insurers,
                 toggle_selected_market_share=toggle_selected_market_share,
                 toggle_selected_qtoq=toggle_selected_qtoq,
-                prev_ranks=processed_data['prev_ranks']
+                prev_ranks=processed_data['prev_ranks'],
+                current_ranks=processed_data['current_ranks'],
             )
 
             unique_insurers = df['insurer'].unique().tolist()

@@ -114,7 +114,7 @@ def filter_year_quarter(df: pd.DataFrame, end_quarter: str, period_type: str, nu
     logger.debug(f"periods after earliest date {set(sorted(df['year_quarter'].tolist()))}")
     df, num_periods_available = filter_by_num_periods(df, period_type, num_periods_selected)
     logger.debug(f"periods after filter_by_num_periods_selected {set(sorted(df['year_quarter'].tolist()))}")
-    return df, round(num_periods_available)
+    return df #, round(num_periods_available)
 
 
 '''# Example usage

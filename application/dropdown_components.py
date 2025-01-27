@@ -17,6 +17,11 @@ from data_process.data_utils import (
     get_categories_by_level
 )
 from application.button_components import ButtonStyleConstants
+from data_process.data_utils import map_insurer
+from callbacks.update_insurer_callbacks import create_insurer_dropdown
+from callbacks.update_metric_callbacks import create_primary_metric_dropdown
+from constants.translations import translate
+
 
 
 class StyleConstants:
@@ -102,40 +107,56 @@ def create_dynamic_metric_dropdown(
     )
 
 
-def create_dynamic_metric_dropdown_container() -> html.Div:
-    """Create a container specifically for dynamic metric dropdowns"""
-    return html.Div([
-        html.Div(
-            className="d-flex align-items-center w-100",
-            children=[
-                html.Div(
-                    dcc.Dropdown(
-                        id='primary-metric',
-                        options=VALUE_METRICS_OPTIONS,
-                        value=DEFAULT_PRIMARY_METRICS,
-                        multi=False,
-                        placeholder=translate("Доп. показатель..."),
-                        clearable=True,
-                        className=StyleConstants.FORM["DD"],
-                        optionHeight=18,
-                        style={"fontSize": "0.85rem"}
-                    ),
-                    className="dash-dropdown flex-grow-1"
-                ),
-                html.Button(
-                    "+",
-                    id="primary-metric-add-btn",
-                    className=ButtonStyleConstants.BTN["ADD"]
-                )
-            ]
-        ),
-        html.Div(
-            id="primary-metric-container",
-            children=[],
-            className="dynamic-dropdowns-container w-100 py-0 pr-1"
-        ),
-        dcc.Store(id="primary-metric-all-values", data=[])
-    ], className="w-100")
+
+
+
+
+
+
+
+def create_dynamic_orimary_metric_container_for_layout(
+    value: Optional[str] = None,
+    options: List[Dict[str, str]] = None
+) -> html.Div:
+
+    if value is None:
+        value = DEFAULT_PRIMARY_METRICS
+
+    if options is None:
+        options = [
+            {'label': translate(DEFAULT_PRIMARY_METRICS), 'value': DEFAULT_PRIMARY_METRICS} 
+        ]
+
+    return html.Div(
+        className="w-100",
+        children=[
+            # Container for all dropdowns (including the first one)
+            html.Div(
+                id="primary-metric-container",
+                className="dynamic-dropdowns-container w-100 py-0 pr-1",
+                children=[
+                    create_primary_metric_dropdown(
+                        index=0,
+                        value=value,
+                        options=options,
+                        is_add_button=True
+                    )
+                ],
+            ),
+            # Store for all selected insurer values
+            dcc.Store(
+                id="primary-metric-all-values",
+                data=[],
+                storage_type='memory'
+            )
+        ]
+    )
+
+
+
+
+
+
 
 
 def create_dynamic_insurance_line_dropdown_container() -> html.Div:
@@ -166,8 +187,13 @@ def create_dynamic_insurance_line_dropdown_container() -> html.Div:
                     className="dash-dropdown flex-grow-1"
                 ),
                 html.Button(
-                    "+",
+                    " ",
                     id="insurance-line-add-btn",
+                    className=ButtonStyleConstants.BTN["ADD"]
+                ),
+                html.Button(
+                    " ",
+                    id="insurance-line-remove-btn",
                     className=ButtonStyleConstants.BTN["ADD"]
                 )
             ]
@@ -181,157 +207,8 @@ def create_dynamic_insurance_line_dropdown_container() -> html.Div:
     ], className="w-100")
 
 
-def create_dynamic_insurer_dropdown_main(
-    value: Optional[str] = None,
-    options: List[Dict[str, str]] = None  # More specific type hint
-) -> html.Div:
-    """Create a container specifically for dynamic insurer dropdowns
-    
-    Args:
-        value: Initial selected value
-        options: List of dropdown options with 'label' and 'value' keys
-        
-    Returns:
-        html.Div containing the main dropdown and container for additional dropdowns
-    """
-    options = options or [{'label': 'Весь рынок', 'value': 'total'}]
-    value = value or DEFAULT_INSURER
-    return html.Div([
-        html.Div(
-            className="d-flex align-items-center w-100",
-            children=[
-                html.Div(
-                    
-                    dcc.Dropdown(
-                        id='selected-insurers',
-                        options=options,
-                        value=value,
-                        multi=False,
-                        clearable=False,
-                        placeholder="Select insurer",
-                        className=StyleConstants.FORM["DD"],
-                        optionHeight=18,
-                        searchable=False
-                    ), 
-                    className="dash-dropdown flex-grow-1"
-                ),
-                html.Button(
-                    children=html.I(className="fas fa-plus"),
-                    # children=html.I(cclassName="fas fa-square-plus")
-                    id="selected-insurers-add-btn",
-                    className=ButtonStyleConstants.BTN["ADD"]
-                )
-            ]
-        ),
-        html.Div(
-            id="selected-insurers-container",
-            children=[],
-            className="dynamic-dropdowns-container w-100 py-0 pr-1"
-        ),
-        dcc.Store(id="selected-insurers-all-values", data=[], storage_type='memory')
-    ], className="w-100")
 
 
-def create_dynamic_insurer_dropdown_additional(
-    index: int,
-    value: Optional[str] = None,
-    options: List[Dict] = None
-) -> html.Div:
-    if options is None:
-        options = [{'label': 'Весь рынок', 'value': 'total'}]
-
-    return html.Div(
-        className="d-flex align-items-center w-100",
-        children=[
-            html.Div(
-                className="dash-dropdown flex-grow-1",
-                children=[
-                    dcc.Dropdown(
-                        id={'type': 'dynamic-selected-insurers', 'index': index},
-                        options=options,
-                        value=value,
-                        multi=False,
-                        clearable=False,
-                        placeholder="Select insurer",
-                        className=StyleConstants.FORM["DD"],
-                        optionHeight=18,
-                        searchable=False
-                    )
-                ]
-            ),
-            html.Button(
-                children=html.I(className="fas fa-xmark"), 
-                # children=html.I(className="fas fa-circle-minus"), 
-                # children=html.I(className="fas fa-trash"), 
-                id={'type': 'remove-selected-insurers-btn', 'index': index},
-                className=ButtonStyleConstants.BTN["REMOVE"],
-                n_clicks=0
-            )
-        ]
-    )
-
-
-def create_insurer_dropdown(
-    index: int,
-    value: Optional[str] = None,
-    options: List[Dict[str, str]] = None,
-    is_add_button: bool = False
-) -> html.Div:
-    """Create a unified insurer dropdown
-    
-    Args:
-        index: Index for the dropdown (0 for first, incrementing for additional)
-        value: Initial selected value
-        options: List of dropdown options with 'label' and 'value' keys
-        is_add_button: Whether this dropdown should have an add button (True for last dropdown)
-        
-    Returns:
-        html.Div containing the dropdown and associated button
-    """
-    options = options or [{'label': 'Весь рынок', 'value': 'total'}]
-    
-    button_props = {
-        'add': {
-            'icon_class': "fas fa-plus",
-            'button_id': "selected-insurers-add-btn",
-            'button_class': ButtonStyleConstants.BTN["ADD"]
-        },
-        'remove': {
-            'icon_class': "fas fa-xmark",
-            'button_id': {'type': 'remove-selected-insurers-btn', 'index': index},
-            'button_class': ButtonStyleConstants.BTN["REMOVE"]
-        }
-    }
-    
-    button_config = button_props['add'] if is_add_button else button_props['remove']
-    
-    return html.Div(
-        className="d-flex align-items-center w-100",
-        children=[
-            html.Div(
-                className="dash-dropdown flex-grow-1",
-                children=[
-                    dcc.Dropdown(
-                        id={'type': 'dynamic-selected-insurers', 'index': index},
-                        options=options,
-                        value=value,
-                        multi=False,
-                        clearable=False,
-                        placeholder="Select insurer",
-                        className=StyleConstants.FORM["DD"],
-                        optionHeight=18,
-                        searchable=False
-                    )
-                ]
-            ),
-            html.Button(
-                children=html.I(className=button_config['icon_class']),
-                id=button_config['button_id'],
-                className=button_config['button_class'],
-                n_clicks=0
-            )
-        ]
-    )
 
 def create_dynamic_insurer_container_for_layout(
     value: Optional[str] = None,
@@ -339,22 +216,13 @@ def create_dynamic_insurer_container_for_layout(
 ) -> html.Div:
 
     if value is None:
-        value = 'total'
+        value = DEFAULT_INSURER
+
     if options is None:
-        options = options or [{'label': 'Весь рынок', 'value': 'total'}]
-    """
-    Create the insurer container for the layout system.
+        options = [
+            {'label': map_insurer(DEFAULT_INSURER), 'value': DEFAULT_INSURER} 
+        ]
 
-    This function serves as a unified implementation to create the insurer container,
-    adapting our dropdown system to integrate seamlessly with the existing layout.
-
-    Args:
-        value: Initial selected value for the first dropdown.
-        options: List of dropdown options, each as a dictionary with 'label' and 'value' keys.
-
-    Returns:
-        html.Div: A Div element containing the dropdown container and storage components.
-    """
     return html.Div(
         className="w-100",
         children=[

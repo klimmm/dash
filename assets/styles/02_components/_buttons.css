@@ -34,6 +34,16 @@
     border-color: #e0e0e0;
 }
 
+.btn-period {
+
+}
+.btn-group-control {
+
+    padding: 0.3rem !important;
+}
+
+
+
 /* Active state - increased specificity to ensure it takes precedence */
 .btn-group-control.btn-primary.active,
 .btn-group-control.btn-primary.active:hover,

@@ -53,7 +53,7 @@ def setup_buttons_callbacks(app: dash.Dash) -> None:
         # Add debug logging
         logger.debug(f"Callback triggered")
         logger.debug(f"Context triggered: {ctx.triggered}")
-        logger.debug(f"Current state: {current_state}")
+        logger.debug(f"period_type_current state: {current_state}")
         
         button_map = {
             'btn-period-type-ytd': 'ytd',
@@ -65,16 +65,16 @@ def setup_buttons_callbacks(app: dash.Dash) -> None:
         
         # Initialize button classes based on current state
         current_state = current_state if current_state else DEFAULT_PERIOD_TYPE
-        button_classes = [button_group_control for _ in range(5)]
+        button_classes = [button_period_main for _ in range(5)]
         
         # If no button was clicked, maintain current state
         if not ctx.triggered:
             # Set active class based on current state
             for i, (btn_id, btn_val) in enumerate(button_map.items()):
                 if btn_val == current_state:
-                    button_classes[i] = button_group_control_active
+                    button_classes[i] = button_period_main_active
             period_type_text = translate(current_state)
-            return (*button_classes, current_state, period_type_text)
+            return (*button_classes, dash.no_update, period_type_text)
         
         try:
             triggered = ctx.triggered[0]["prop_id"].split(".")[0]
@@ -85,14 +85,17 @@ def setup_buttons_callbacks(app: dash.Dash) -> None:
                 button_index = list(button_map.keys()).index(triggered)
                 
                 # Update button classes
-                button_classes = [button_group_control for _ in range(5)]
-                button_classes[button_index] = button_group_control_active
+                button_classes = [button_period_main for _ in range(5)]
+                button_classes[button_index] = button_period_main_active
                 
                 period_type_text = translate(new_state)
                 logger.debug(f"New state: {new_state}")
                 logger.debug(f"Button classes: {button_classes}")
+                logger.debug(f"period_type_new_state: {new_state}")
+
                 
                 return (*button_classes, new_state, period_type_text)
+                
         except Exception as e:
             logger.error(f"Error in update_period: {e}")
             raise
@@ -223,62 +226,71 @@ def setup_buttons_callbacks(app: dash.Dash) -> None:
     @app.callback(
         [
             Output("btn-top-insurers-top-5", "className"),
+            
             Output("btn-top-insurers-top-10", "className"),
             Output("btn-top-insurers-top-20", "className"),
+            Output("btn-top-insurers-top-999", "className"),
             Output('number-of-insurers', 'data'),
         ],
         [
             Input("btn-top-insurers-top-5", "n_clicks"),
             Input("btn-top-insurers-top-10", "n_clicks"),
+            Input("btn-top-insurers-top-999", "n_clicks"),
             Input("btn-top-insurers-top-20", "n_clicks")
         ],
         State('number-of-insurers', 'data'),
         prevent_initial_call=False
     )
-    def update_number_insurers(n_clicks_5, n_clicks_10, n_clicks_20, state):
+    def update_number_insurers(n_clicks_5, n_clicks_10, n_clicks_20, n_clicks_999, state):
         ctx = dash.callback_context
         start_time = track_callback('app.buttons_callbacks', 'update_number_insurers', ctx)
-
-        button_map = {
-            'btn-top-insurers-top-5': ('top-5', 0),
-            'btn-top-insurers-top-10': ('top-10', 1),
-            'btn-top-insurers-top-20': ('top-20', 2)
-        }
-
-        value_map = {
-            'btn-top-insurers-top-5': 5,
-            'btn-top-insurers-top-10': 10,
-            'btn-top-insurers-top-20': 20
-        }
-
-        button_classes = [button_period_main for _ in range(3)]
         
-        if state == 5:
-            button_classes[0] = button_period_main_active
-        elif state == 10:
-            button_classes[1] = button_period_main_active
-        elif state == 20:
-            button_classes[2] = button_period_main_active
-
+        button_map = {
+            'btn-top-insurers-top-5': ('top-5', 0, 5),
+            'btn-top-insurers-top-10': ('top-10', 1, 10),
+            'btn-top-insurers-top-20': ('top-20', 2, 20),
+            'btn-top-insurers-top-999': ('top-20', 3, 999)
+        }
+        
+        # Initialize button classes and selected values
+        button_classes = [button_group_control for _ in range(4)]
+        if state is None:
+            state = []
+        elif isinstance(state, (int, float)):
+            # Convert old single-value state to list
+            state = [state] if state in [5, 10, 20, 999] else []
+        
+        # Set initial active states based on current selection
+        for btn_id, (_, idx, value) in button_map.items():
+            if value in state:
+                button_classes[idx] = button_group_control_active
+        
         if not ctx.triggered:
             output = (*button_classes, dash.no_update)
             track_callback_end('app.buttons_callbacks', 'update_number_insurers', start_time, result=output)
             return output
-
+        
         try:
             triggered = ctx.triggered[0]["prop_id"].split(".")[0]
             
             if triggered in button_map:
-                _, button_index = button_map[triggered]
-                state = value_map.get(triggered, 10)
+                _, button_index, value = button_map[triggered]
                 
-                button_classes = [button_period_main for _ in range(3)]
-                button_classes[button_index] = button_period_main_active
+                # Toggle selection
+                if value in state:
+                    state.remove(value)
+                    button_classes[button_index] = button_group_control
+                else:
+                    state.append(value)
+                    button_classes[button_index] = button_group_control_active
+                
+                # Sort the state list for consistency
+                state.sort()
                 
                 output = (*button_classes, state)
                 track_callback_end('app.buttons_callbacks', 'update_number_insurers', start_time, result=output)
                 return output
-
+                
         except Exception as e:
             logger.error(f"Error in update_number_insurers: {e}")
             raise

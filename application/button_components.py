@@ -46,9 +46,10 @@ DEFAULT_BUTTON_CONFIGS = {
         {"label": "0420162", "value": "0420162"}
     ],
     'top-insurers': [
-        {"label": "Top 5", "value": "top-5"},
-        {"label": "Top 10", "value": "top-10"},
-        {"label": "Top 20", "value": "top-20"}
+        {"label": "Total", "value": "top-999"},
+        {"label": "Top5", "value": "top-5"},
+        {"label": "Top10", "value": "top-10"},
+        {"label": "Top20", "value": "top-20"}
     ],
     'period-type': [
         {"label": "YTD", "value": "ytd"},
@@ -144,7 +145,7 @@ def create_button_group_from_config(
     buttons = DEFAULT_BUTTON_CONFIGS.get(config_key or component_id, [])
     
     # Use different classNames based on component type
-    if component_id in ['period-type', 'periods-data-table', 'metric-toggles']:
+    if component_id in ['top-insurers', 'periods-data-table', 'metric-toggles']:
         className = ButtonStyleConstants.BTN["PERIOD"]
     else:
         className = ButtonStyleConstants.BTN["GROUP_CONTROL"]

@@ -14,10 +14,10 @@ from application.button_components import (
 )
 from application.dropdown_components import (
     create_end_quarter_dropdown,
-    create_dynamic_metric_dropdown_container,
     create_dynamic_insurer_container_for_layout,
     create_dynamic_insurance_line_dropdown_container,
-    create_secondary_metric_dropdown
+    create_secondary_metric_dropdown,
+    create_dynamic_orimary_metric_container_for_layout
 )
 from application.checklist_components import create_business_type_checklist
 
@@ -30,7 +30,7 @@ logger = get_logger(__name__)
 # Component registry
 COMPONENTS = {
     'dropdown': {
-        'primary-metric': create_dynamic_metric_dropdown_container,
+        'primary-metric': create_dynamic_orimary_metric_container_for_layout,
         'selected-insurers': create_dynamic_insurer_container_for_layout,  # Updated
         'insurance-line-dropdown': create_dynamic_insurance_line_dropdown_container,
         'end-quarter': create_end_quarter_dropdown,
@@ -60,35 +60,48 @@ FILTER_LAYOUT = {
             'className': 'sidebar-col collapsed',
             'items': [
                 {
-                    'label': 'Отчетный квартал:',
-                    'type': 'dropdown',
-                    'component_id': 'end-quarter',
-                    'label_width': 8,
-                    'component_width': 4,
-                    'row_className': 'filter-row mb-0',
-                    'wrapper_className': 'd-flex justify-content-center'
+                    'type': 'row-container',  # New type to handle row grouping
+                    'className': 'first-row',
+                    'widths': {'xs': 6, 'sm': 6, 'md': 4},
+                    'components': [
+                        {
+                            'label': 'Отчетный квартал:',
+                            'type': 'dropdown',
+                            'component_id': 'end-quarter',
+                            'label_width': 8,
+                            'component_width': 4,
+                            'row_className': 'filter-row mb-0',
+                            'wrapper_className': 'd-flex justify-content-center'
+                        },
+                        {
+                            'label': 'Бизнес:',
+                            'type': 'checklist',
+                            'component_id': 'business-type-checklist',
+                            'label_width': 3,
+                            'component_width': 9,
+                            'row_className': 'filter-row mb-0',
+                            'wrapper_className': 'd-flex justify-content-center'
+                        }
+                    ]
                 },
                 {
-                    'label': 'Бизнес:',
-                    'type': 'checklist',
-                    'component_id': 'business-type-checklist',
-                    'label_width': 3,
-                    'component_width': 9,
-                    'row_className': 'filter-row mb-0',
-                    'wrapper_className': 'd-flex justify-content-center'
-                },
-                {
-                    'label': 'Доп. показатель:',
-                    'type': 'dropdown',
-                    'component_id': 'secondary-y-metric',
-                    'label_width': 4,
-                    'component_width': 8,
-                    'row_className': 'filter-row mb-0',
-                    'wrapper_className': 'd-flex justify-content-center'
+                    'type': 'row-container',
+                    'className': 'second-row',
+                    'widths': {'xs': 12, 'sm': 12, 'md': 12},
+                    'components': [
+                        {
+                            'label': 'Доп. показатель:',
+                            'type': 'dropdown',
+                            'component_id': 'secondary-y-metric',
+                            'label_width': 4,
+                            'component_width': 8,
+                            'row_className': 'filter-row mb-0',
+                            'wrapper_className': 'd-flex justify-content-center'
+                        }
+                    ]
                 }
             ],
-            'col_className': 'main-filter-column',
-            'widths': {'xs': 6, 'sm': 6, 'md': 4}
+            'col_className': 'main-filter-column'
         }
     ],
     'expanded': [
@@ -105,16 +118,17 @@ FILTER_LAYOUT = {
                     'wrapper_className': 'd-flex justify-content-center'
                 },
                 {
-                    'label': ' ',
+                    'label': 'Период:',
                     'type': 'button-group',
-                    'component_id': 'top-insurers',
+                    'component_id': 'period-type',
                     'label_width': 3,
                     'component_width': 9,
                     'row_className': 'filter-row mb-0',
-                    'wrapper_className': 'd-flex justify-content-center'
-                }
+                    'wrapper_className': 'd-flex justify-content-start'
+                },
+
             ],
-            'col_className': 'main-filter-column',
+            'col_className': 'top-sidebar-row',
             'widths': {'xs': 6, 'sm': 6, 'md': 6}
         },
         {
@@ -154,14 +168,16 @@ FILTER_LAYOUT = {
         {
             'className': 'button-groups-row',
             'items': [
+
+
                 {
                     'label': ' ',
                     'type': 'button-group',
-                    'component_id': 'period-type',
+                    'component_id': 'top-insurers',
                     'label_width': 0,
                     'component_width': 12,
                     'row_className': 'filter-row mb-0',
-                    'wrapper_className': 'd-flex justify-content-center'
+                    'wrapper_className': 'd-flex justify-content-start'
                 },
                 {
                     'label': ' ',
@@ -171,7 +187,8 @@ FILTER_LAYOUT = {
                     'component_width': 12,
                     'row_className': 'filter-row mb-0',
                     'wrapper_className': 'd-flex justify-content-center'
-                },
+                },                
+                
                 {
                     'label': ' ',
                     'type': 'button-group',
@@ -179,7 +196,7 @@ FILTER_LAYOUT = {
                     'label_width': 0,
                     'component_width': 12,
                     'row_className': 'filter-row mb-0',
-                    'wrapper_className': 'd-flex justify-content-center'
+                    'wrapper_className': 'd-flex justify-content-start'
                 }
             ],
             'col_className': 'main-filter-column',
@@ -188,18 +205,37 @@ FILTER_LAYOUT = {
     ]
 }
 
-def create_filter_row(
-    item: Dict[str, Any]
-) -> html.Div:
-    """Create a filter row with label and component
-    
-    Args:
-        item: Filter item configuration
-    
-    Returns:
-        html.Div: Styled filter row
-    """
-    if not item['label']:
+def create_filter_row(item: Dict[str, Any]) -> html.Div:
+    """Create a filter row with label and component"""
+    if item['type'] == 'row-container':
+        row_items = []
+        for component in item['components']:
+            try:
+                comp = COMPONENTS[component['type']][component['component_id']]()
+            except Exception as e:
+                logger.error(f"Failed to create component {component['component_id']}: {str(e)}")
+                return html.Div("Error creating component")
+
+            row_items.append(dbc.Row([
+                dbc.Col(
+                    html.Label(component['label'], className='filter-label'),
+                    width=component['label_width']
+                ),
+                dbc.Col(
+                    comp,
+                    width=component['component_width'],
+                    className=component.get('wrapper_className')
+                )
+            ], className=component.get('row_className')))
+
+        return dbc.Col(
+            html.Div(row_items),
+            **item.get('widths', {'xs': 12, 'sm': 12, 'md': 12}),
+            className=item.get('className')
+        )
+
+    # Handle regular items (non row-container)
+    if not item.get('label'):
         component = COMPONENTS[item['type']][item['component_id']]()
         return component
 
@@ -221,17 +257,8 @@ def create_filter_row(
         )
     ], className=item.get('row_className'))
 
-def create_filter_section(
-    config: List[Dict]
-) -> List[html.Div]:
-    """Create a section of filter components
-    
-    Args:
-        config: Filter section configuration
-    
-    Returns:
-        List[html.Div]: Filter section components
-    """
+def create_filter_section(config: List[Dict]) -> List[html.Div]:
+    """Create a section of filter components"""
     trace_id = str(uuid.uuid4())[:8]
     rows = []
 
@@ -241,11 +268,14 @@ def create_filter_section(
         columns = []
         for item in section['items']:
             filtered_row = create_filter_row(item)
-            columns.append(dbc.Col(
-                filtered_row,
-                **section.get('widths', {'xs': 12, 'sm': 12, 'md': 12}),
-                className=section.get('col_className')
-            ))
+            if item.get('type') == 'row-container':
+                columns.append(filtered_row)
+            else:
+                columns.append(dbc.Col(
+                    filtered_row,
+                    **section.get('widths', {'xs': 12, 'sm': 12, 'md': 12}),
+                    className=section.get('col_className')
+                ))
 
         row_props = {
             'children': columns,

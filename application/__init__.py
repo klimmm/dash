@@ -20,11 +20,13 @@ from callbacks.app_layout_callbacks import (
 )
 from callbacks.buttons_callbacks import setup_buttons_callbacks
 from callbacks.get_available_metrics import get_checklist_config
-from callbacks.update_insurer_callbacks import setup_insurers_callbacks, setup_sync_insurers_callback
+from callbacks.update_insurer_callbacks import setup_insurers_callbacks
 from callbacks.insurance_lines_callbacks import setup_insurance_lines_callbacks
 from callbacks.ui_callbacks import setup_ui_callbacks
 from callbacks.process_data_callback import setup_process_data_callback
-from callbacks.update_metric_callbacks import setup_sync_metrics_callback, setup_metric_callbacks, get_metric_options
+from callbacks.update_metric_callbacks import setup_metric_callbacks
+
+from callbacks.get_metrics import get_metric_options
 
 from config.default_values import (
     DEFAULT_REPORTING_FORM,

@@ -21,7 +21,9 @@ def create_app_layout():
                         dbc.Button(
                             "Show Additional Filters",
                             id="toggle-sidebar-button-sidebar",
-                            className=StyleConstants.BTN["SIDEBAR_SHOW"]
+                            className=StyleConstants.BTN["SIDEBAR_SHOW"],
+                            style={"display": "none"}
+
                         ),
                         create_filters(),
                         dbc.Row([

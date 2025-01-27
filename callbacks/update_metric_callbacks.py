@@ -1,214 +1,282 @@
-from typing import List, Tuple, Dict, Optional, Any
+from typing import List, Dict, Optional
 import json
 import dash
-from dash import Dash, ALL
+from dash import Dash, html, dcc, ALL
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
-from callbacks.get_available_metrics import get_available_metrics
-from application.dropdown_components import create_dynamic_metric_dropdown
-from config.default_values import DEFAULT_PRIMARY_METRICS, DEFAULT_PRIMARY_METRICS_158
-from constants.filter_options import METRICS_OPTIONS
+from constants.translations import translate
+from application.button_components import ButtonStyleConstants
+from callbacks.get_metrics import get_metric_options
 from config.logging_config import get_logger, track_callback, track_callback_end
+
+
 logger = get_logger(__name__)
 
-
-FORM_METRICS = {
-    '0420158': {'total_premiums', 'total_losses', 'ceded_premiums', 'ceded_losses',
-                'net_premiums', 'net_losses'
-               },
-    '0420162': {'direct_premiums', 'direct_losses', 'inward_premiums', 'inward_losses', 
-                'ceded_premiums', 'ceded_losses',
-                'new_sums', 'sums_end',
-                'new_contracts', 'contracts_end',
-                'premiums_interm', 'commissions_interm', 
-                'claims_settled', 'claims_reported'
-               }
-}
+class StyleConstants:
+    FORM = {
+        "DD": "dd-control",
+    }
 
 
-def get_metric_options(
-    reporting_form: str,
-    selected_primary_metrics: Optional[List[str]] = None,
-    selected_secondary_metrics: Optional[List[str]] = None
-) -> Dict[str, List[Dict[str, Any]]]:
-    # 1. Initialize and normalize inputs
-    allowed_basic_metrics = FORM_METRICS.get(reporting_form, set())
-    available_calculated_metrics = set(get_available_metrics(allowed_basic_metrics))  # Convert to set explicitly
-    selected_primary_metrics = [selected_primary_metrics] if isinstance(selected_primary_metrics, str) else (selected_primary_metrics or [])
-    selected_secondary_metrics = [selected_secondary_metrics] if isinstance(selected_secondary_metrics, str) else (selected_secondary_metrics or [])
-
-    # 2. Determine default metrics sets
-    primary_metric_set = allowed_basic_metrics.copy()
-    secondary_metric_set = available_calculated_metrics.copy()
-
-    # 3. Handle selected primary metrics that are in secondary set
-    for metric in selected_primary_metrics:
-        if metric in secondary_metric_set:
-            primary_metric_set.add(metric)
-            secondary_metric_set.remove(metric)
-
-    # 4. Validate primary metrics
-    valid_primary_metrics = [
-        metric for metric in selected_primary_metrics 
-        if metric in primary_metric_set
-    ] or None
-
-    # 5. Handle selected secondary metrics based on primary validation
-    if not valid_primary_metrics and selected_secondary_metrics:
-        # If no valid primary metrics, collect eligible secondary metrics
-        valid_primary_metrics = []
-        metrics_to_remove = []
-
-        for metric in selected_secondary_metrics:
-            if metric in primary_metric_set or metric in secondary_metric_set:
-                valid_primary_metrics.append(metric)
-                metrics_to_remove.append(metric)
-                primary_metric_set.add(metric)
-                secondary_metric_set.discard(metric)
-
-        # Remove processed metrics from selected_secondary_metrics
-        for metric in metrics_to_remove:
-            selected_secondary_metrics.remove(metric)
-    else:
-        # If we have valid primary metrics, move appropriate metrics to secondary
-        for metric in selected_secondary_metrics:
-            if metric in primary_metric_set:
-                primary_metric_set.remove(metric)
-                secondary_metric_set.add(metric)
-
-    primary_metric_value = valid_primary_metrics if valid_primary_metrics is not None else DEFAULT_PRIMARY_METRICS if reporting_form == '0420162' else DEFAULT_PRIMARY_METRICS_158
-
-    # 6. Validate secondary metrics
-    valid_secondary_metrics = [
-        metric for metric in selected_secondary_metrics 
-        if metric in secondary_metric_set
-    ] or None
-
-    secondary_metric_value = valid_secondary_metrics if valid_secondary_metrics is not None else []
-
-    # 7. Create options based on the metric sets
-    primary_metric_options = [
-        opt for opt in METRICS_OPTIONS 
-        if opt['value'] in primary_metric_set
-    ]
-
-    secondary_metric_options = [
-        opt for opt in METRICS_OPTIONS 
-        if opt['value'] in secondary_metric_set
-    ]
-
-    return primary_metric_options, secondary_metric_options, primary_metric_value, secondary_metric_value
 
 
-def setup_sync_metrics_callback(app: Dash) -> None:
-    """Setup callback for syncing metric values"""
+def create_primary_metric_dropdown(
+    index: int,
+    value: Optional[str] = None,
+    options: List[Dict[str, str]] = None,
+    is_add_button: bool = False,
+    is_remove_button: bool = True
+) -> html.Div:
 
+    button_props = {
+        'add': {
+            'icon_class': "fas fa-plus",
+            'button_id': "primary-metric-add-btn",
+            'button_class': ButtonStyleConstants.BTN["ADD"]
+        },
+        'remove': {
+            'icon_class': "fas fa-xmark",
+            'button_id': {'type': 'remove-primary-metric-btn', 'index': str(index)},
+            'button_class': ButtonStyleConstants.BTN["REMOVE"]
+        }
+    }
+
+    return html.Div(
+        className="d-flex align-items-center w-100",
+        children=[
+            html.Div(
+                className="dash-dropdown flex-grow-1",
+                children=[
+                    dcc.Dropdown(
+                        id={'type': 'dynamic-primary-metric', 'index': index},
+                        options=options,
+                        value=value,
+                        multi=False,
+                        clearable=False,
+                        placeholder="Select primary_metric",
+                        className=StyleConstants.FORM["DD"],
+                        optionHeight=18,
+                        searchable=False
+                    )
+                ]
+            ),
+            html.Button(
+                children=html.I(className=button_props['remove']['icon_class']), 
+                id=button_props['remove']['button_id'],
+                className=button_props['remove']['button_class'],
+                n_clicks=0
+            ) if is_remove_button else html.Div(
+                className=button_props['remove']['button_class'],
+                style={'visibility': 'hidden'}
+            ),
+            html.Button(
+                children=html.I(className=button_props['add']['icon_class']),
+                id=button_props['add']['button_id'],
+                className=button_props['add']['button_class'],
+                n_clicks=0
+            ) if is_add_button else html.Div(
+                className=button_props['add']['button_class'],
+                style={'visibility': 'hidden'}
+            ),
+        ]
+    )
+
+'''def setup_sync_metrics_callback(app: Dash) -> None:
     @app.callback(
         Output('primary-metric-all-values', 'data'),
-        [Input('primary-metric', 'value'),
-         Input({'type': 'dynamic-primary-metric', 'index': ALL}, 'value')]
+        [Input({'type': 'dynamic-primary-metric', 'index': ALL}, 'value')],
+        State('primary-metric-all-values', 'data'),
     )
-    def sync_metric_values(main_value: str, dynamic_values: List[str]) -> List[str]:
-        return [main_value] + [v for v in dynamic_values if v is not None]
-
-
+    def sync_metric_values(values: List[str], current_values: List[str]) -> List[str]:
+        try:
+            start_info = track_callback(__name__, 'sync_metric_values', dash.callback_context)
+            
+            new_values = [v for v in values if v is not None and v != '']
+            if new_values == current_values:
+                track_callback_end(__name__, 'sync_metric_values', start_info, 
+                                 message_no_update="No changes in values")
+                return dash.no_update
+            
+            track_callback_end(__name__, 'sync_metric_values', start_info, result=new_values)
+            return new_values
+        except Exception as e:
+            track_callback_end(__name__, 'sync_metric_values', start_info, error=e)
+            raise'''
+            
 def setup_metric_callbacks(app: Dash) -> None:
-    """Setup callbacks for managing primary and secondary metric dropdowns"""
-
     @app.callback(
-        [Output('primary-metric', 'options'),
-         Output('primary-metric', 'value'),
-         Output('primary-metric-container', 'children'),
+        [Output('primary-metric-container', 'children'),
          Output('secondary-y-metric', 'options'),
-         Output('secondary-y-metric', 'value')],
-        [Input('reporting-form', 'data'),
-         Input('primary-metric', 'value'),
-         Input({'type': 'dynamic-primary-metric', 'index': ALL}, 'value'),
+         Output('reporting-form-inter', 'data'),
+         Output('primary-metric-all-values', 'data'),
+        ],
+        [Input({'type': 'dynamic-primary-metric', 'index': ALL}, 'value'),
          Input('primary-metric-add-btn', 'n_clicks'),
-         Input({'type': 'remove-primary-metric-btn', 'index': ALL}, 'n_clicks')],
-        [State('primary-metric-container', 'children'),
-         State('secondary-y-metric', 'value')]
+         Input({'type': 'remove-primary-metric-btn', 'index': ALL}, 'n_clicks'),
+         Input('reporting-form', 'data'),
+         Input('insurance-lines-state', 'data'),
+         Input('period-type', 'data'),
+        ],
+        [State('intermediate-data-store', 'data'),
+         State('primary-metric-container', 'children'),
+         State('secondary-y-metric', 'value'),
+         State('primary-metric-all-values', 'data')]
     )
-    def update_metric_selections(
+    def update_primary_metric_selections(
+        primary_metric: List[str],
+        add_primary_metric_clicks: int,
+        remove_primary_metric_clicks: List[int],
         reporting_form: str,
-        selected_primary_metric: str,
-        selected_dynamic_metrics: List[str],
-        add_metric_clicks: int,
-        remove_metric_clicks: List[int],
+        lines: List[str],
+        period_type: str,
+        intermediate_data: Dict,
         existing_dropdowns: List,
-        secondary_metric: str
-    ) -> Tuple:
-        """Update metric dropdowns based on user interactions"""
+        secondary_metric: str,
+        all_selected_primary_metric: List[str]
+    ) -> List:
         ctx = dash.callback_context
         if not ctx.triggered:
             raise PreventUpdate
 
         try:
+            start_info = track_callback(__name__, 'update_primary_metric_selections', ctx)
+            
+            primary_metric_options, secondary_metric_options, valid_selected_primary_metrics, secondary_metric_value = get_metric_options(reporting_form, primary_metric, secondary_metric)
 
-            # Initialize dropdowns if None
-            existing_dropdowns = existing_dropdowns or []
-            logger.debug(f"existing_dropdowns {existing_dropdowns}")
-            selected_dynamic_metrics = [v for v in (selected_dynamic_metrics or []) if v is not None]
-            all_selected_primary_metric = [selected_primary_metric] + selected_dynamic_metrics
+            # Initialize if needed
+            if not existing_dropdowns:
+                return [create_primary_metric_dropdown(
+                    index=0,
+                    options=primary_metric_options,
+                    is_add_button=True,
+                    is_remove_button=False
+                )]
+            logger.debug(f"primary_metric{primary_metric}")
+            logger.debug(f"reporting_form{reporting_form}")
+            logger.debug(f"valid_selected_primary_metrics{valid_selected_primary_metrics}")
 
-            # Get initial metric options
-            primary_metric_options, secondary_metric_options, valid_selected_primary_metrics, secondary_metric_value = (
-                get_metric_options(reporting_form, all_selected_primary_metric, secondary_metric)
-            )
-            # Get all selected values
-            valid_selected_dynamic_metrics = [v for v in valid_selected_primary_metrics if v != valid_selected_primary_metrics[0]]
+            # Clean up selected primary_metric
+            primary_metric = [v for v in (primary_metric or []) if v is not None and v in valid_selected_primary_metrics] or valid_selected_primary_metrics            
+            logger.debug(f"primary_metric{primary_metric}")
+            trigger_id = ctx.triggered[0]['prop_id']
 
-            # Handle remove button click
-            if '.n_clicks' in ctx.triggered[0]['prop_id'] and '"type":"remove-primary-metric-btn"' in ctx.triggered[0]['prop_id']:
-                component_id = json.loads(ctx.triggered[0]['prop_id'].split('.')[0])
-                removed_index = component_id['index']
 
-                if ctx.triggered[0]['value'] is not None:
-                    valid_selected_dynamic_metrics = [v for i, v in enumerate(valid_selected_dynamic_metrics) if i != removed_index]
-                    existing_dropdowns = [
-                        d for i, d in enumerate(existing_dropdowns) if i != removed_index
+            if '.n_clicks' in trigger_id and 'intermediate-data-store' not in trigger_id:
+                if 'remove-primary-metric-btn' in trigger_id:
+                    # Prevent removing if it's the last dropdown
+                    if len(existing_dropdowns) <= 1:
+                        track_callback_end(__name__, 'update_primary_metric_selections', start_info, 
+                                         message_no_update="Cannot remove last dropdown")
+                        raise PreventUpdate
+
+                    component_id = json.loads(trigger_id.split('.')[0])
+                    removed_index = int(component_id['index'])
+
+                    # Check if removing a dropdown with the only selected value
+                    has_value_at_index = removed_index < len(primary_metric) and primary_metric[removed_index] is not None
+                    other_values = [v for i, v in enumerate(primary_metric) if i != removed_index and v is not None]
+
+                    if has_value_at_index and not other_values:
+                        # If removing the only selected value, move it to the remaining empty dropdown
+                        value_to_preserve = primary_metric[removed_index]
+                        # Remove the dropdown at the specified index
+                        existing_dropdowns.pop(removed_index)
+                        # Find the first empty dropdown
+                        empty_index = next((i for i, v in enumerate(primary_metric) if v is None), 0)
+                        # Create updated dropdowns list with preserved value
+                        return [
+                            create_primary_metric_dropdown(
+                                index=i,
+                                options=primary_metric_options,
+                                value=value_to_preserve if i == empty_index else None,
+                                is_add_button=(i == len(existing_dropdowns) - 1),
+                                is_remove_button=(len(existing_dropdowns) > 1)
+                            ) for i in range(len(existing_dropdowns))
+                        ]
+                    else:
+                        # Normal removal process
+                        existing_dropdowns.pop(removed_index)
+                        if removed_index < len(primary_metric):
+                            primary_metric.pop(removed_index)
+
+                    # Recreate all dropdowns with updated indices
+                    updated_dropdowns = [
+                        create_primary_metric_dropdown(
+                            index=i,
+                            options=primary_metric_options,
+                            value=primary_metric[i] if i < len(primary_metric) else None,
+                            is_add_button=(i == len(existing_dropdowns) - 1),
+                            is_remove_button=(len(existing_dropdowns) > 1)
+                        ) for i in range(len(existing_dropdowns))
                     ]
 
-            # Handle add button click
-            if 'primary-metric-add-btn' in ctx.triggered[0]['prop_id']:
-                new_primary_metric_dropdown = create_dynamic_metric_dropdown(
-                    index=len(existing_dropdowns),
-                    options=[opt for opt in primary_metric_options if opt['value'] not in valid_selected_primary_metrics],
-                    value=None
-                )
-                existing_dropdowns.append(new_primary_metric_dropdown)
+                    
+                    output = (updated_dropdowns, secondary_metric_options, reporting_form, primary_metric)
+                    track_callback_end(__name__, 'update_primary_metric_selections', start_info, result=output)
+                    return output
+                
+                if 'primary-metric-add-btn' in trigger_id:
+                    # Update last dropdown to remove add button
+                    if existing_dropdowns:
+                        last_index = len(existing_dropdowns) - 1
+                        existing_dropdowns[last_index] = create_primary_metric_dropdown(
+                            index=last_index,
+                            options=primary_metric_options,
+                            value=primary_metric[last_index] if last_index < len(primary_metric) else None,
+                            is_add_button=False,
+                            is_remove_button=True
+                        )
 
-            # Update existing dropdowns
-            updated_primary_metric_dropdowns = []
+                    # Add new dropdown with add button
+                    filtered_options = [
+                        opt for opt in primary_metric_options 
+                        if ('value' in opt and opt['value'] not in primary_metric)
+                    ]
+                    new_dropdown = create_primary_metric_dropdown(
+                        index=len(existing_dropdowns),
+                        options=filtered_options,
+                        value=None,
+                        is_add_button=True,
+                        is_remove_button=True
+                    )
+                    existing_dropdowns.append(new_dropdown)
+
+            # Update existing dropdowns with filtered options
+            updated_dropdowns = []
             for i, _ in enumerate(existing_dropdowns):
-                current_primary_metric = valid_selected_dynamic_metrics[i] if i < len(valid_selected_dynamic_metrics) else None
-                other_primary_metric_selected = [v for v in valid_selected_primary_metrics if v != current_primary_metric]
+                current_selected = primary_metric[i] if i < len(primary_metric) else None
+                other_selected = [v for j, v in enumerate(primary_metric) if j != i and v is not None]
 
-                primary_metric_dropdown_options = [
+                dropdown_options = [
                     opt for opt in primary_metric_options 
-                    if opt['value'] not in other_primary_metric_selected
+                    if opt['value'] not in other_selected
                 ]
 
-                updated_primary_metric_dropdowns.append(create_dynamic_metric_dropdown(
+                if current_selected and not any(opt['value'] == current_selected for opt in dropdown_options):
+                    dropdown_options.append({
+                        'label': translate(current_selected),
+                        'value': current_selected
+                    })
+
+                updated_dropdowns.append(create_primary_metric_dropdown(
                     index=i,
-                    options=primary_metric_dropdown_options,
-                    value=current_primary_metric
+                    options=dropdown_options,
+                    value=current_selected,
+                    is_add_button=(i == len(existing_dropdowns) - 1),
+                    is_remove_button=(len(existing_dropdowns) > 1)
                 ))
 
-            # Filter primary metric options
-            filtered_primary_metric_options = [
-                opt for opt in primary_metric_options 
-                if opt['value'] not in valid_selected_dynamic_metrics
-            ]
+            if primary_metric == all_selected_primary_metric:
+                output = (updated_dropdowns, secondary_metric_options, reporting_form, primary_metric)
+                track_callback_end(__name__, 'update_primary_metric_selections', start_info, result=output)
+                return output
 
-            return (
-                filtered_primary_metric_options,
-                valid_selected_primary_metrics[0],
-                updated_primary_metric_dropdowns,
-                secondary_metric_options,
-                secondary_metric_value[0] if secondary_metric_value else []
-            )
+            output = (updated_dropdowns, secondary_metric_options, reporting_form, primary_metric)
+            track_callback_end(__name__, 'update_primary_metric_selections', start_info, result=output)
+
+            return output
 
         except Exception as e:
-            logger.error(f"Error in update_metric_dropdowns: {str(e)}", exc_info=True)
+            track_callback_end(__name__, 'update_primary_metric_selections', start_info, error=e)
+            logger.error(f"Error in update_primary_metric_selections: {str(e)}", exc_info=True)
             raise

@@ -117,8 +117,8 @@ def setup_logging(console_level=logging.DEBUG, file_level=logging.DEBUG,
             'get_y_ranges': logging.WARNING,
         },
         'constants': logging.WARNING,
-        'callbacks': logging.WARNING,
-        'data_process': logging.WARNING,
+        'callbacks': logging.INFO,
+        'data_process': logging.DEBUG,
         'fsevents': fsevents_level,
     }
 
@@ -133,25 +133,7 @@ def setup_logging(console_level=logging.DEBUG, file_level=logging.DEBUG,
 
 
 
-def track_callback(logger_name: str, callback_name: str, ctx) -> tuple[float, dict]:
-    """Track callback execution start with enhanced debugging"""
-    trigger_info = ctx.triggered[0]
-    import traceback
-    stack = traceback.extract_stack()
-    caller_info = stack[-2]
 
-    logger = get_logger(logger_name)
-    logger.debug(
-        f"Callback '{callback_name}' triggered by '{trigger_info['prop_id']}' "
-        f"from {caller_info.filename}:{caller_info.lineno}"
-    )
-
-    return time.time(), {
-        'trigger': trigger_info['prop_id'].split('.')[0],
-        'trigger_value': trigger_info['value'],
-        'start_timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
-        'caller_info': f"{caller_info.filename}:{caller_info.lineno}"
-    }
 
 def format_data(data):
     """Format data for logging with focus on key information"""
@@ -193,7 +175,25 @@ def format_data(data):
         return f"'{data}'"
         
     return str(data)
+def track_callback(logger_name: str, callback_name: str, ctx) -> tuple[float, dict]:
+    """Track callback execution start with enhanced debugging"""
+    trigger_info = ctx.triggered[0]
+    import traceback
+    stack = traceback.extract_stack()
+    caller_info = stack[-2]
 
+    logger = get_logger(logger_name)
+    logger.debug(
+        f"Callback '{callback_name}' triggered by '{trigger_info['prop_id']}' "
+        f"from {caller_info.filename}:{caller_info.lineno}"
+    )
+
+    return time.time(), {
+        'trigger': trigger_info['prop_id'].split('.')[0],
+        'trigger_value': trigger_info['value'],
+        'start_timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
+        'caller_info': f"{caller_info.filename}:{caller_info.lineno}"
+    }
 
 def track_callback_end(logger_name: str, callback_name: str, 
                       start_info: tuple[float, dict], result=None, 

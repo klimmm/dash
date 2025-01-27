@@ -25,14 +25,15 @@ def get_data_table(
     number_of_insurers: int,
     toggle_selected_market_share: Optional[List[str]],
     toggle_selected_qtoq: Optional[List[str]],
-    prev_ranks: Optional[Dict[str, int]] = None
+    prev_ranks: Optional[Dict[str, int]] = None,
+    current_ranks:  Optional[Dict[str, int]] = None
 ) -> Tuple[dash_table.DataTable, str, str]:
     """
     Generate table configuration with styles and formatting.
     @API_STABILITY: BACKWARDS_COMPATIBLE
     """
     save_df_to_csv(df, "df_before_pivot.csv")
-    table_data = table_data_pivot(df, table_selected_metric, prev_ranks)
+    table_data = table_data_pivot(df, table_selected_metric, prev_ranks, current_ranks)
     save_df_to_csv(table_data, "df_after_pivot.csv")
 
     table_config = generate_dash_table_config(
@@ -65,25 +66,62 @@ def format_rank_change(current_rank: int, previous_rank: Optional[int]) -> str:
     )
     return f"{current_rank} ({change_str})"
 
-def process_main_data(df: pd.DataFrame, prev_ranks: Optional[Dict[str, int]] = None) -> pd.DataFrame:
-    """Process main data rows with rankings."""
+def process_main_data(df: pd.DataFrame, prev_ranks: Optional[Dict[str, int]] = None, 
+                     current_ranks: Optional[Dict[str, int]] = None) -> pd.DataFrame:
+    """Process main data rows with rankings.
+    
+    Args:
+        df: Input DataFrame
+        prev_ranks: Previous rankings dictionary mapping insurer to rank
+        current_ranks: Current rankings dictionary mapping insurer to rank
+    """
+    logger.debug(f"Starting data processing with DataFrame shape: {df.shape}")
+    logger.debug(f"Previous ranks provided: {prev_ranks is not None}")
+    logger.debug(f"Current ranks provided: {current_ranks is not None}")
+    
     if df.empty:
+        logger.warning("Empty DataFrame received")
         return df
-
     sort_col = [col for col in df.columns if col != INSURER_COL][0]
+    logger.debug(f"Sorting by column: {sort_col}")
     df = df.sort_values(by=sort_col, ascending=False)
+    if current_ranks is None:
+        logger.debug("No current ranks provided, using sorting logic")
 
-    df.insert(0, PLACE_COL, range(1, len(df) + 1))
+        df.insert(0, PLACE_COL, range(1, len(df) + 1))
+        logger.debug(f"Generated ranks from sorting: {df[PLACE_COL].tolist()}")
+    else:
+        logger.debug("Using provided current ranks")
+        logger.debug(f"Current ranks mapping: {current_ranks}")
+        df.insert(0, PLACE_COL, df[INSURER_COL].map(current_ranks))
+        
+        # Check for any missing ranks
+        missing_ranks = df[df[PLACE_COL].isna()][INSURER_COL].tolist()
+        if missing_ranks:
+            logger.warning(f"Missing ranks for insurers: {missing_ranks}")
+            df[PLACE_COL] = df[PLACE_COL].fillna(-1)
+    
     if prev_ranks:
+        logger.debug("Formatting rank changes with previous ranks")
         df[PLACE_COL] = df.apply(
             lambda row: format_rank_change(int(row[PLACE_COL]), prev_ranks.get(row[INSURER_COL])),
             axis=1
         )
+        # Log any significant rank changes
+        for _, row in df.iterrows():
+            current = int(row[PLACE_COL].split()[0])  # Extract current rank from formatted string
+            previous = prev_ranks.get(row[INSURER_COL])
+            if previous and abs(current - previous) >= 5:  # Significant change threshold
+                logger.debug(f"Significant rank change for {row[INSURER_COL]}: {previous} -> {current}")
     else:
+        logger.debug("No previous ranks, converting places to strings")
         df[PLACE_COL] = df[PLACE_COL].astype(str)
-
+        
     df[SECTION_HEADER_COL] = False
-    return df.replace(0, '-').fillna('-')
+    
+    result_df = df.replace(0, '-').fillna('-')
+    logger.debug(f"Completed processing. Final DataFrame shape: {result_df.shape}")
+    return result_df
 
 def process_summary_data(df: pd.DataFrame) -> pd.DataFrame:
     """Process summary data rows."""
@@ -107,7 +145,8 @@ def process_summary_data(df: pd.DataFrame) -> pd.DataFrame:
 def table_data_pivot(
     df: pd.DataFrame,
     table_selected_metric: List[str],
-    prev_ranks: Optional[Dict[str, Dict[str, int]]] = None
+    prev_ranks: Optional[Dict[str, Dict[str, int]]] = None,
+    current_ranks: Optional[Dict[str, Dict[str, int]]] = None
 ) -> pd.DataFrame:
     """Process and pivot table data with rankings and metrics."""
     try:
@@ -133,7 +172,8 @@ def table_data_pivot(
             summary_mask = pivot_df[INSURER_COL].str.lower().str.contains('^top|^total')
             main_data = process_main_data(
                 pivot_df[~summary_mask], 
-                prev_ranks.get(line) if prev_ranks else None
+                prev_ranks.get(line) if prev_ranks else None,
+                current_ranks.get(line) if current_ranks else None
             )
             summary_data = process_summary_data(pivot_df[summary_mask])
 

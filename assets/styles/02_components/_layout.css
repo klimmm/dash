@@ -19,7 +19,6 @@
 .layout-wrapper {
     width: 100%;
     display: flex;
-
     flex-direction: column;
     position: relative;
     padding: 0;
@@ -47,6 +46,21 @@
     overflow: visible;
 }
 
+
+.d-flex.justify-content-start {
+    overflow: hidden;
+}
+.row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+
+.row>* {
+    padding: 0 !important;
+}
+
+
 .sidebar-col.row {
     max-width: 430px;
     min-width: 375px;
@@ -69,12 +83,17 @@
     border: 0;
 }
 
+.top-sidebar-row {
+    margin-bottom: 1rem !important;
+    margin-top: 1rem !important;
+}
 
 .button-groups-row {
-    margin-top: 1rem;
+    margin-top: 1rem !important;
     margin-bottom: 0;
     padding: 0;
     width: 100%;
+    overflow: hidden;
     max-width: 430px;
     min-width: 375px;
 
