@@ -17,7 +17,8 @@ from application import (
     get_required_metrics, log_callback,
     filter_year_quarter, filter_by_period_type,
     add_top_n_rows, calculate_metrics, TOP_N_LIST,
-    process_insurers_data, add_market_share_rows, add_growth_rows
+    process_insurers_data, add_market_share_rows, add_growth_rows,
+    setup_callback_logging
     )
 from application import (
     setup_process_data_callback,
@@ -29,6 +30,15 @@ from application import (
     )
 logger = get_logger(__name__)
 setup_logging(console_level=logging.DEBUG, file_level=logging.DEBUG)
+setup_callback_logging()
+
+dbc._js_dist = [
+    {
+        "relative_package_path": "_components/dash_bootstrap_components.min.js",
+        "external_url": "https://unpkg.com/dash-bootstrap-components@1.6.0/dist/dash-bootstrap-components.min.js",
+        "namespace": "dash_bootstrap_components"
+    }
+]
 
 print("Starting application initialization...")
 
@@ -36,16 +46,19 @@ app = dash.Dash(
     __name__,
     url_base_pathname="/",
     assets_folder='assets',
-    assets_ignore='.ipynb_checkpoints/*',
     external_stylesheets=[dbc.themes.BOOTSTRAP],
     suppress_callback_exceptions=True,
-    update_title=None,
-    serve_locally=True
+    update_title=None
 )
 
-app.config.assets_external_path = '/'  # Add here
-print("Registered paths:", app.registered_paths)
-print("Static routes:", list(app.server.url_map.iter_rules()))
+# Add these lines after initialization
+app._favicon = None  # Optional: prevent favicon errors
+print("DBC version:", dbc.__version__)
+print("Dash version:", dash.__version__)
+print("Registered paths after init:", app.registered_paths)
+print("DBC paths:", dbc._js_dist)
+
+
 app.title = APP_TITLE
 
 app.index_string = '''

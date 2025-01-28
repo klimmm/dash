@@ -4,7 +4,8 @@ from dash import Input, Output, State, ALL
 from dash.exceptions import PreventUpdate
 from typing import Dict, Any
 from config.default_values import DEFAULT_CHECKED_LINES, DEFAULT_REPORTING_FORM
-from config.logging_config import get_logger, log_callback
+from config.logging_config import get_logger
+from config.callback_logging import log_callback
 logger = get_logger(__name__)
 
 

@@ -4,7 +4,8 @@ from typing import Dict, List
 import pandas as pd
 from data_process.table_data import get_data_table
 from charting.chart import create_chart
-from config.logging_config import log_callback, get_logger, memory_monitor
+from config.logging_config import get_logger, memory_monitor
+from config.callback_logging import log_callback
 from data_process.filter_insurers import process_insurers_data
 
 logger = get_logger(__name__)

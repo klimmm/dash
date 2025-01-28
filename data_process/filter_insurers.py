@@ -19,6 +19,7 @@ def process_insurers_data(
     """
     if df.empty or len(df['insurer'].unique()) <= 1:
         return pd.DataFrame(), {}, 0
+    logger.debug(f"insurers unique {len(df['insurer'].unique())}")
 
     # Determine number of insurers to process
     number_of_insurers = next(
@@ -31,9 +32,10 @@ def process_insurers_data(
         number_of_insurers,
         len(df[df['year_quarter'] == latest_quarter]['insurer'].unique())
     )
+    #logger.warning(f"insurers unique {len(latest_quarter['insurer'].unique())}")
 
     # Set up excluded insurers and ranking metric
-    excluded_insurers = {f'top-{n}' for n in top_n_list} | {'total'}
+    excluded_insurers = {f'top-{n}' for n in [5, 10, 20]} | {'total'}
     ranking_metric = next(
         (m for m in selected_metrics if m in df['metric'].unique()),
         df['metric'].iloc[0]
@@ -45,7 +47,7 @@ def process_insurers_data(
 
     line_ids = df['linemain'].unique()
     processed_dfs = []
-
+    logger.debug(f"num_insurers  {num_insurers}")
     for line_id in line_ids:
         line_df = df[df['linemain'] == line_id]
         if line_df.empty:
@@ -57,7 +59,7 @@ def process_insurers_data(
             (~line_df['insurer'].isin(excluded_insurers)) &
             (line_df['metric'] == ranking_metric)
         ]
-
+        logger.debug(f"excluded_insurers  {excluded_insurers}")
         top_insurers = []
         if any(insurer.startswith('top-') for insurer in (selected_insurers or [])):
             top_insurers = (
@@ -70,7 +72,7 @@ def process_insurers_data(
 
         # Combine top insurers and specifically selected insurers
         filtered_insurers = list(set(top_insurers + specific_insurers))
-
+        logger.debug(f"filtered_insurers  {filtered_insurers}")
         if filtered_insurers:
             filtered_df = line_df[
                 line_df['insurer'].isin(
@@ -80,10 +82,12 @@ def process_insurers_data(
             processed_dfs.append(filtered_df)
 
     df = pd.concat(processed_dfs, ignore_index=True) if processed_dfs else df
-
+    logger.debug(f"insurers unique {len(df['insurer'].unique())}")
     if 999 not in top_n_list:
         df = df[~(df['insurer'] == 'total')]
 
+    logger.debug(f"insurers unique {len(df['insurer'].unique())}")
     df = df[~df['insurer'].str.match('|'.join(f'top-{n}' for n in [5, 10, 20] if n not in top_n_list))]
+    logger.debug(f"insurers unique {len(df['insurer'].unique())}")
 
     return df

@@ -38,11 +38,11 @@ from config.default_values import (
     DEFAULT_END_QUARTER,
     TOP_N_LIST
 )
+from config.callback_logging import setup_callback_logging, log_callback, track_callback_end, track_callback
 from config.logging_config import (
     memory_monitor, setup_logging,
-    get_logger, track_callback,
-    track_callback_end, monitor_memory,
-    log_callback
+    get_logger, monitor_memory
+
 )
 from config.main_config import (
     APP_TITLE, DEBUG_MODE, PORT, DATA_FILE_162, DATA_FILE_158,

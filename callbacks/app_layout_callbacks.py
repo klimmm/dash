@@ -2,7 +2,8 @@ import dash
 from dash import Input, Output, State
 from dataclasses import dataclass
 from typing import Tuple
-from config.logging_config import get_logger, log_callback
+from config.logging_config import get_logger
+from config.callback_logging import log_callback
 from constants.style_config import StyleConstants
 logger = get_logger(__name__)
 

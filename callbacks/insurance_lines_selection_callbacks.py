@@ -5,7 +5,8 @@ from dash.exceptions import PreventUpdate
 from typing import List, Optional, Dict
 from application.dropdown_components import create_insurance_line_dropdown
 from config.default_values import DEFAULT_CHECKED_LINES, DEFAULT_REPORTING_FORM
-from config.logging_config import get_logger, log_callback
+from config.logging_config import get_logger
+from config.callback_logging import log_callback
 from constants.translations import translate
 from data_process.insurance_line_options import get_insurance_line_options
 logger = get_logger(__name__)

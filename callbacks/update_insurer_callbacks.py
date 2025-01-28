@@ -6,7 +6,8 @@ from dash.exceptions import PreventUpdate
 from typing import List, Dict, Set, Tuple, Any
 from application.dropdown_components import create_insurer_dropdown
 from config.default_values import MAX_DROPDOWNS
-from config.logging_config import get_logger, log_callback
+from config.logging_config import get_logger
+from config.callback_logging import log_callback
 
 logger = get_logger(__name__)
 

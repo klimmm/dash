@@ -12,7 +12,8 @@ from config.default_values import (
     DEFAULT_NUMBER_OF_INSURERS,
     DEFAULT_NUMBER_OF_PERIODS
 )
-from config.logging_config import get_logger, log_callback, get_triggered_index
+from config.logging_config import get_logger
+from config.callback_logging import log_callback, get_triggered_index
 
 
 logger = get_logger(__name__)

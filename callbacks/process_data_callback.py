@@ -2,7 +2,9 @@ import pandas as pd
 import dash
 from dash import Input, Output, State
 from typing import Tuple, Dict
-from config.logging_config import get_logger, log_callback, memory_monitor
+from config.logging_config import get_logger, memory_monitor
+from config.callback_logging import log_callback
+
 from data_process.calculate_growth import add_growth_rows
 from data_process.calculate_market_share import add_market_share_rows
 

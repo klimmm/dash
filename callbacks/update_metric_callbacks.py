@@ -7,7 +7,8 @@ from typing import List, Dict, Tuple
 from application.dropdown_components import create_primary_metric_dropdown
 from callbacks.get_metrics import get_metric_options
 from constants.translations import translate
-from config.logging_config import get_logger, log_callback
+from config.logging_config import get_logger
+from config.callback_logging import log_callback
 
 logger = get_logger(__name__)
 
