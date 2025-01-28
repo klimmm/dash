@@ -83,34 +83,6 @@ setup_insurance_lines_callbacks(app, insurance_lines_tree)
 setup_sidebar_callbacks(app)
 setup_insurers_callbacks(app)
 
-
-def process_data_optimized(df, lines, required_metrics, end_quarter, period_type, num_periods_selected, top_n_list, all_metrics, business_type_checklist):
-    # Make a copy and convert to categorical
-    df = df.copy()
-    categorical_columns = ['linemain', 'metric', 'insurer']
-    for col in categorical_columns:
-        df[col] = df[col].astype('category')
-
-    # Create mask and filter
-    mask = df['linemain'].isin(lines) & df['metric'].isin(required_metrics)
-    df_filtered = df.loc[mask]
-
-    # Process the filtered dataframe
-    result = (df_filtered
-             .pipe(filter_year_quarter, end_quarter, period_type, num_periods_selected)
-             .pipe(filter_by_period_type, period_type=period_type)
-             .pipe(add_top_n_rows, top_n_list=top_n_list)
-             .pipe(calculate_metrics, all_metrics, business_type_checklist)
-             )
-
-    # Convert back from categorical if needed
-    for col in categorical_columns:
-        if col in result.columns:
-            result[col] = result[col].astype(str)
-
-    return result
-
-
 @app.callback(
     [Output('end-quarter', 'options'),
      Output('insurance-line-dropdown', 'options'),
@@ -133,7 +105,7 @@ def process_data_optimized(df, lines, required_metrics, end_quarter, period_type
      State('insurance-lines-state', 'data'),
     ]
 )
-@profile
+# @profile
 def prepare_data(
         secondary_metric: str,
         primary_metrics: List[str],
