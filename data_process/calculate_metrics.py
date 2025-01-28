@@ -198,6 +198,7 @@ def get_calculation_order(metrics: Set[str]) -> List[str]:
 def calculate_metrics(
     df: pd.DataFrame,
     selected_metrics: List[str],
+    required_metrics: List[str],
     premium_loss_selection: Optional[List[str]] = None
 ) -> pd.DataFrame:
     """
@@ -214,7 +215,12 @@ def calculate_metrics(
     logger.debug(f"Starting calculation for {len(selected_metrics)} selected metrics")
 
     # Get all required metrics including dependencies
-    required_metrics = set(get_required_metrics(selected_metrics))
+    required_metrics = set(required_metrics)
+
+    existing_metrics = set(df['metric'].unique())
+    if required_metrics.issubset(existing_metrics):
+        logger.debug("All required metrics already present in DataFrame")
+        return df[df['metric'].isin(selected_metrics)]
 
     # Filter based on premium_loss_selection if provided
     if premium_loss_selection:

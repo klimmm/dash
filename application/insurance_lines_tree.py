@@ -5,11 +5,11 @@ from dash import dcc, html
 from typing import Dict, List, Set, Optional, TypedDict
 from config.logging_config import get_logger
 from config.default_values import DEFAULT_CHECKED_LINES
-from data_process.data_utils import category_structure_162, get_categories_by_level
+from data_process.insurance_line_options import get_insurance_line_options
+from data_process.data_utils import load_json
+from config.main_config import LINES_162_DICTIONARY
 
 logger = get_logger(__name__)
-
-insurance_line_structure = category_structure_162
 
 class InsuranceLineDetails(TypedDict):
     label: str
@@ -17,6 +17,7 @@ class InsuranceLineDetails(TypedDict):
 
 DEFAULT_SINGLE_LINE = DEFAULT_CHECKED_LINES[0] if isinstance(DEFAULT_CHECKED_LINES, list) else DEFAULT_CHECKED_LINES
 
+insurance_line_structure = load_json(LINES_162_DICTIONARY)
 InsuranceLineStructure = Dict[str, InsuranceLineDetails]
 
 initial_state = list(DEFAULT_CHECKED_LINES)
@@ -226,6 +227,7 @@ insurance_lines_tree = InsuranceLinesTree(insurance_line_structure, initial_stat
 
 
 def get_insurance_lines_tree_components(container_class=None, label_class=None, button_class=None, dropdown_col_class=None, dropdown_class=None):
+    reporting_form = '0420162'
     """Create insurance lines tree components"""
     dropdown = html.Div([
         dbc.Row([
@@ -235,7 +237,7 @@ def get_insurance_lines_tree_components(container_class=None, label_class=None, 
             dbc.Col([
                 dcc.Dropdown(
                     id='insurance-line-dropdown',
-                    options=get_categories_by_level(category_structure_162, level=2),
+                    options=get_insurance_line_options(reporting_form, level=2),
                     value=DEFAULT_SINGLE_LINE,
                     multi=False,
                     clearable=False

@@ -204,3 +204,5 @@ application/market_cards.py
 application/market_component.py
 combapp.py
 test_server.py
+memory_test.py
+untitled.md

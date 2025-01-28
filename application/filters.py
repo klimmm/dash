@@ -1,10 +1,7 @@
 import dash_bootstrap_components as dbc
 from dash import html
-from typing import Any, Dict, List, Optional, Tuple, Callable
+from typing import Any, Dict, List
 import uuid
-
-from constants.translations import translate
-from config.logging_config import get_logger
 from application.button_components import (
     create_reporting_form_buttons,
     create_top_insurers_buttons,
@@ -17,21 +14,16 @@ from application.dropdown_components import (
     create_dynamic_insurer_container_for_layout,
     create_dynamic_insurance_line_dropdown_container,
     create_secondary_metric_dropdown,
-    create_dynamic_orimary_metric_container_for_layout
+    create_dynamic_primary_metric_container_for_layout
 )
 from application.checklist_components import create_business_type_checklist
-
+from config.logging_config import get_logger
 logger = get_logger(__name__)
 
-
-
-
-
-# Component registry
 COMPONENTS = {
     'dropdown': {
-        'primary-metric': create_dynamic_orimary_metric_container_for_layout,
-        'selected-insurers': create_dynamic_insurer_container_for_layout,  # Updated
+        'primary-metric': create_dynamic_primary_metric_container_for_layout,
+        'selected-insurers': create_dynamic_insurer_container_for_layout,
         'insurance-line-dropdown': create_dynamic_insurance_line_dropdown_container,
         'end-quarter': create_end_quarter_dropdown,
         'secondary-y-metric': create_secondary_metric_dropdown
@@ -49,10 +41,6 @@ COMPONENTS = {
     }
 }
 
-
-
-
-# Filter layout configuration
 FILTER_LAYOUT = {
     'collapsed': [
         {
@@ -60,7 +48,7 @@ FILTER_LAYOUT = {
             'className': 'sidebar-col collapsed',
             'items': [
                 {
-                    'type': 'row-container',  # New type to handle row grouping
+                    'type': 'row-container',
                     'className': 'first-row',
                     'widths': {'xs': 6, 'sm': 6, 'md': 4},
                     'components': [
@@ -168,8 +156,6 @@ FILTER_LAYOUT = {
         {
             'className': 'button-groups-row',
             'items': [
-
-
                 {
                     'label': ' ',
                     'type': 'button-group',
@@ -187,8 +173,7 @@ FILTER_LAYOUT = {
                     'component_width': 12,
                     'row_className': 'filter-row mb-0',
                     'wrapper_className': 'd-flex justify-content-center'
-                },                
-                
+                },
                 {
                     'label': ' ',
                     'type': 'button-group',
@@ -204,6 +189,7 @@ FILTER_LAYOUT = {
         }
     ]
 }
+
 
 def create_filter_row(item: Dict[str, Any]) -> html.Div:
     """Create a filter row with label and component"""
@@ -257,6 +243,7 @@ def create_filter_row(item: Dict[str, Any]) -> html.Div:
         )
     ], className=item.get('row_className'))
 
+
 def create_filter_section(config: List[Dict]) -> List[html.Div]:
     """Create a section of filter components"""
     trace_id = str(uuid.uuid4())[:8]
@@ -264,7 +251,7 @@ def create_filter_section(config: List[Dict]) -> List[html.Div]:
 
     for section_idx, section in enumerate(config):
         logger.debug(f"[{trace_id}] Processing section {section_idx}")
-        
+
         columns = []
         for item in section['items']:
             filtered_row = create_filter_row(item)
@@ -281,7 +268,7 @@ def create_filter_section(config: List[Dict]) -> List[html.Div]:
             'children': columns,
             'className': section.get('className')
         }
-        
+
         if section_id := section.get('id'):
             row_props['id'] = section_id
         if section_style := section.get('style'):
@@ -291,12 +278,13 @@ def create_filter_section(config: List[Dict]) -> List[html.Div]:
 
     return rows
 
+
 def create_filters() -> html.Div:
     """Create the complete filter interface
-    
+
     Returns:
         html.Div: Complete filter interface component
-        
+
     @API_STABILITY: BACKWARDS_COMPATIBLE
     """
     # Create collapsed and expanded sections

@@ -11,14 +11,9 @@ from config.default_values import (
     DEFAULT_REPORTING_FORM,
     DEFAULT_INSURER
 )
-from data_process.data_utils import (
-    category_structure_162,
-    category_structure_158,
-    get_categories_by_level
-)
+from data_process.insurance_line_options import get_insurance_line_options
 from application.button_components import ButtonStyleConstants
 from data_process.data_utils import map_insurer
-from callbacks.update_insurer_callbacks import create_insurer_dropdown
 from callbacks.update_metric_callbacks import create_primary_metric_dropdown
 from constants.translations import translate
 
@@ -114,7 +109,7 @@ def create_dynamic_metric_dropdown(
 
 
 
-def create_dynamic_orimary_metric_container_for_layout(
+def create_dynamic_primary_metric_container_for_layout(
     value: Optional[str] = None,
     options: List[Dict[str, str]] = None
 ) -> html.Div:
@@ -162,7 +157,6 @@ def create_dynamic_orimary_metric_container_for_layout(
 def create_dynamic_insurance_line_dropdown_container() -> html.Div:
     """Create a container specifically for dynamic insurance line dropdowns"""
     # Determine the category structure based on reporting form
-    category_structure = category_structure_162 if DEFAULT_REPORTING_FORM == '0420162' else category_structure_158
 
     return html.Div([
         html.Div(
@@ -171,8 +165,8 @@ def create_dynamic_insurance_line_dropdown_container() -> html.Div:
                 html.Div(
                     dcc.Dropdown(
                         id='insurance-line-dropdown',
-                        options=get_categories_by_level(
-                            category_structure,
+                        options=get_insurance_line_options(
+                            DEFAULT_REPORTING_FORM,
                             level=2,
                             indent_char="--"
                         ),
@@ -207,7 +201,66 @@ def create_dynamic_insurance_line_dropdown_container() -> html.Div:
     ], className="w-100")
 
 
+def create_insurer_dropdown(
+    index: int,
+    value: Optional[str] = None,
+    options: List[Dict[str, str]] = None,
+    is_add_button: bool = False,
+    is_remove_button: bool = True
+) -> html.Div:
 
+    button_props = {
+        'add': {
+            'icon_class': "fas fa-plus",
+            'button_id': "selected-insurers-add-btn",
+            'button_class': ButtonStyleConstants.BTN["ADD"]
+        },
+        'remove': {
+            'icon_class': "fas fa-xmark",
+            'button_id': {'type': 'remove-selected-insurers-btn', 'index': str(index)},
+            'button_class': ButtonStyleConstants.BTN["REMOVE"]
+        }
+    }
+
+    return html.Div(
+        className="d-flex align-items-center w-100",
+        children=[
+            html.Div(
+                className="dash-dropdown flex-grow-1",
+                children=[
+                    dcc.Dropdown(
+                        id={'type': 'dynamic-selected-insurers', 'index': index},
+                        options=options,
+                        value=value,
+                        multi=False,
+                        clearable=False,
+                        placeholder="Select insurer",
+                        className=StyleConstants.FORM["DD"],
+                        optionHeight=18,
+                        searchable=False
+                    )
+                ]
+            ),
+            html.Button(
+                children=html.I(className=button_props['remove']['icon_class']), 
+                id=button_props['remove']['button_id'],
+                className=button_props['remove']['button_class'],
+                n_clicks=0
+            ) if is_remove_button else html.Div(
+                className=button_props['remove']['button_class'],
+                style={'visibility': 'hidden'}
+            ),
+            html.Button(
+                children=html.I(className=button_props['add']['icon_class']),
+                id=button_props['add']['button_id'],
+                className=button_props['add']['button_class'],
+                n_clicks=0
+            ) if is_add_button else html.Div(
+                className=button_props['add']['button_class'],
+                style={'visibility': 'hidden'}
+            ),
+        ]
+    )
 
 
 def create_dynamic_insurer_container_for_layout(

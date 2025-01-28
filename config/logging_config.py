@@ -117,8 +117,13 @@ def setup_logging(console_level=logging.DEBUG, file_level=logging.DEBUG,
             'get_y_ranges': logging.WARNING,
         },
         'constants': logging.WARNING,
-        'callbacks': logging.INFO,
-        'data_process': logging.DEBUG,
+        'callbacks':  {
+            'update_insurer_callbacks': logging.WARNING,
+        },
+        'data_process': {
+
+            'insurer_options': logging.WARNING,
+        },
         'fsevents': fsevents_level,
     }
 
