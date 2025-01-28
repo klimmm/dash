@@ -14,9 +14,9 @@ def setup_process_data_callback(app: dash.Dash):
         [Output('filter-state-store', 'data'),
          Output('processed-data-store', 'data')],
         [Input('intermediate-data-store', 'data'),
-         Input('selected-insurers-all-values', 'data'),
-         Input('number-of-insurers', 'data')],
-        [State('show-data-table', 'data'),
+         Input('selected-insurers-all-values', 'data')],
+        [State('number-of-insurers', 'data'),
+         State('show-data-table', 'data'),
          State('filter-state-store', 'data'),
          State('insurer-options-store', 'data')],
         prevent_initial_call=True
