@@ -35,9 +35,13 @@ app = dash.Dash(
     assets_ignore='.ipynb_checkpoints/*',
     external_stylesheets=[dbc.themes.BOOTSTRAP],
     suppress_callback_exceptions=True,
-    update_title=None
+    update_title=None,
+    serve_locally=True
 )
 
+app.config.assets_external_path = '/'  # Add here
+print("Registered paths:", app.registered_paths)
+print("Static routes:", list(app.server.url_map.iter_rules()))
 app.title = APP_TITLE
 
 app.index_string = '''

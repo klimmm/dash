@@ -3,6 +3,8 @@
 import os
 import multiprocessing
 
+os.environ['DASH_PRUNE_ERRORS'] = 'False'
+
 # Get port from environment variable with a default of 10000
 port = int(os.environ.get("PORT", 10000))
 
