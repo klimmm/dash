@@ -35,6 +35,10 @@
 /* Mobile and small screens (up to 768px) */
 
 
+.sidebar-col.row {
+    max-width: 430px;
+}
+
 /* Tablet */
 @media screen and (min-width: 530px) {
     :root {
@@ -48,6 +52,7 @@
     :root {
         font-size: 11px;
     }
+    
 }
 
 /* Tablet */
@@ -71,6 +76,14 @@
     :root {
         font-size: 13px;
     }
+    .sidebar-col.row {
+        max-width: 480px !important;
+    }
+    .filter-row {
+        max-width: 480px !important;
+    }
+
+    
 }
 
 /* Large Desktop */

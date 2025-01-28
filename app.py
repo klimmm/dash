@@ -1,30 +1,34 @@
 import os
 import logging
 import dash
+import pandas as pd
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from typing import List, Dict, Tuple
 from memory_profiler import profile
+from application import memory_monitor
 from application import (
-    create_app_layout, load_insurance_dataframes, insurance_lines_tree,
+    create_app_layout, load_insurance_dataframes,
+    insurance_lines_tree_162, insurance_lines_tree_158,
     APP_TITLE, PORT, DEBUG_MODE, setup_logging, get_logger,
-    track_callback, track_callback_end, memory_monitor,
     get_year_quarter_options, get_checklist_config,
     get_insurance_line_options, get_insurer_options,
-    get_required_metrics,
+    get_required_metrics, log_callback,
     filter_year_quarter, filter_by_period_type,
-    add_top_n_rows, calculate_metrics
+    add_top_n_rows, calculate_metrics, TOP_N_LIST,
+    process_insurers_data, add_market_share_rows, add_growth_rows
     )
 from application import (
     setup_process_data_callback,
     setup_metric_callbacks, setup_insurers_callbacks,
-    setup_buttons_callbacks, setup_debug_callbacks,
+    setup_buttons_callbacks_singlechoice, setup_buttons_callbacks_multichoice,
+    setup_debug_callbacks, setup_insurance_lines_tree_callbacks,
     setup_insurance_lines_callbacks, setup_sidebar_callbacks,
     setup_resize_observer_callback, setup_ui_callbacks
     )
 logger = get_logger(__name__)
-setup_logging(console_level=logging.INFO, file_level=logging.DEBUG)
+setup_logging(console_level=logging.DEBUG, file_level=logging.DEBUG)
 
 print("Starting application initialization...")
 
@@ -72,53 +76,54 @@ server = app.server
 
 df_162, df_158 = load_insurance_dataframes()
 
-setup_buttons_callbacks(app)
+
+
+setup_buttons_callbacks_multichoice(app)
+setup_buttons_callbacks_singlechoice(app)
 setup_debug_callbacks(app)
 setup_resize_observer_callback(app)
 setup_ui_callbacks(app)
 setup_process_data_callback(app)
 
 setup_metric_callbacks(app)
-setup_insurance_lines_callbacks(app, insurance_lines_tree)
+setup_insurance_lines_callbacks(app, insurance_lines_tree_162, insurance_lines_tree_158)
+setup_insurance_lines_tree_callbacks(app, insurance_lines_tree_162, insurance_lines_tree_158)
+
+
 setup_sidebar_callbacks(app)
 setup_insurers_callbacks(app)
 
 @app.callback(
     [Output('end-quarter', 'options'),
-     Output('insurance-line-dropdown', 'options'),
      Output('business-type-checklist-container', 'children'),
      Output('intermediate-data-store', 'data'),
      Output('insurer-options-store', 'data'),
      ],
-    [Input('secondary-y-metric', 'value'),
+    [
      Input('primary-metric-all-values', 'data'),
      Input('business-type-checklist', 'value'),
      Input('number-of-periods-data-table', 'data'),
-     Input('number-of-insurers', 'data'),
-     Input('end-quarter', 'value')],
-    [
-     State('period-type', 'data'),
-     State('insurance-lines-state', 'data'),
+     Input('end-quarter', 'value'),
+     Input('insurance-lines-all-values', 'data')],
+    [State('period-type', 'data'),
+     State('secondary-y-metric', 'value'),
      State('reporting-form', 'data'),
      State('show-data-table', 'data'),
-     State('filter-state-store', 'data'),
-     State('insurance-lines-state', 'data'),
+     State('filter-state-store', 'data')
     ]
 )
-# @profile
+@log_callback
 def prepare_data(
-        secondary_metric: str,
         primary_metrics: List[str],
         current_checklist_values: List[str],
         num_periods_selected: int,
-        top_n_list: List[int],
         end_quarter: str,
-        period_type: str,
         lines: List[str],
+        period_type: str,
+        secondary_metric: str,
         reporting_form: str,
         show_data_table: bool,
-        current_filter_state: Dict,
-        current_lines: List[str],
+        current_filter_state: Dict
 ) -> Tuple:
     """First part of data processing: Initial filtering and setup"""
     # memory_monitor.log_memory("start_prepare_data", logger)
@@ -127,12 +132,11 @@ def prepare_data(
     if not ctx.triggered:
         raise PreventUpdate  
     trigger_id = ctx.triggered[0]['prop_id']
-    start_time = track_callback('main', 'prepare_data', ctx)
 
     try:
         df = df_162 if reporting_form == '0420162' else df_158
 
-        insurance_line_dropdown_options = get_insurance_line_options(reporting_form, level=2, indent_char="--")
+        insurance_line_dropdown_options = get_insurance_line_options(reporting_form, level=2)
 
         end_quarter_options = get_year_quarter_options(df)
 
@@ -145,7 +149,7 @@ def prepare_data(
         df = (df[df['linemain'].isin(lines) & df['metric'].isin(required_metrics)]
               .pipe(filter_year_quarter, end_quarter, period_type, num_periods_selected)
               .pipe(filter_by_period_type, period_type=period_type)
-              .pipe(add_top_n_rows, top_n_list=top_n_list)
+              .pipe(add_top_n_rows, top_n_list=TOP_N_LIST)
               .pipe(calculate_metrics, all_metrics, required_metrics, business_type_checklist)
                )
 
@@ -164,22 +168,18 @@ def prepare_data(
 
         result = (
             end_quarter_options,
-            insurance_line_dropdown_options,
             [checklist_component],
             intermediate_data,
             insurer_options_store
         )
 
-        track_callback_end('main', 'prepare_data', start_time, result=result)
         # memory_monitor.log_memory("end_prepare_data", logger)
 
         return result
 
     except Exception as e:
         logger.error(f"Error in prepare data: {str(e)}", exc_info=True)
-        track_callback_end('main', 'prepare_data', start_time, error=str(e))
         raise
-
 
 def main():
     """Application entry point"""

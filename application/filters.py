@@ -12,7 +12,7 @@ from application.button_components import (
 from application.dropdown_components import (
     create_end_quarter_dropdown,
     create_dynamic_insurer_container_for_layout,
-    create_dynamic_insurance_line_dropdown_container,
+    create_dynamic_insurance_line_container_for_layout,
     create_secondary_metric_dropdown,
     create_dynamic_primary_metric_container_for_layout
 )
@@ -24,7 +24,7 @@ COMPONENTS = {
     'dropdown': {
         'primary-metric': create_dynamic_primary_metric_container_for_layout,
         'selected-insurers': create_dynamic_insurer_container_for_layout,
-        'insurance-line-dropdown': create_dynamic_insurance_line_dropdown_container,
+        'insurance-line': create_dynamic_insurance_line_container_for_layout,
         'end-quarter': create_end_quarter_dropdown,
         'secondary-y-metric': create_secondary_metric_dropdown
     },
@@ -134,7 +134,7 @@ FILTER_LAYOUT = {
                 {
                     'label': 'Вид страхования:',
                     'type': 'dropdown',
-                    'component_id': 'insurance-line-dropdown',
+                    'component_id': 'insurance-line',
                     'label_width': 3,
                     'component_width': 9,
                     'row_className': 'filter-row mb-0',

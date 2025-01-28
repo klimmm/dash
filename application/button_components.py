@@ -1,45 +1,11 @@
-"""
-Button components and configurations for dashboard filters.
-Contains all button-related functionality including creation, styling, and default configurations.
-"""
-
 from dash import html
+from typing import Dict, List, Optional, Union
 import dash_bootstrap_components as dbc
-from typing import Dict, List, Any, Optional, Union
-from dataclasses import dataclass
 from config.logging_config import get_logger
-
+from constants.style_config import StyleConstants
 logger = get_logger(__name__)
 
 
-@dataclass
-class ButtonStyleConstants:
-    """Unified button styling constants"""
-    BTN = {
-        # Button group styles
-        "GROUP": "btn-group",
-        "GROUP_CONTROL": "btn-custom btn-group-control",
-
-# Custom button styles
-        "PERIOD": "btn-custom btn-period",
-        "SIDEBAR_SHOW": "btn-custom btn-sidebar-toggle-show",
-        "SIDEBAR_HIDE": "btn-custom btn-sidebar-toggle-hide",
-        "TAB": "btn-custom btn-tab",
-        "TABLE_TAB": "btn-custom btn-table-tab",
-        "ADD": "btn-metric-add pr-1",
-        "REMOVE": "btn-metric-remove"
-    }
-
-    FLEX = {
-        "CENTER": "d-flex justify-content-center"
-    }
-
-    UTILS = {
-        "MB_0": "mb-0"
-    }
-
-
-# Default button configurations
 DEFAULT_BUTTON_CONFIGS = {
     'reporting-form': [
         {"label": "0420158", "value": "0420158"},
@@ -68,11 +34,10 @@ DEFAULT_BUTTON_CONFIGS = {
     ]
 }
 
-
 def create_button(
     label: str,
     button_id: str,
-    className: str = ButtonStyleConstants.BTN["GROUP_CONTROL"],
+    className: str = StyleConstants.BTN["GROUP_CONTROL"],
     style: Optional[Dict] = None
 ) -> dbc.Button:
     """Create a single button with consistent styling"""
@@ -87,12 +52,12 @@ def create_button(
 
 def create_button_group(
     buttons: Union[List[Dict], Dict],
-    className: Optional[str] = ButtonStyleConstants.BTN["PERIOD"],
+    className: Optional[str] = StyleConstants.BTN["PERIOD"],
     component_id: Optional[str] = None,
 ) -> Union[dbc.ButtonGroup, html.Div]:
     """
     Create a button group component with flexible configuration
-    
+
     Args:
         buttons: List of button configs or dict with 'buttons' and 'className' keys
         className: Default className for the button group
@@ -116,9 +81,9 @@ def create_button_group(
             if component_id
             else btn.get("id")
         )
-        
+
         style = btn.get("style", {})
-        
+
         button = create_button(
             label=btn["label"],
             button_id=btn_id,
@@ -128,10 +93,10 @@ def create_button_group(
         button_components.append(button)
 
     button_group = dbc.ButtonGroup(button_components)
-    
+
     # Return wrapped ButtonGroup for filter components
     return html.Div([
-        dbc.Row([button_group], className=ButtonStyleConstants.UTILS["MB_0"])
+        dbc.Row([button_group], className=StyleConstants.UTILS["MB_0"])
     ])
 
 
@@ -141,15 +106,15 @@ def create_button_group_from_config(
 ) -> Union[dbc.ButtonGroup, html.Div]:
     """Create a button group using default configurations"""
     logger.debug(f"Creating button group for {config_key or component_id}")
-    
+
     buttons = DEFAULT_BUTTON_CONFIGS.get(config_key or component_id, [])
-    
+
     # Use different classNames based on component type
     if component_id in ['top-insurers', 'periods-data-table', 'metric-toggles']:
-        className = ButtonStyleConstants.BTN["PERIOD"]
+        className = StyleConstants.BTN["PERIOD"]
     else:
-        className = ButtonStyleConstants.BTN["GROUP_CONTROL"]
-        
+        className = StyleConstants.BTN["GROUP_CONTROL"]
+
     return create_button_group(
         buttons=buttons,
         className=className,

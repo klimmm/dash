@@ -1,8 +1,7 @@
 from dash import html, dcc
-from typing import Dict, List, Optional, Union, Any
-
-from constants.translations import translate
+from typing import Dict, List, Optional, Any
 from constants.filter_options import VALUE_METRICS_OPTIONS
+from constants.translations import translate
 from config.default_values import (
     DEFAULT_PRIMARY_METRICS,
     DEFAULT_SECONDARY_METRICS,
@@ -10,195 +9,264 @@ from config.default_values import (
     DEFAULT_END_QUARTER,
     DEFAULT_REPORTING_FORM,
     DEFAULT_INSURER
-)
-from data_process.insurance_line_options import get_insurance_line_options
-from application.button_components import ButtonStyleConstants
-from data_process.data_utils import map_insurer
-from callbacks.update_metric_callbacks import create_primary_metric_dropdown
-from constants.translations import translate
-
-
-
-class StyleConstants:
-    """CSS class names for dropdown components"""
-    FORM = {
-        "DD": "dd-control",
-        "CHECKLIST": "checklist",
-        "INPUT": "form-control input-short"
-    }
-
-def create_base_dropdown(
-    id: str,
-    options: List[Dict],
-    value: Any = None,
-    placeholder: str = "",
-    clearable: bool = True,
-    multi: bool = False
-) -> dcc.Dropdown:
-    """Create a base dropdown with consistent styling"""
-    return dcc.Dropdown(
-        id=id,
-        options=options,
-        value=value,
-        multi=multi,
-        placeholder=translate(placeholder),
-        clearable=clearable,
-        className=StyleConstants.FORM["DD"],
-        optionHeight=18,
-        style={"fontSize": "0.85rem"}
     )
+from constants.style_config import StyleConstants
+from data_process.insurance_line_options import get_insurance_line_options
+from data_process.data_utils import map_insurer
+
 
 def create_secondary_metric_dropdown() -> dcc.Dropdown:
     """Create secondary metric dropdown component"""
     return create_base_dropdown(
         id='secondary-y-metric',
-        options=VALUE_METRICS_OPTIONS,
         value=DEFAULT_SECONDARY_METRICS,
+        options=VALUE_METRICS_OPTIONS,
         placeholder="Доп. показатель..."
     )
+
 
 def create_end_quarter_dropdown() -> dcc.Dropdown:
     """Create end quarter selection dropdown component"""
     return create_base_dropdown(
         id='end-quarter',
-        options=[{'label': '2024Q3', 'value': '2024Q3'}],
         value=DEFAULT_END_QUARTER,
-        placeholder="Select quarter",
-        clearable=False
+        options=[{'label': translate(DEFAULT_END_QUARTER), 'value': DEFAULT_END_QUARTER}],
+        placeholder="Select quarter"
     )
 
-def create_dynamic_metric_dropdown(
+
+def create_base_dropdown(
+    id: str,
+    value: Any = None,
+    options: List[Dict] = [],
+    multi: bool = False,
+    placeholder: str = "",
+    clearable: bool = False,
+    searchable: bool = False,
+    className: str = StyleConstants.FORM["DD"],
+    optionHeight: int = 18
+) -> dcc.Dropdown:
+    """Create a base dropdown with consistent styling"""
+    return dcc.Dropdown(
+        id=id,
+        value=value,
+        options=options,
+        multi=multi,
+        placeholder=translate(placeholder),
+        clearable=clearable,
+        searchable=searchable,
+        className=className,
+        optionHeight=optionHeight
+    )
+
+
+def create_dynamic_dropdown(
+    dropdown_type: str,
     index: int,
     value: Optional[str] = None,
-    options: List[Dict] = None
+    options: List[Dict[str, str]] = None,
+    is_add_button: bool = False,
+    is_remove_button: bool = False,
+    is_detalize_button: bool = False,
+    placeholder: str = ""
 ) -> html.Div:
-    """Create a dynamic metric dropdown with remove button"""
-    if options is None:
-        options = VALUE_METRICS_OPTIONS
+    """
+    Create a dynamic dropdown with optional buttons
+    """
+    button_props = {
+        'add': {
+            'icon_class': "fas fa-plus",
+            'button_id': f"{dropdown_type}-add-btn",
+            'button_class': StyleConstants.BTN["ADD"]
+        },
+        'remove': {
+            'icon_class': "fas fa-xmark",
+            'button_id': {'type': f'remove-{dropdown_type}-btn', 'index': str(index)},
+            'button_class': StyleConstants.BTN["REMOVE"]
+        },
+        'detalize': {
+            'icon_class': "fas fa-list",
+            'button_id': {'type': f'dropdown-detalize-btn', 'index': index},
+            'button_class': StyleConstants.BTN["SECONDARY"]
+        }
+    }
+
+    buttons = []
+
+    # Add detalize button if enabled
+    if is_detalize_button:
+        buttons.append(
+            html.Button(
+                children=html.I(className=button_props['detalize']['icon_class']),
+                id=button_props['detalize']['button_id'],
+                className=button_props['detalize']['button_class'],
+                n_clicks=0
+            )
+        )
+
+    # Add remove button or placeholder
+    if is_remove_button:
+        buttons.append(
+            html.Button(
+                children=html.I(className=button_props['remove']['icon_class']),
+                id=button_props['remove']['button_id'],
+                className=button_props['remove']['button_class'],
+                n_clicks=0
+            )
+        )
+    else:
+        buttons.append(
+            html.Div(
+                className=button_props['remove']['button_class'],
+                style={'visibility': 'hidden'}
+            )
+        )
+
+    # Add add button or placeholder
+    if is_add_button:
+        buttons.append(
+            html.Button(
+                children=html.I(className=button_props['add']['icon_class']),
+                id=button_props['add']['button_id'],
+                className=button_props['add']['button_class'],
+                n_clicks=0
+            )
+        )
+    else:
+        buttons.append(
+            html.Div(
+                className=button_props['add']['button_class'],
+                style={'visibility': 'hidden'}
+            )
+        )
 
     return html.Div(
-        className="d-flex align-items-center w-100",
+        className=f"{StyleConstants.FLEX['CENTER']} {StyleConstants.UTILS['W_100']}",
         children=[
             html.Div(
-                className="dash-dropdown flex-grow-1",
+                className=f"{StyleConstants.DROPDOWN['CONTAINER']} {StyleConstants.UTILS['FLEX_GROW_1']}",
                 children=[
                     create_base_dropdown(
-                        id={'type': 'dynamic-primary-metric', 'index': index},
-                        options=options,
+                        id={'type': f'dynamic-{dropdown_type}', 'index': index},
                         value=value,
-                        multi=False,
-                        clearable=False,
-                        placeholder="Select primary metric"
+                        options=options,
+                        placeholder=placeholder
                     )
                 ]
             ),
-            html.Button(
-                "✕",
-                id={'type': 'remove-primary-metric-btn', 'index': index},
-                className=ButtonStyleConstants.BTN["REMOVE"],
-                n_clicks=0
-            )
+            *buttons
         ]
     )
 
 
-
-
-
-
-
-
-
-def create_dynamic_primary_metric_container_for_layout(
-    value: Optional[str] = None,
-    options: List[Dict[str, str]] = None
+def create_dynamic_container_for_layout(
+    dropdown_type: str,
+    default_value: Any,
+    default_options: Optional[List[Dict[str, str]]] = None,
+    value: Optional[Any] = None,
+    options: Optional[List[Dict[str, str]]] = None,
+    placeholder: str = "",
+    show_detalize: bool = False
 ) -> html.Div:
-
+    """Create a container for dynamic dropdowns with consistent layout"""
     if value is None:
-        value = DEFAULT_PRIMARY_METRICS
+        value = default_value
 
     if options is None:
-        options = [
-            {'label': translate(DEFAULT_PRIMARY_METRICS), 'value': DEFAULT_PRIMARY_METRICS} 
-        ]
+        if default_options is None:
+            label = (
+                translate(default_value) 
+                if dropdown_type == 'primary-metric' 
+                else map_insurer(default_value)
+            )
+            options = [{'label': label, 'value': default_value}]
+        else:
+            options = default_options
+
+    # Create container children
+    children = [
+        html.Div(
+            id=f"{dropdown_type}-container",
+            className=f"{StyleConstants.DROPDOWN['DYNAMIC_CONTAINER']} {StyleConstants.UTILS['W_100']} {StyleConstants.UTILS['PY_0']} {StyleConstants.UTILS['PR_1']}",
+            children=[
+                create_dynamic_dropdown(
+                    dropdown_type=dropdown_type,
+                    index=0,
+                    value=value,
+                    options=options,
+                    is_add_button=True,
+                    is_detalize_button=show_detalize,
+                    placeholder=placeholder
+                )
+            ]
+        )
+    ]
+
+    # Add stores
+    stores = []
+
+    # Add main store with standard ID format
+    stores.append(
+        dcc.Store(
+            id=f"{dropdown_type}-all-values",
+            data=[value] if value is not None else [],
+            storage_type='memory'
+        )
+    )
+
+    children.extend(stores)
 
     return html.Div(
-        className="w-100",
-        children=[
-            # Container for all dropdowns (including the first one)
-            html.Div(
-                id="primary-metric-container",
-                className="dynamic-dropdowns-container w-100 py-0 pr-1",
-                children=[
-                    create_primary_metric_dropdown(
-                        index=0,
-                        value=value,
-                        options=options,
-                        is_add_button=True
-                    )
-                ],
-            ),
-            # Store for all selected insurer values
-            dcc.Store(
-                id="primary-metric-all-values",
-                data=[],
-                storage_type='memory'
-            )
-        ]
+        className=StyleConstants.UTILS['W_100'],
+        children=children
     )
 
 
+def create_insurance_line_dropdown(
+    index: int,
+    value: Optional[str] = None,
+    options: List[Dict[str, str]] = None,
+    is_add_button: bool = False,
+    is_remove_button: bool = True,
+    show_detalize: bool = True
+) -> html.Div:
+    """Create a single insurance line dropdown with optional buttons"""
+    if options is None:
+        options = get_insurance_line_options(
+            DEFAULT_REPORTING_FORM,
+            level=2,
+            indent_char="--"
+        )
+
+    return create_dynamic_dropdown(
+        dropdown_type='insurance-line',
+        index=index,
+        value=value,
+        options=options,
+        is_add_button=is_add_button,
+        is_remove_button=is_remove_button,
+        is_detalize_button=show_detalize,
+        placeholder="Select insurance line"
+    )
 
 
-
-
-
-
-def create_dynamic_insurance_line_dropdown_container() -> html.Div:
-    """Create a container specifically for dynamic insurance line dropdowns"""
-    # Determine the category structure based on reporting form
-
-    return html.Div([
-        html.Div(
-            className="d-flex align-items-center w-100",
-            children=[
-                html.Div(
-                    dcc.Dropdown(
-                        id='insurance-line-dropdown',
-                        options=get_insurance_line_options(
-                            DEFAULT_REPORTING_FORM,
-                            level=2,
-                            indent_char="--"
-                        ),
-                        value=DEFAULT_CHECKED_LINES,
-                        multi=False,
-                        placeholder=translate("Select insurance line"),
-                        clearable=False,
-                        className=StyleConstants.FORM["DD"],
-                        optionHeight=18,
-                        style={"fontSize": "0.85rem"}
-                    ),
-                    className="dash-dropdown flex-grow-1"
-                ),
-                html.Button(
-                    " ",
-                    id="insurance-line-add-btn",
-                    className=ButtonStyleConstants.BTN["ADD"]
-                ),
-                html.Button(
-                    " ",
-                    id="insurance-line-remove-btn",
-                    className=ButtonStyleConstants.BTN["ADD"]
-                )
-            ]
-        ),
-        html.Div(
-            id="insurance-line-container",
-            children=[],
-            className="dynamic-dropdowns-container w-100 py-0 pr-1"
-        ),
-        dcc.Store(id="insurance-line-all-values", data=[])
-    ], className="w-100")
+def create_primary_metric_dropdown(
+    index: int,
+    value: Optional[str] = None,
+    options: List[Dict[str, str]] = None,
+    is_add_button: bool = False,
+    is_remove_button: bool = False
+) -> html.Div:
+    """Create a primary metric dropdown"""
+    return create_dynamic_dropdown(
+        dropdown_type='primary-metric',
+        index=index,
+        value=value,
+        options=options,
+        is_add_button=is_add_button,
+        is_remove_button=is_remove_button,
+        placeholder="Select primary metric"
+    )
 
 
 def create_insurer_dropdown(
@@ -208,95 +276,70 @@ def create_insurer_dropdown(
     is_add_button: bool = False,
     is_remove_button: bool = True
 ) -> html.Div:
+    """Create an insurer dropdown"""
+    return create_dynamic_dropdown(
+        dropdown_type='selected-insurers',
+        index=index,
+        value=value,
+        options=options,
+        is_add_button=is_add_button,
+        is_remove_button=is_remove_button,
+        placeholder="Select insurer"
+    )
 
-    button_props = {
-        'add': {
-            'icon_class': "fas fa-plus",
-            'button_id': "selected-insurers-add-btn",
-            'button_class': ButtonStyleConstants.BTN["ADD"]
-        },
-        'remove': {
-            'icon_class': "fas fa-xmark",
-            'button_id': {'type': 'remove-selected-insurers-btn', 'index': str(index)},
-            'button_class': ButtonStyleConstants.BTN["REMOVE"]
-        }
-    }
 
-    return html.Div(
-        className="d-flex align-items-center w-100",
-        children=[
-            html.Div(
-                className="dash-dropdown flex-grow-1",
-                children=[
-                    dcc.Dropdown(
-                        id={'type': 'dynamic-selected-insurers', 'index': index},
-                        options=options,
-                        value=value,
-                        multi=False,
-                        clearable=False,
-                        placeholder="Select insurer",
-                        className=StyleConstants.FORM["DD"],
-                        optionHeight=18,
-                        searchable=False
-                    )
-                ]
-            ),
-            html.Button(
-                children=html.I(className=button_props['remove']['icon_class']), 
-                id=button_props['remove']['button_id'],
-                className=button_props['remove']['button_class'],
-                n_clicks=0
-            ) if is_remove_button else html.Div(
-                className=button_props['remove']['button_class'],
-                style={'visibility': 'hidden'}
-            ),
-            html.Button(
-                children=html.I(className=button_props['add']['icon_class']),
-                id=button_props['add']['button_id'],
-                className=button_props['add']['button_class'],
-                n_clicks=0
-            ) if is_add_button else html.Div(
-                className=button_props['add']['button_class'],
-                style={'visibility': 'hidden'}
-            ),
-        ]
+def create_dynamic_insurance_line_container_for_layout(
+    value: Optional[str] = None,
+    options: Optional[List[Dict[str, str]]] = None,
+) -> html.Div:
+    """Create a container specifically for dynamic insurance line dropdowns"""
+    if options is None:
+        options = get_insurance_line_options(
+            DEFAULT_REPORTING_FORM,
+            level=2,
+            indent_char="--"
+        )
+
+    return create_dynamic_container_for_layout(
+        dropdown_type='insurance-line',
+        default_value=DEFAULT_CHECKED_LINES[0] if DEFAULT_CHECKED_LINES else None,
+        value=value,
+        options=options,
+        placeholder="Select insurance line",
+        show_detalize=True
+    )
+
+
+def create_dynamic_primary_metric_container_for_layout(
+    value: Optional[str] = None,
+    options: Optional[List[Dict[str, str]]] = None,
+) -> html.Div:
+    """Create a container specifically for primary metric dropdowns"""
+    if options is None:
+        options = [{'label': translate(DEFAULT_PRIMARY_METRICS), 'value': DEFAULT_PRIMARY_METRICS}]
+
+    # Create with both standard and specific store IDs
+    return create_dynamic_container_for_layout(
+        dropdown_type='primary-metric',
+        default_value=DEFAULT_PRIMARY_METRICS,
+        value=value,
+        options=options,
+        placeholder="Select primary metric",
     )
 
 
 def create_dynamic_insurer_container_for_layout(
     value: Optional[str] = None,
-    options: List[Dict[str, str]] = None
+    options: Optional[List[Dict[str, str]]] = None
 ) -> html.Div:
-
-    if value is None:
-        value = DEFAULT_INSURER
-
+    """Create a container specifically for insurer dropdowns"""
     if options is None:
-        options = [
-            {'label': map_insurer(DEFAULT_INSURER), 'value': DEFAULT_INSURER} 
-        ]
+        options = [{'label': map_insurer(DEFAULT_INSURER), 'value': DEFAULT_INSURER}]    
 
-    return html.Div(
-        className="w-100",
-        children=[
-            # Container for all dropdowns (including the first one)
-            html.Div(
-                id="selected-insurers-container",
-                className="dynamic-dropdowns-container w-100 py-0 pr-1",
-                children=[
-                    create_insurer_dropdown(
-                        index=0,
-                        value=value,
-                        options=options,
-                        is_add_button=True
-                    )
-                ],
-            ),
-            # Store for all selected insurer values
-            dcc.Store(
-                id="selected-insurers-all-values",
-                data=[],
-                storage_type='memory'
-            )
-        ]
+    return create_dynamic_container_for_layout(
+        dropdown_type='selected-insurers',
+        default_value=DEFAULT_INSURER,
+        value=value,
+        options=options,
+        placeholder="Select insurer"
     )

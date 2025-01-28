@@ -79,5 +79,11 @@ def process_insurers_data(
             ]
             processed_dfs.append(filtered_df)
 
-    result_df = pd.concat(processed_dfs, ignore_index=True) if processed_dfs else df
-    return result_df
+    df = pd.concat(processed_dfs, ignore_index=True) if processed_dfs else df
+
+    if 999 not in top_n_list:
+        df = df[~(df['insurer'] == 'total')]
+
+    df = df[~df['insurer'].str.match('|'.join(f'top-{n}' for n in [5, 10, 20] if n not in top_n_list))]
+
+    return df

@@ -1,9 +1,16 @@
-from dash import dcc, html
 import dash_bootstrap_components as dbc
+from dash import dcc, html
 from typing import List
 from application.insurance_lines_tree import initial_state
-from application.style_config import StyleConstants
-from config.default_values import DEFAULT_REPORTING_FORM, DEFAULT_NUMBER_OF_PERIODS, DEFAULT_NUMBER_OF_INSURERS, DEFAULT_PERIOD_TYPE, DEFAULT_SHOW_MARKET_SHARE, DEFAULT_SHOW_CHANGES
+from config.default_values import (
+     DEFAULT_REPORTING_FORM, 
+     DEFAULT_NUMBER_OF_PERIODS,
+     DEFAULT_NUMBER_OF_INSURERS,
+     DEFAULT_PERIOD_TYPE, 
+     DEFAULT_SHOW_MARKET_SHARE,
+     DEFAULT_SHOW_CHANGES
+)
+from constants.style_config import StyleConstants
 
 
 def create_stores() -> List[html.Div]:
@@ -19,7 +26,7 @@ def create_stores() -> List[html.Div]:
         dcc.Store(id='insurer-options-store', storage_type='memory'),
         dcc.Store(id="filter-state-store"),
         dcc.Store(id="top-insurers-store"),
-
+        dcc.Store(id='insurance-lines-all-values', data=initial_state, storage_type='memory'),
         dcc.Store(id='insurance-lines-state', data=initial_state),
         dcc.Store(id='expansion-state', data={'states': {}, 'all_expanded': False}),
         dcc.Store(id='tree-state', data={'states': {}, 'all_expanded': False}),
@@ -27,7 +34,7 @@ def create_stores() -> List[html.Div]:
         dcc.Store(id='reporting-form', data=DEFAULT_REPORTING_FORM),
         dcc.Store(id='toggle-selected-market-share', data=DEFAULT_SHOW_MARKET_SHARE),
         dcc.Store(id='toggle-selected-qtoq', data=DEFAULT_SHOW_CHANGES),
-        dcc.Store(id='number-of-insurers', data=DEFAULT_NUMBER_OF_INSURERS),
+        dcc.Store(id='top-n-rows', data=DEFAULT_NUMBER_OF_INSURERS),
         dcc.Store(id='number-of-periods-data-table', data=DEFAULT_NUMBER_OF_PERIODS)
 
     ]

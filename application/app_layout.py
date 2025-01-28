@@ -1,11 +1,52 @@
 import dash_bootstrap_components as dbc
 from dash import dcc, html
-from application.insurance_lines_tree import create_lines_checklist_buttons, create_debug_footer
 from application.filters import create_filters
 from application.navbar_and_stores import create_navbar, create_stores
-from application.style_config import StyleConstants
+from constants.style_config import StyleConstants
 
 
+def create_lines_checklist_buttons() -> dbc.Row:
+    """Create hierarchy control buttons."""
+    return dbc.Row(
+        [
+            dbc.Col([
+                dbc.Button("Показать все", id="expand-all-button",
+                          style={"display": "none"}, color="secondary"),
+                dbc.Button("Показать иерархию", id="collapse-button",
+                          style={"display": "none"}, color="info", className="ms-1"),
+                dbc.Button("Drill down", id="detailize-button",
+                          style={"display": "none"}, color="info", className="ms-1"),
+            ])
+        ],
+        className="mb-3"
+    )
+
+
+def create_debug_footer() -> html.Div:
+    """Create debug footer component."""
+    return html.Div(
+        id="debug-footer",
+        className="debug-footer",
+        children=[
+            dbc.Button(
+                "Toggle Debug Logs",
+                id="debug-toggle",
+                color="secondary",
+                className="btn-custom btn-debug-toggle"
+            ),
+            dbc.Collapse(
+                dbc.Card(
+                    dbc.CardBody([
+                        html.H4("Debug Logs", className="debug-title"),
+                        html.Pre(id="debug-output", className="debug-output")
+                    ]),
+                    className="debug-card"
+                ),
+                id="debug-collapse",
+                is_open=False
+            )
+        ], style={"display": "none"},
+    )
 def create_app_layout():
     try:
         return dbc.Container([
@@ -14,7 +55,7 @@ def create_app_layout():
             html.Div(id="dummy-output", style={"display": "none"}),
             html.Div(id="dummy-trigger", style={"display": "none"}),
             html.Div(id="tree-container", className=StyleConstants.CONTAINER["TREE"]),
-            create_lines_checklist_buttons(),
+            
             dbc.CardBody([
                 dbc.Row([
                     dbc.Col([
@@ -25,6 +66,7 @@ def create_app_layout():
                             style={"display": "none"}
 
                         ),
+                        create_lines_checklist_buttons(),
                         create_filters(),
                         dbc.Row([
                             dbc.Col([

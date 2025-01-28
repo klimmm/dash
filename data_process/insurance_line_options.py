@@ -7,7 +7,7 @@ logger = get_logger(__name__)
 
 
 
-def get_insurance_line_options(reporting_form, level=1, indent_char="  "):
+def get_insurance_line_options(reporting_form, level=1, indent_char="\u2003"):
 
     category_structure = load_json(LINES_162_DICTIONARY) if reporting_form == '0420162' else load_json(LINES_158_DICTIONARY)
 

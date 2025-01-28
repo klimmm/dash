@@ -6,7 +6,8 @@ from dash.exceptions import PreventUpdate
 from typing import List, Dict, Set, Tuple, Any
 from application.dropdown_components import create_insurer_dropdown
 from config.default_values import MAX_DROPDOWNS
-from config.logging_config import get_logger, track_callback, track_callback_end
+from config.logging_config import get_logger, log_callback
+
 logger = get_logger(__name__)
 
 
@@ -76,6 +77,7 @@ def setup_insurers_callbacks(app: Dash) -> None:
         [State('selected-insurers-container', 'children'),
          State('selected-insurers-all-values', 'data')]
     )
+    @log_callback
     def update_insurers_selections(
         selected_insurers: List[str],
         add_insurer_clicks: int,
@@ -93,7 +95,6 @@ def setup_insurers_callbacks(app: Dash) -> None:
             raise PreventUpdate
 
         try:
-            start_info = track_callback(__name__, 'update_insurers_selections', ctx)
             trigger_id = ctx.triggered[0]['prop_id']
 
             # Initialize if needed
@@ -210,10 +211,8 @@ def setup_insurers_callbacks(app: Dash) -> None:
             final_values = selected_insurers if selected_insurers != current_selected_insurers else dash.no_update
             output = (updated_dropdowns, final_values)
 
-            track_callback_end(__name__, 'update_insurers_selections', start_info, result=output)
             return output
 
         except Exception as e:
             logger.error(f"Error in update_insurers_selections: {str(e)}", exc_info=True)
-            track_callback_end(__name__, 'update_insurers_selections', start_info, error=e)
             raise

@@ -1,26 +1,26 @@
 import functools
 import dash_bootstrap_components as dbc
-import dash
-from dash import dcc, html
+from dash import html
 from typing import Dict, List, Set, Optional, TypedDict
 from config.logging_config import get_logger
 from config.default_values import DEFAULT_CHECKED_LINES
-from data_process.insurance_line_options import get_insurance_line_options
 from data_process.data_utils import load_json
-from config.main_config import LINES_162_DICTIONARY
+from config.main_config import LINES_162_DICTIONARY, LINES_158_DICTIONARY
 
 logger = get_logger(__name__)
+
+DEFAULT_SINGLE_LINE = DEFAULT_CHECKED_LINES[0] if isinstance(DEFAULT_CHECKED_LINES, list) else DEFAULT_CHECKED_LINES
+initial_state = list(DEFAULT_CHECKED_LINES)
+insurance_line_structure_162 = load_json(LINES_162_DICTIONARY)
+insurance_line_structure_158 = load_json(LINES_158_DICTIONARY)
+
 
 class InsuranceLineDetails(TypedDict):
     label: str
     children: Optional[List[str]]
 
-DEFAULT_SINGLE_LINE = DEFAULT_CHECKED_LINES[0] if isinstance(DEFAULT_CHECKED_LINES, list) else DEFAULT_CHECKED_LINES
 
-insurance_line_structure = load_json(LINES_162_DICTIONARY)
 InsuranceLineStructure = Dict[str, InsuranceLineDetails]
-
-initial_state = list(DEFAULT_CHECKED_LINES)
 
 
 class TreeItem(html.Div):
@@ -222,168 +222,5 @@ class InsuranceLinesTree:
 
         return html.Div(all_items, className="category-tree")
 
-
-insurance_lines_tree = InsuranceLinesTree(insurance_line_structure, initial_state)
-
-
-def get_insurance_lines_tree_components(container_class=None, label_class=None, button_class=None, dropdown_col_class=None, dropdown_class=None):
-    reporting_form = '0420162'
-    """Create insurance lines tree components"""
-    dropdown = html.Div([
-        dbc.Row([
-            dbc.Col([
-                html.Label("Линия:", className=label_class),
-            ], width=3, className=dropdown_col_class),
-            dbc.Col([
-                dcc.Dropdown(
-                    id='insurance-line-dropdown',
-                    options=get_insurance_line_options(reporting_form, level=2),
-                    value=DEFAULT_SINGLE_LINE,
-                    multi=False,
-                    clearable=False
-                ),
-            ], width=9),            
-        ], className="mb-0 g-0")
-    ])
-
-    toggle_button = dbc.Row([
-        dbc.Col(
-            dbc.Button(
-                "Показать все",
-                id='expand-all-button',
-                size="sm",
-                className=button_class,
-                style={"display": "none"}
-            ),
-            className="pe-1"
-        ),
-    ], className="g-0")
-
-    components = [
-        toggle_button,
-        dcc.Store(id='insurance-lines-state', data=initial_state),
-        dcc.Store(id='expansion-state', data={'states': {}, 'all_expanded': False}),
-        dcc.Store(id='tree-state', data={'states': {}, 'all_expanded': False}),
-        html.Div([
-            dropdown,
-            html.Div(id="tree-container")
-        ], className=container_class)
-    ]
-
-    return components
-
-
-def create_tree_control_buttons():
-    return html.Div([
-        dbc.Row([
-            dbc.ButtonGroup([
-                dbc.Button(
-                    "Показать иерархию",
-                    id="collapse-button",
-                    size="sm",
-                    className="py-0 btn-secondary-custom",
-                    style={"height": "26px"},
-                    n_clicks=0
-                ),
-                dbc.Button(
-                    "Drill down",
-                    id="detailize-button",
-                    size="sm",
-                    className="py-0 ms-1 btn-secondary-custom",
-                    style={"height": "26px"},
-
-                )
-            ])
-        ], className="mb-2")
-    ])
-
-
-def create_insurance_lines_tree_app(
-    insurance_line_structure: InsuranceLineStructure,
-    default_categories: Optional[List[str]] = None
-) -> dash.Dash:
-
-    app = dash.Dash(
-        __name__,  # Corrected from **name** to __name__
-        external_stylesheets=[dbc.themes.BOOTSTRAP],
-        suppress_callback_exceptions=True
-    )
-
-    app.layout = dbc.Container([
-        *get_insurance_lines_tree_components(insurance_line_structure, initial_state),
-    ], fluid=True)
-
-    setup_insurance_lines_callbacks(app)
-    return app
-
-def create_lines_checklist_buttons() -> dbc.Row:
-    """Create hierarchy control buttons."""
-    return dbc.Row(
-        [
-            dbc.Col([
-                dbc.Button("Показать все", id="expand-all-button",
-                          style={"display": "none"}, color="secondary"),
-                dbc.Button("Показать иерархию", id="collapse-button",
-                          style={"display": "none"}, color="info", className="ms-1"),
-                dbc.Button("Drill down", id="detailize-button",
-                          style={"display": "none"}, color="success", className="ms-1")
-            ])
-        ],
-        className="mb-3"
-    )
-
-
-def create_debug_footer() -> html.Div:
-    """Create debug footer component."""
-    return html.Div(
-        id="debug-footer",
-        className="debug-footer",
-        children=[
-            dbc.Button(
-                "Toggle Debug Logs",
-                id="debug-toggle",
-                color="secondary",
-                className="btn-custom btn-debug-toggle"
-            ),
-            dbc.Collapse(
-                dbc.Card(
-                    dbc.CardBody([
-                        html.H4("Debug Logs", className="debug-title"),
-                        html.Pre(id="debug-output", className="debug-output")
-                    ]),
-                    className="debug-card"
-                ),
-                id="debug-collapse",
-                is_open=False
-            )
-        ], style={"display": "none"},
-    )
-
-if __name__ == '__main__':
-    # Configure logging at the start of the application
-    logger.basicConfig(
-        level=logger.debug,  # Use INFO for important events, can change to DEBUG for more detail
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        datefmt='%H:%M:%S'
-    )
-
-    # Example category structure and default categories remain the same
-    '''insurance_line_structure = {
-        'A': {'label': 'Category A', 'children': ['A1', 'A2']},
-        'A1': {'label': 'Subcategory A1', 'children': None},
-        'A2': {'label': 'Subcategory A2', 'children': None},
-        'B': {'label': 'Category B', 'children': ['B1', 'B2']},
-        'B1': {'label': 'Subcategory B1', 'children': None},
-        'B2': {'label': 'Subcategory B2', 'children': None},
-    }
-
-    DEFAULT_CHECKED_LINES = ['A1', 'B1']'''
-
-    logger.debug("Starting application...")
-    app = create_insurance_lines_tree_app(
-        insurance_line_structure=insurance_line_structure,
-        default_categories=DEFAULT_CHECKED_LINES
-    )
-
-    logger.debug("Running server...")
-    app.run_server(debug=True)
+insurance_lines_tree_162 = InsuranceLinesTree(insurance_line_structure_162, initial_state)
+insurance_lines_tree_158 = InsuranceLinesTree(insurance_line_structure_158, initial_state)

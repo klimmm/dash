@@ -29,7 +29,6 @@ def get_insurer_options(
             logger.info(f"Selected metric: {metric_to_use}")
         except StopIteration:
             logger.error("No valid metrics found in data")
-            raise ValueError("No valid metrics available")
 
         # Get metric-filtered data
         metric_df = filtered_df[filtered_df['metric'] == metric_to_use]
@@ -74,7 +73,7 @@ def get_insurer_options(
 
                     if not line_df.empty:
                         logger.debug(f"Processing {period} for line_id: {line_id}")
-                        save_df_to_csv(line_df, f"{line_id}_{target_quarter}_line_df.csv")
+                        # save_df_to_csv(line_df, f"{line_id}_{target_quarter}_line_df.csv")
 
                         rankings[period][line_id] = dict(
                             zip(

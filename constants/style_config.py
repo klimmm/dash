@@ -1,36 +1,5 @@
 # style_config.py
 
-STYLE_CONFIG = {
-    'colors': {
-        'primary': '#8884d8',
-        'secondary': '#82ca9d',
-        'positive': '#4ade80',
-        'negative': '#f87171',
-        'grid': 'rgb(226, 232, 240)',
-        'text': {
-            'primary': 'rgb(17, 24, 39)',
-            'secondary': 'rgb(107, 114, 128)',
-            'muted': 'rgb(156, 163, 175)'
-        },
-        'border': 'rgb(226, 232, 240)'
-    },
-    'card': {
-        'base': {
-            'border-radius': '0.5rem',
-            'border': '1px solid rgb(226, 232, 240)',
-            'background-color': 'white',
-            'box-shadow': '0 1px 3px 0 rgb(0 0 0 / 0.1)',
-            'height': '100%'
-        },
-        'header': {
-            'padding': '1rem 1.5rem 0.5rem',
-            'border-bottom': 'none',
-            'background-color': 'transparent'
-        }
-    }
-}
-
-
 class StyleConstants:
     NAV = "main-nav"
     LAYOUT = "layout-wrapper"
@@ -47,7 +16,7 @@ class StyleConstants:
         "TITLES_CHART": "titles-container-chart",
         "CARD": "card-container",
         "TABS": "tabs-container",
-        "GRAPH": "graph-container"
+        "GRAPH": "graph-container",
     }
     # Market analysis
     MARKET = {
@@ -63,12 +32,16 @@ class StyleConstants:
     # Buttons
     BTN = {
         "PERIOD": "btn-custom btn-period",
+        "PERIOD_ACTIVE": "btn-custom btn-period active",
         "SIDEBAR_SHOW": "btn-custom btn-sidebar-toggle-show",
         "SIDEBAR_HIDE": "btn-custom btn-sidebar-toggle-hide",
         "TAB": "btn-custom btn-tab",
         "TABLE_TAB": "btn-custom btn-table-tab",
-        "ADD": "btn-metric-add pr-1",  # New class for add button
-        "REMOVE": "btn-metric-remove",  # New class for remove button
+        "ADD": "btn-metric-add pr-1",
+        "REMOVE": "btn-metric-remove",
+        "GROUP_CONTROL": "btn-custom btn-group-control",
+        "GROUP_CONTROL_ACTIVE": "btn-custom btn-group-control active",
+        "SECONDARY": "btn-custom btn-group-control active"
     }
     # Filters
     FILTER = {
@@ -85,16 +58,28 @@ class StyleConstants:
         "DEFAULT": "tab",
         "SELECTED": "tab-selected"
     }
-    # Utilities
+    # Flex utilities
     FLEX = {
         "START": "d-flex justify-content-start",
-        "END": "d-flex justify-content-end"
+        "END": "d-flex justify-content-end",
+        "CENTER": "d-flex align-items-center"  # Added for the align-items-center class
     }
+    # Table styles
     TABLE = {
         "TITLE": "table-title",
         "SUBTITLE": "table-subtitle mb-3",
     }
+    # General utilities
     UTILS = {
         "MB_0": "mb-0",
-        "PERIOD_TYPE": "period-type__text"
+        "PERIOD_TYPE": "period-type__text",
+        "W_100": "w-100",  # Added for width 100% utility
+        "FLEX_GROW_1": "flex-grow-1",  # Added for flex-grow-1 utility
+        "PY_0": "py-0",  # Added for padding-y-0 utility
+        "PR_1": "pr-1"   # Added for padding-right-1 utility
+    }
+    # Dropdown specific styles
+    DROPDOWN = {
+        "CONTAINER": "dash-dropdown",
+        "DYNAMIC_CONTAINER": "dynamic-dropdowns-container"
     }
