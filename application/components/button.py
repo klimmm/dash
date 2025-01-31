@@ -1,9 +1,11 @@
-from dash import html
 from typing import Dict, List, Optional, Union
+
+from dash import html
 import dash_bootstrap_components as dbc
+
+from config.components_config import BUTTON_CONFIG
 from config.logging_config import get_logger
 from constants.style_constants import StyleConstants
-from config.components_config import BUTTON_CONFIG
 
 logger = get_logger(__name__)
 

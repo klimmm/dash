@@ -1,6 +1,7 @@
-import dash_bootstrap_components as dbc
-from dash import dcc, html
 from typing import List
+
+from dash import dcc, html
+import dash_bootstrap_components as dbc
 
 from application.filters_panel import create_filters
 from application.components.lines_tree import create_lines_checklist_buttons, initial_state
@@ -9,7 +10,7 @@ from config.default_values import (
      DEFAULT_REPORTING_FORM,
      DEFAULT_NUMBER_OF_PERIODS,
      DEFAULT_NUMBER_OF_INSURERS,
-     DEFAULT_PERIOD_TYPE, 
+     DEFAULT_PERIOD_TYPE,
      DEFAULT_SHOW_MARKET_SHARE,
      DEFAULT_SHOW_CHANGES,
      DEFAULT_SPLIT_MODE
@@ -34,6 +35,7 @@ def create_stores() -> List[html.Div]:
         dcc.Store(id='number-of-periods-data-table', data=DEFAULT_NUMBER_OF_PERIODS),
         dcc.Store(id='table-split-mode', data=DEFAULT_SPLIT_MODE),
     ]
+
 
 def create_navbar() -> dbc.Navbar:
     """Create navigation bar component."""
@@ -82,7 +84,6 @@ def create_debug_footer() -> html.Div:
             )
         ], style={"display": "none"},
     )
-
 
 
 def create_app_layout():

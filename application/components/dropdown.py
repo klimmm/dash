@@ -1,5 +1,7 @@
-from dash import html, dcc
 from typing import Dict, List, Optional, Any
+
+from dash import html, dcc
+
 from constants.metrics import VALUE_METRICS_OPTIONS, METRICS_OPTIONS
 from constants.translations import translate
 from config.default_values import (
@@ -11,8 +13,8 @@ from config.default_values import (
     DEFAULT_INSURER
     )
 from constants.style_constants import StyleConstants
-from data_process.options import get_insurance_line_options
 from data_process.mappings import map_insurer
+from data_process.options import get_insurance_line_options
 
 
 def create_secondary_metric_dropdown() -> dcc.Dropdown:

@@ -17,6 +17,7 @@ INSURER_COL = 'insurer'
 SECTION_HEADER_COL = 'is_section_header'
 LINE_COL = 'linemain'
 
+
 class ColumnType(Enum):
     RANK = 'rank'
     INSURER = 'insurer'
@@ -24,13 +25,14 @@ class ColumnType(Enum):
     LINE = 'linemain'
     DEFAULT = 'default'
 
+
 def get_base_unit(metric: str) -> str:
     """Get the base unit for a metric based on its type."""
     if metric not in METRICS:
         return 'млрд руб.'
-        
+
     metric_type = METRICS[metric][2]  # Get the type (third element in tuple)
-    
+
     return {
         'value': 'млрд. руб.',
         'average_value': 'тыс. руб.',
@@ -38,6 +40,7 @@ def get_base_unit(metric: str) -> str:
         'ratio': '%'
     }.get(metric_type, 'млрд руб.')
 
+    
 def create_datatable(
     df: pd.DataFrame,
     table_selected_metric: List[str],

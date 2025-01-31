@@ -1,10 +1,11 @@
-# checklist_components.py
-
-import dash_bootstrap_components as dbc
 from typing import Dict, List
-from constants.metrics import BUSINESS_TYPE_OPTIONS
-from config.default_values import DEFAULT_BUSINESS_TYPE
+
 from dash import html
+import dash_bootstrap_components as dbc
+
+from config.default_values import DEFAULT_BUSINESS_TYPE
+from constants.metrics import BUSINESS_TYPE_OPTIONS
+
 
 class ChecklistComponent:
     """Factory for creating checklist components with consistent styling"""

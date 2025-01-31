@@ -5,6 +5,7 @@ from config.logging_config import get_logger
 
 logger = get_logger(__name__)
 
+
 class ColumnType(Enum):
     RANK = 'N'
     INSURER = 'insurer'
@@ -37,6 +38,7 @@ def get_column_type(col: str) -> ColumnType:
 
     logger.info(f"No specific type found for column {col}, returning DEFAULT")
     return ColumnType.DEFAULT
+
 
 def get_row_type(row: Dict[str, Any]) -> RowType:
     """
@@ -83,7 +85,7 @@ COLUMNS = {
         'min': '3.5rem',
         'max': '6rem',
         'align': 'right'
-    },    
+    },
     ColumnType.LINE: {
         'width': '14rem',
         'min': '14rem',
@@ -100,6 +102,7 @@ COLUMNS = {
     },
 
 }
+
 
 def get_base_style() -> Dict[str, Dict[str, Any]]:
     """Generate base table styles."""
@@ -124,6 +127,7 @@ def get_base_style() -> Dict[str, Dict[str, Any]]:
             'color': '#212529'
         }
     }
+
 
 def get_css_rules(df: pd.DataFrame) -> Dict[str, str]:
     """Generate all CSS rules including column width and height constraints."""
@@ -182,7 +186,6 @@ def get_css_rules(df: pd.DataFrame) -> Dict[str, str]:
     return {**base_rules}
 
 
-
 def generate_styles(df: pd.DataFrame) -> Dict[str, List[Dict[str, Any]]]:
     """Generate optimized conditional styles with inline values."""
     styles = {'cell': [], 'data': [], 'header': []}
@@ -207,7 +210,7 @@ def generate_styles(df: pd.DataFrame) -> Dict[str, List[Dict[str, Any]]]:
                 *[{'if': {'column_id': col, 'filter_query': f'{{{col}}} contains "(-{i}"'},
                   'backgroundImage': 'linear-gradient(90deg, transparent 0%, transparent calc(50% - 1ch), rgba(255, 0, 0, 0.15) calc(50% + 1.5ch), rgba(255, 0, 0, 0.15) calc(50% + 2.5ch), transparent calc(50% + 3ch), transparent 100%)'} for i in range(1, 10)]
             ])
-        
+
         elif col_type == ColumnType.CHANGE:
             styles['data'].extend([
                 {'if': {'column_id': col, 'filter_query': f'{{{col}}} {op} 0'},
@@ -248,13 +251,12 @@ def generate_styles(df: pd.DataFrame) -> Dict[str, List[Dict[str, Any]]]:
                     'verticalAlign': 'bottom' if idx == 0 else 'bottom',
                     'paddingLeft': '15px' if idx == 0 else '0px',
                     'marginBottom': '-10px' if idx == 1 else '3px',
-                    'paddingBottom': '-10px' if idx == 1 else '6px',
+                    'paddingBottom': '6px' if idx == 0 else '0px',
                     'paddingTop': '3px' if idx == 1 else '3px',
                     'min-height': 'auto',  # Changed from fixed height
                     'height': 'auto',      # Allow content to determine height
                     'whiteSpace': 'normal',  # Allow text wrapping
                     'overflow': 'visible',   # Show overflow content
-                    'paddingBottom': '6px' if idx == 0 else '0px',
                     'marginLeft': '6px' if idx == 0 else '0px',
                     'borderTop': '0.1rem solid #D3D3D3' if idx == 1 else '0px',
                     'borderBottom': '0.1rem solid #D3D3D3' if idx == 0 or idx == 2 else '0px',
@@ -272,7 +274,6 @@ def generate_styles(df: pd.DataFrame) -> Dict[str, List[Dict[str, Any]]]:
                     'if': {'column_id': col, 'header_index': idx},
                     **base_style,
                     'borderTop': '0.1rem solid #D3D3D3 !importa' if idx == 1 else '0px',
-                    
                     'borderBottom': '0.1rem solid #D3D3D3' if idx == 2 or idx == 0 else '0px',
                     'fontWeight': 'bold' if idx == 0 else 'normal',
                     'paddingBottom': '6px' if idx == 0 else '0px',

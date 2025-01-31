@@ -1,6 +1,8 @@
+from typing import List
+
 import numpy as np
 import pandas as pd
-from typing import List
+
 from config.logging_config import get_logger
 from data_process.io import save_df_to_csv
 
@@ -67,14 +69,14 @@ def calculate_growth(
             num_periods_growth = num_periods_selected - 1
 
             recent_periods = (df_sorted['year_quarter']
-                            .drop_duplicates()
-                            .sort_values(ascending=False)
-                            .iloc[:num_periods_selected])
+                              .drop_duplicates()
+                              .sort_values(ascending=False)
+                              .iloc[:num_periods_selected])
 
             recent_growth_periods = (df_sorted['year_quarter']
-                                   .drop_duplicates()
-                                   .sort_values(ascending=False)
-                                   .iloc[:max(num_periods_growth, 1)])
+                                     .drop_duplicates()
+                                     .sort_values(ascending=False)
+                                     .iloc[:max(num_periods_growth, 1)])
 
             df_filtered = df_sorted[df_sorted['year_quarter'].isin(recent_periods)].copy()
             growth_filtered = growth_df[growth_df['year_quarter'].isin(recent_growth_periods)].copy()
@@ -84,11 +86,10 @@ def calculate_growth(
             result = pd.concat([df_sorted, growth_df], ignore_index=True)
 
         save_df_to_csv(result, "result_growth_before_sort.csv")
-        
+
         result.sort_values(by=group_cols + ['year_quarter'], inplace=True)
         save_df_to_csv(result, "result_growth_after_sort.csv")
 
-        
         result.reset_index(drop=True, inplace=True)
 
         return result

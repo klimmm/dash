@@ -291,7 +291,7 @@ def get_metrics_options(form_ids=None, metric_types=None, valid_metrics=None, me
             if (form_ids is None or any(form_id in metric_info[3] for form_id in form_ids))
             and (metric_types is None or metric_info[2] in metric_types)
         ]
-    
+
     return [
         {'label': metrics_dict[metric][4], 'value': metric}
         for metric in valid_metrics
@@ -308,35 +308,35 @@ valid_metrics = [
     'inward_losses',
     'ceded_premiums',
     'ceded_losses',
-    #'new_sums',
-    #'sums_end',
+    # 'new_sums',
+    # 'sums_end',
     'new_contracts',
     'contracts_end',
     'premiums_interm',
     'commissions_interm',
-    #'claims_settled',
-    #'claims_reported',
+    # 'claims_settled',
+    # 'claims_reported',
     'total_premiums',
     'total_losses',
-    #'net_balance',
+    # 'net_balance',
     'net_premiums',
     'net_losses',
-    #'gross_result',
-    #'net_result',
-    #'average_sum_insured',
-    #'average_new_sum_insured',
+    # 'gross_result',
+    # 'net_result',
+    # 'average_sum_insured',
+    # 'average_new_sum_insured',
     'average_new_premium',
     'average_loss',
     'average_rate',
     'ceded_premiums_ratio',
     'ceded_losses_ratio',
-    #'ceded_losses_to_ceded_premiums_ratio',
-    #'direct_loss_ratio',
-    #'inward_loss_ratio',
-    #'gross_loss_ratio',
-    #'net_loss_ratio',
-    #'effect_on_loss_ratio',
-    #'ceded_ratio_diff',
+    # 'ceded_losses_to_ceded_premiums_ratio',
+    # 'direct_loss_ratio',
+    # 'inward_loss_ratio',
+    # 'gross_loss_ratio',
+    # 'net_loss_ratio',
+    # 'effect_on_loss_ratio',
+    # 'ceded_ratio_diff',
     'premiums_interm_ratio',
     'commissions_rate'
 ]

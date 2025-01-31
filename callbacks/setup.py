@@ -8,6 +8,7 @@ from .prepare_data_callbacks import setup_prepare_data
 from .process_data_callbacks import setup_process_data
 from .ui_callbacks import setup_ui
 
+
 def setup_all_callbacks(app, lines_tree_162, lines_tree_158, df_162, df_158):
     """
     Centralized function to set up all callbacks in the application.

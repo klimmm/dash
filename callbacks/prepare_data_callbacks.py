@@ -13,7 +13,6 @@ from data_process.options import get_year_quarter_options, get_insurer_options
 from data_process.top_n import add_top_n_rows
 from data_process.io import save_df_to_csv
 
-
 logger = get_logger(__name__)
 
 

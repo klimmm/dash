@@ -1,4 +1,4 @@
-from typing import List, Tuple, Optional, Dict, Literal
+from typing import List, Tuple, Optional, Dict
 
 from dash import dash_table
 import pandas as pd

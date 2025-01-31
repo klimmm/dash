@@ -1,6 +1,8 @@
-import dash_bootstrap_components as dbc
-from dash import html
 from typing import Dict
+
+from dash import html
+import dash_bootstrap_components as dbc
+
 from application.components.dropdown import (
     create_dynamic_insurer_container_for_layout,
     create_dynamic_primary_metric_container_for_layout,
@@ -11,7 +13,7 @@ from application.components.dropdown import (
 from application.components.button import (
     create_reporting_form_buttons,
     create_top_insurers_buttons,
-    create_period_type_buttons, 
+    create_period_type_buttons,
     create_periods_data_table_buttons,
     create_metric_toggles_buttons,
     create_table_split_buttons
@@ -25,8 +27,7 @@ FILTERS = {
          'component': create_end_quarter_dropdown},
         {'label': 'Бизнес:', 'label_width': 3,
          'component': create_business_type_checklist,
-         'component_className': 'd-flex justify-content-start'
-        },
+         'component_className': 'd-flex justify-content-start'},
         {'label': 'Доп. показатель:', 'label_width': 3,
          'component': create_secondary_metric_dropdown}
     ],
@@ -44,23 +45,16 @@ FILTERS = {
          'component': create_dynamic_primary_metric_container_for_layout},
         {'label': ' ', 'label_width': 12,
          'component': create_top_insurers_buttons,
-         'component_className': 'd-flex justify-content-end'
-         
-        },
+         'component_className': 'd-flex justify-content-end'},
         {'label': ' ', 'label_width': 0,
          'component': create_periods_data_table_buttons,
-         'component_className': 'd-flex justify-content-center'
-        },
+         'component_className': 'd-flex justify-content-center'},
         {'label': ' ', 'label_width': 0,
          'component': create_metric_toggles_buttons,
-         'component_className': 'd-flex justify-content-center'
-        },
+         'component_className': 'd-flex justify-content-center'},
         {'label': 'Показать:', 'label_width': 4,
          'component': create_table_split_buttons,
-         'component_className': 'd-flex justify-content-center'
-        }        
-
-        
+         'component_className': 'd-flex justify-content-center'}
     ]
 }
 
@@ -169,22 +163,19 @@ def create_filters() -> html.Div:
             xs=4, sm=4, md=4, lg=4,
             className=StyleConstants.FILTER_PANEL["THIRD_COL"]
         ),
-        
+
         dbc.Col(
             filters['expanded'][7], 
             xs=4, sm=4, md=4, lg=4,
             className=StyleConstants.FILTER_PANEL["THIRD_COL"]
         ),
-        
+
         dbc.Col(
             filters['expanded'][5], 
             xs=4, sm=4, md=4, lg=4,
             className=StyleConstants.FILTER_PANEL["THIRD_COL"]
         )
 
-
-
-        
     ], className=f'{StyleConstants.FILTER_PANEL["ROW"]} {StyleConstants.SPACING["MT_3"]}')
 
     collapsed_section = html.Div(
@@ -192,7 +183,6 @@ def create_filters() -> html.Div:
         id='sidebar-col',
         className=StyleConstants.SIDEBAR_COLLAPSED
     )
-
 
     expanded_section = [period_indicator, row3, row4, row5, row6, row7]
 

@@ -1,15 +1,12 @@
 from typing import Dict, List
 
-import dash
 from dash import Input, Output, State, html
 import pandas as pd
 
 from config.callback_logging import log_callback
-from config.logging_config import get_logger, memory_monitor
+from config.logging_config import get_logger
 from data_process.insurer_filters import filter_by_insurer
 from data_process.table.data import get_data_table
-from data_process.io import save_df_to_csv
-
 
 logger = get_logger(__name__)
 
@@ -26,11 +23,11 @@ empty_chart = {
 
 def create_data_section(title: str, table_data: tuple) -> html.Div:
     """Create a section with title and table data.
-    
+
     Args:
         title: Section title (line or insurer name)
         table_data: Tuple containing (table, title, subtitle) from get_data_table
-    
+
     Returns:
         html.Div containing the formatted section
     """
@@ -39,6 +36,7 @@ def create_data_section(title: str, table_data: tuple) -> html.Div:
         html.H4(table_data[2], className="table-subtitle", style={"display": "none"}),
         table_data[0]
     ], className="data-section mb-8")
+
 
 def setup_ui(app):
     @app.callback(
@@ -68,30 +66,29 @@ def setup_ui(app):
         ) -> List:
             """Update tables based on processed data, splitting by either line or insurer."""
             logger.info("Starting process_ui callback")
-            
+
             try:
                 # Handle empty processed data
                 if not processed_data['df']:
                     logger.debug("Empty processed data received")
                     return [empty_table]
-                
+
                 df = pd.DataFrame.from_records(processed_data['df'])
-                
+
                 if df.empty:
                     logger.debug("Empty DataFrame after conversion")
                     return [empty_table]
-                    
+
                 # Convert year_quarter
                 df['year_quarter'] = pd.to_datetime(df['year_quarter'])
-                
+
                 # Process insurers data
                 df = filter_by_insurer(df, filter_state['selected_metrics'], 
                                      selected_insurers, top_n_list)
 
-                
                 # Determine split column and order based on split mode
                 split_column = 'linemain' if split_mode == 'line' else 'insurer'
-                
+
                 # Get the order from selected values
                 if split_mode == 'line':
                     # Use the order from selected_lines
@@ -100,14 +97,14 @@ def setup_ui(app):
                 else:
                     # Use the order from selected_insurers (already a list)
                     ordered_values = [ins for ins in df[split_column].unique()]
-                    
+
                 logger.debug(f"ordered_values {ordered_values} tables split by {split_mode}")
                 # Create tables for each value in the specified order
                 all_tables = []
                 for value in ordered_values:
                     # Filter data for current value
                     df_filtered = df[df[split_column] == value]
-                    
+
                     # Get table data
                     table_data = get_data_table(
                         df=df_filtered,
@@ -121,20 +118,20 @@ def setup_ui(app):
                         prev_ranks=processed_data['prev_ranks'],
                         current_ranks=processed_data['current_ranks'],
                     )
-                    
+
                     # Create section using generic function
                     section = create_data_section(value, table_data)
                     all_tables.append(section)
-                    
+
                 logger.debug(f"Generated {len(ordered_values)} tables split by {split_mode}")
                 return all_tables
-                
+
             except Exception as e:
                 logger.error(f"Error in process_ui: {str(e)}", exc_info=True)
                 return [html.Div([
                     html.H3("Error"),
                     html.P(str(e))
                 ], className="error-container")]
-                
+
             finally:
                 logger.info("Completed process_ui callback")

@@ -1,12 +1,17 @@
-import pandas as pd
 from typing import List, Optional, Set
-from constants.metrics import METRICS
+
+import pandas as pd
+
 from config.logging_config import get_logger
+from constants.metrics import METRICS
 
 logger = get_logger(__name__)
 
 
-def get_required_metrics(selected_metrics: List[str], business_type_selection: Optional[List[str]] = None) -> List[str]:
+def get_required_metrics(
+    selected_metrics: List[str],
+    business_type_selection: Optional[List[str]] = None
+) -> List[str]:
     """
     Determine all required metrics based on selected metrics and their dependencies.
     Returns them with selected metrics first, followed by their dependencies grouped by parent metric.

@@ -5,9 +5,9 @@ import dash
 import dash_bootstrap_components as dbc
 
 from application import create_app_layout, lines_tree_162, lines_tree_158
+from callbacks.setup import setup_all_callbacks
 from config import setup_logging, setup_callback_logging, get_logger
 from data_process import load_insurance_dataframes
-from callbacks.setup import setup_all_callbacks
 
 logger = get_logger(__name__)
 setup_logging(console_level=logging.DEBUG, file_level=logging.DEBUG)
@@ -76,7 +76,9 @@ def main():
     try:
         port = int(os.environ.get("PORT", 8051))
         print(f"Starting server on port {port}...")
-        app.run_server(debug=True, port=port, host='0.0.0.0', dev_tools_hot_reload=False)
+        app.run_server(debug=True,
+                       port=port, host='0.0.0.0',
+                       dev_tools_hot_reload=False)
     except Exception as e:
         print(f"Error during startup: {e}")
         raise
