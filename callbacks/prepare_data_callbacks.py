@@ -60,7 +60,7 @@ def setup_prepare_data(app: dash.Dash, df_162, df_158):
             checklist_component, business_type_selection = get_checklist_config(selected_metrics, reporting_form, current_business_type_selection)
             required_metrics = get_required_metrics(selected_metrics, business_type_selection)
 
-            logger.warning(f"lines {lines}")
+            logger.debug(f"lines {lines}")
 
             df = (df[df['linemain'].isin(lines) & df['metric'].isin(required_metrics)]
                   .pipe(filter_by_period, end_quarter, period_type, num_periods_selected)

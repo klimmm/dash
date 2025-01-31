@@ -72,13 +72,13 @@ def setup_ui(app):
             try:
                 # Handle empty processed data
                 if not processed_data['df']:
-                    logger.warning("Empty processed data received")
+                    logger.debug("Empty processed data received")
                     return [empty_table]
                 
                 df = pd.DataFrame.from_records(processed_data['df'])
                 
                 if df.empty:
-                    logger.warning("Empty DataFrame after conversion")
+                    logger.debug("Empty DataFrame after conversion")
                     return [empty_table]
                     
                 # Convert year_quarter
@@ -101,7 +101,7 @@ def setup_ui(app):
                     # Use the order from selected_insurers (already a list)
                     ordered_values = [ins for ins in df[split_column].unique()]
                     
-                logger.warning(f"ordered_values {ordered_values} tables split by {split_mode}")
+                logger.debug(f"ordered_values {ordered_values} tables split by {split_mode}")
                 # Create tables for each value in the specified order
                 all_tables = []
                 for value in ordered_values:
@@ -126,7 +126,7 @@ def setup_ui(app):
                     section = create_data_section(value, table_data)
                     all_tables.append(section)
                     
-                logger.warning(f"Generated {len(ordered_values)} tables split by {split_mode}")
+                logger.debug(f"Generated {len(ordered_values)} tables split by {split_mode}")
                 return all_tables
                 
             except Exception as e:

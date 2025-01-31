@@ -142,7 +142,7 @@ def process_group_data(
 
         # Rest of your existing code...
         save_df_to_csv(df, "transform_before_pivot_df.csv")
-        # Create a copy of the DataFrame first to avoid the SettingWithCopyWarning
+        # Create a copy of the DataFrame first to avoid the SettingWithCopydebug
         #df_copy = df.copy()
 
         pivot_df = df.pivot_table(
@@ -273,13 +273,13 @@ def transform_table_data(
 
                     # Combine sorted regular rows with summary rows for this group
                     group_df = pd.concat([regular_rows, summary_rows])
-                    logger.warning(f"Sorting group {group_df}")
+                    logger.debug(f"Sorting group {group_df}")
 
                 transformed_dfs.append(group_df)
 
         # Combine results
         result_df = pd.concat(transformed_dfs, ignore_index=True) if transformed_dfs else pd.DataFrame()
-        logger.warning(f"result_df {result_df}")
+        logger.debug(f"result_df {result_df}")
         save_df_to_csv(result_df, "df_transform_after_concat.csv")
         # Drop appropriate column based on grouping type
         if not result_df.empty:

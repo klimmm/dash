@@ -42,11 +42,11 @@ def setup_line_selection(app: dash.Dash, insurance_lines_tree_162, insurance_lin
                     return current_state
 
                 selected_line = current_state[dropdown_index]
-                logger.warning(f"Detailizing line: {selected_line}")
+                logger.debug(f"Detailizing line: {selected_line}")
 
                 detailed = insurance_lines_tree.handle_parent_child_selections(
                     [selected_line], detailize=True)
-                logger.warning(f"detailed: {detailed}")
+                logger.debug(f"detailed: {detailed}")
 
                 if detailed != [selected_line]:
                     logger.info(f"Detailed selection changed for index {dropdown_index}")
@@ -74,9 +74,9 @@ def setup_line_selection(app: dash.Dash, insurance_lines_tree_162, insurance_lin
                                   current_state: List[str], trigger_id: str,
                                   insurance_lines_tree) -> List[str]:
         """Process checkbox selection changes."""
-        logger.warning("Processing checkbox selection")
-        logger.warning(f"Checkbox values: {checkbox_values}")
-        logger.warning(f"Current state: {current_state}")
+        logger.debug("Processing checkbox selection")
+        logger.debug(f"Checkbox values: {checkbox_values}")
+        logger.debug(f"Current state: {current_state}")
 
         try:
             if not any(checkbox_values):
@@ -88,18 +88,18 @@ def setup_line_selection(app: dash.Dash, insurance_lines_tree_162, insurance_lin
                 for value, id_dict in zip(checkbox_values, checkbox_ids)
                 if value
             ]
-            logger.warning(f"New selection: {new_selected}")
+            logger.debug(f"New selection: {new_selected}")
 
             trigger_line = json.loads(trigger_id).get('index')
             if trigger_line not in new_selected and trigger_line not in current_state:
-                logger.warning(f"Invalid trigger line state: {trigger_line}")
+                logger.debug(f"Invalid trigger line state: {trigger_line}")
 
                 return current_state
 
             result = insurance_lines_tree.handle_parent_child_selections(
                 new_selected, [trigger_line], detailize=False)
 
-            logger.warning(f"Checkbox selection complete. Results: {result}")
+            logger.debug(f"Checkbox selection complete. Results: {result}")
             return result
 
         except Exception as e:
@@ -110,7 +110,7 @@ def setup_line_selection(app: dash.Dash, insurance_lines_tree_162, insurance_lin
                                  insurance_lines_tree) -> List[str]:
         """Process dynamic insurance line selection."""
         logger.info("Processing dynamic selection")
-        logger.warning(f"Insurance line: {insurance_line}")
+        logger.debug(f"Insurance line: {insurance_line}")
         logger.debug(f"Current state: {current_state}")
 
         try:
@@ -126,12 +126,12 @@ def setup_line_selection(app: dash.Dash, insurance_lines_tree_162, insurance_lin
                 return DEFAULT_CHECKED_LINES
 
             trigger_line = list(set(new_selected) - set(current_state))
-            logger.warning(f"new_selected: {new_selected}")
+            logger.debug(f"new_selected: {new_selected}")
 
             result = insurance_lines_tree.handle_parent_child_selections(
                 new_selected, trigger_line, detailize=False)
 
-            logger.warning(f"Dynamic selection complete. Results: {result}")
+            logger.debug(f"Dynamic selection complete. Results: {result}")
             return result
 
         except Exception as e:
@@ -318,12 +318,12 @@ def setup_line_selection(app: dash.Dash, insurance_lines_tree_162, insurance_lin
             initial_dropdowns = existing_dropdowns
             trigger = ctx.triggered[0]
             trigger_id = trigger['prop_id'].rsplit('.', 1)[0]
-            logger.warning(f"insurance_line : {insurance_line}")
+            logger.debug(f"insurance_line : {insurance_line}")
 
 
             
-            logger.warning(f"Trigger prop_id: {trigger['prop_id']}")
-            logger.warning(f"Trigger id : {trigger['prop_id'].rsplit('.', 1)[0]}")
+            logger.debug(f"Trigger prop_id: {trigger['prop_id']}")
+            logger.debug(f"Trigger id : {trigger['prop_id'].rsplit('.', 1)[0]}")
             # Initialize state
             current_state = current_state or DEFAULT_CHECKED_LINES
 
@@ -344,7 +344,7 @@ def setup_line_selection(app: dash.Dash, insurance_lines_tree_162, insurance_lin
             else:
                 final_selected = current_state
 
-            logger.warning(f"final_selected : {final_selected}")
+            logger.debug(f"final_selected : {final_selected}")
             # Ensure valid selection
             final_selected = final_selected or DEFAULT_CHECKED_LINES
             insurance_line = [v for v in (final_selected or []) if v is not None]
@@ -380,12 +380,12 @@ def setup_line_selection(app: dash.Dash, insurance_lines_tree_162, insurance_lin
             # Update dropdowns and get valid selections
             updated_dropdowns, valid_selections = _update_dropdowns(
                 existing_dropdowns, insurance_line, insurance_line_options, insurance_line_options_extended)
-            logger.warning(f"insurance_line{valid_selections}")  # Use valid selections here
+            logger.debug(f"insurance_line{valid_selections}")  # Use valid selections here
             logger.debug(f"current_state{current_state}")  # Use valid selections here
             logger.debug(f"updated_dropdowns{updated_dropdowns}")  # Use valid selections here
             logger.debug(f"initial_dropdowns{initial_dropdowns}")  # Use valid selections here
             '''if valid_selections == current_state:
-                logger.warning(f"initial_dropdowns=current {initial_dropdowns == existing_dropdowns}")  
+                logger.debug(f"initial_dropdowns=current {initial_dropdowns == existing_dropdowns}")  
                 if initial_dropdowns == existing_dropdowns:
 
                     return dash.no_update, dash.no_update

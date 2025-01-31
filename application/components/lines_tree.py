@@ -136,19 +136,19 @@ class InsuranceLinesTree:
                 new_selected = selected_lines.copy()  # Create a copy of the list
                 for category in trigger_line:
                     descendants = self.get_descendants(category)
-                    logger.warning(f"descendants {descendants}")
+                    logger.debug(f"descendants {descendants}")
                     # Remove descendants using list comprehension
                     new_selected = [line for line in new_selected if line not in descendants]
                     
                     ancestors = self.get_ancestors(category)
-                    logger.warning(f"ancestors {ancestors}")
+                    logger.debug(f"ancestors {ancestors}")
                     # Remove ancestors using list comprehension
                     new_selected = [line for line in new_selected if line not in ancestors]
             else:
                 new_selected = []
                 for category in selected_lines:
                     children = self.get_children(category)
-                    logger.warning(f"children {children}")
+                    logger.debug(f"children {children}")
                     if children:
                         # Extend list with children while avoiding duplicates
                         for child in children:
@@ -159,7 +159,7 @@ class InsuranceLinesTree:
                         if category not in new_selected:
                             new_selected.append(category)
 
-            logger.warning(f"new_selected {new_selected}")
+            logger.debug(f"new_selected {new_selected}")
             return new_selected
 
     def create_tree(self, expansion_state: Dict[str, bool], selected: Set[str]) -> html.Div:

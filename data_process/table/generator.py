@@ -246,7 +246,7 @@ def generate_styles(df: pd.DataFrame) -> Dict[str, List[Dict[str, Any]]]:
                     **base_style,
                     'textAlign': 'center' if idx == 1 and col_type == ColumnType.RANK else 'left',
                     'verticalAlign': 'bottom' if idx == 0 else 'bottom',
-                    'paddingLeft': '15px' if idx == 0 else '3px',
+                    'paddingLeft': '15px' if idx == 0 else '0px',
                     'marginBottom': '-10px' if idx == 1 else '3px',
                     'paddingBottom': '-10px' if idx == 1 else '6px',
                     'paddingTop': '3px' if idx == 1 else '3px',
@@ -255,7 +255,7 @@ def generate_styles(df: pd.DataFrame) -> Dict[str, List[Dict[str, Any]]]:
                     'whiteSpace': 'normal',  # Allow text wrapping
                     'overflow': 'visible',   # Show overflow content
                     'paddingBottom': '6px' if idx == 0 else '0px',
-                    'marginLeft': '6px' if idx == 0 else '3px',
+                    'marginLeft': '6px' if idx == 0 else '0px',
                     'borderTop': '0.1rem solid #D3D3D3' if idx == 1 else '0px',
                     'borderBottom': '0.1rem solid #D3D3D3' if idx == 0 or idx == 2 else '0px',
                     'borderLeft': '0.1rem solid #D3D3D3' if idx == 2 or idx == 1 else '0px',

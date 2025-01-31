@@ -31,7 +31,7 @@ def format_period(quarter_str: str, period_type: str = '', comparison: bool = Fa
     logger.debug(f"Formatting period: quarter_str={quarter_str}, type={period_type}, comparison={comparison}")
     
     if not quarter_str or len(quarter_str) != 6:
-        logger.warning(f"Invalid quarter string format: {quarter_str}")
+        logger.debug(f"Invalid quarter string format: {quarter_str}")
         return quarter_str
     
     try:
@@ -83,7 +83,7 @@ def get_comparison_quarter(current_quarter: str, columns: List[str]) -> Optional
                 logger.info(f"Found comparison quarter: {candidate}")
                 return candidate
                 
-        logger.warning(f"No comparison quarter found for {current_quarter}")
+        logger.debug(f"No comparison quarter found for {current_quarter}")
         return None
         
     except Exception as e:

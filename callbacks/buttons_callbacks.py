@@ -159,7 +159,7 @@ def setup_multi_choice_buttons(app: dash.Dash) -> None:
 
             return (*button_classes, states['market-share'], states['qtoq'])
 
-        logger.warning("Button index not found in triggered context")
+        logger.debug("Button index not found in triggered context")
         return [dash.no_update] * 4
 
     @app.callback(
@@ -179,7 +179,7 @@ def setup_multi_choice_buttons(app: dash.Dash) -> None:
         current_state = args[-1] if args[-1] is not None else DEFAULT_NUMBER_OF_INSURERS
         config = BUTTON_CONFIG['top-insurers']
         ctx = dash.callback_context
-        logger.warning(f" current_state {current_state}")
+        logger.debug(f" current_state {current_state}")
 
         # Convert current_state values to strings to match button['value']
         current_state_str = [str(val) for val in current_state]
