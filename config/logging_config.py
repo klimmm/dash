@@ -105,6 +105,7 @@ def setup_logging(console_level=logging.DEBUG,
         'data_process.insurer_filters': logging.WARNING,
         'data_process.options': logging.WARNING,
         'data_process.table.data': logging.WARNING,
+        'callbacks.buttons_callbacks': logging.WARNING,
         'data_process': logging.WARNING,
         'fsevents': fsevents_level,
     }
