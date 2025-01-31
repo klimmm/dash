@@ -91,8 +91,7 @@ def create_app_layout():
         return dbc.Container([
             *create_stores(),
             create_navbar(),
-            html.Div(id="dummy-output", style={"display": "none"}),
-            html.Div(id="dummy-trigger", style={"display": "none"}),
+
             html.Div(id="tree-container", className=StyleConstants.CONTAINER["TREE"]),
             dbc.CardBody([
                 dbc.Row([
@@ -118,20 +117,6 @@ def create_app_layout():
                     ], md=12),
                 ])
             ], className=StyleConstants.LAYOUT),
-            html.Div([
-                html.Div([
-                    html.H4(id="table-title-chart", className=StyleConstants.TABLE["TITLE"], 
-                           style={"display": "none"}),
-                    html.H4(id="table-subtitle-chart", className=StyleConstants.TABLE["SUBTITLE"], 
-                           style={"display": "none"})
-                ], className=StyleConstants.CONTAINER["TITLES_CHART"], style={"display": "none"}),
-                html.Div([
-                    dcc.Graph(
-                        id='graph',
-                        style={'height': '100%', 'width': '100%'}
-                    ),
-                ], className=StyleConstants.CONTAINER["GRAPH"])
-            ], id="chart-container", className=StyleConstants.CONTAINER["CHART"], style={"display": "none"}),
             create_debug_footer()
         ], fluid=True)
     except Exception as e:

@@ -9,6 +9,9 @@ from data_process.io import save_df_to_csv
 from data_process.mappings import map_line
 from .config import create_datatable
 from .transformers import transform_table_data
+from .sort_lines import sort_and_indent_df
+from config.main_config import LINES_162_DICTIONARY, LINES_158_DICTIONARY
+
 
 logger = get_logger(__name__)
 
@@ -41,6 +44,14 @@ def get_data_table(
     )
     save_df_to_csv(table_data, "df_after_pivot.csv")
 
+    if split_mode == 'insurer':
+
+        with open(LINES_162_DICTIONARY, 'r', encoding='utf-8') as file:
+            json_str = file.read()
+        logger.debug(f" line uniquw {table_data['linemain'].unique()} ")
+        table_data = sort_and_indent_df(table_data, json_str)
+
+    save_df_to_csv(table_data, "df_after_pivot_aftersort.csv")
     datatable = create_datatable(
         table_data,
         table_selected_metric,

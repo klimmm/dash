@@ -1,5 +1,7 @@
 import pandas as pd
+
 from config.logging_config import get_logger
+from data_process.io import save_df_to_csv
 
 logger = get_logger(__name__)
 
@@ -78,7 +80,7 @@ def filter_by_num_periods(df: pd.DataFrame, period_type: str, num_periods_select
         num_periods_available = len(quarters.unique())
         num_periods_to_keep = min(num_periods_selected, num_periods_available - 1) + 1
         logger.debug(f"num_periods_available {num_periods_available}")
-        logger.debug(f"num_periods_to_keep {num_periods_to_keep}")
+        logger.debug(f"num_periods_to_sortkeep {num_periods_to_keep}")
         logger.debug(f"periods before filter {set(sorted(df['year_quarter'].tolist()))}")
         df = df[df['year_quarter'].isin(pd.Series(quarters.unique()).nlargest(num_periods_to_keep))]
 
@@ -105,6 +107,9 @@ def filter_by_num_periods(df: pd.DataFrame, period_type: str, num_periods_select
 
 
 def filter_by_period(df: pd.DataFrame, end_quarter: str, period_type: str, num_periods_selected: int):
+
+    save_df_to_csv(df, "before_filter_by_period.csv")
+
     df = filter_by_end_quarter(df, end_quarter)
     logger.debug(f"period_type {period_type}")
     logger.debug(f"num_periods_selected {num_periods_selected}")
@@ -116,6 +121,9 @@ def filter_by_period(df: pd.DataFrame, end_quarter: str, period_type: str, num_p
     logger.debug(f"periods after earliest date {set(sorted(df['year_quarter'].tolist()))}")
     df, num_periods_available = filter_by_num_periods(df, period_type, num_periods_selected)
     logger.debug(f"periods after filter_by_num_periods_selected {set(sorted(df['year_quarter'].tolist()))}")
+
+    save_df_to_csv(df, "after_filter_by_period.csv")
+
     return df
 
 

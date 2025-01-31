@@ -1,93 +1,91 @@
 from typing import List, Optional, Dict, Literal
-
 import numpy as np
 import pandas as pd
-
 from config.logging_config import get_logger
 from data_process.mappings import map_line, map_insurer
 from data_process.io import save_df_to_csv
 
 logger = get_logger(__name__)
 
+# Constants
 PLACE_COL = 'N'
 INSURER_COL = 'insurer'
 LINE_COL = 'linemain'
 SECTION_HEADER_COL = 'is_section_header'
 
-
 def format_summary_rows(df: pd.DataFrame) -> pd.DataFrame:
-    """Process summary data rows."""
+    """Process summary data rows with sorting logic for totals and top-N entries."""
+    logger.debug("Processing summary rows")
     if df.empty:
         return df
 
-    df = df.sort_values(
-        by=INSURER_COL,
-        key=lambda x: pd.Series([
-            (2 if ins.lower().startswith('total') else
-             1 if ins.lower().startswith('top-') else 0,
-             int(ins.split('-')[1]) if ins.lower().startswith('top-') else 0)
-            for ins in x
-        ])
-    )
+    # Simplified sort key function
+    def get_sort_priority(ins: str) -> tuple:
+        ins_lower = ins.lower()
+        if ins_lower.startswith('total'): return (2, 0)
+        if ins_lower.startswith('top-'):
+            try:
+                return (1, int(ins.split('-')[1]))
+            except (IndexError, ValueError):
+                logger.debug(f"Invalid top-N format: {ins}")
+                return (1, 0)
+        return (0, 0)
 
+    df = df.sort_values(
+        by=INSURER_COL, 
+        key=lambda x: pd.Series([get_sort_priority(ins) for ins in x])
+    )
+    
+    # Initialize new columns efficiently
     df.insert(0, PLACE_COL, np.nan)
     df[SECTION_HEADER_COL] = False
+    
+    logger.debug(f"Processed {len(df)} summary rows")
     return df.replace(0, '-').fillna('-')
 
+def get_rank_change(current: int, previous: Optional[int]) -> str:
+    """Calculate and format rank change."""
+    if previous is None and current is None:
+        return f"-"
+    if previous is None:
+        return str(current)
+    diff = previous - current
+    if diff == 0:
+        return f"{current} (-)"
+    return f"{current} ({'+' if diff > 0 else ''}{diff})"
 
 def format_ranking_column(
     df: pd.DataFrame,
-    prev_ranks: Optional[Dict[str, Dict[str, int]]] = None,
-    current_ranks: Optional[Dict[str, Dict[str, int]]] = None,
+    prev_ranks: Optional[Dict] = None,
+    current_ranks: Optional[Dict] = None,
     split_mode: str = 'line'
 ) -> pd.DataFrame:
     """Process insurance company rankings and format rank changes."""
-    if df.empty:
+    logger.info(f"Formatting ranking column: split_mode={split_mode}, rows={len(df)}")
+    
+    if df.empty or not current_ranks:
+        df.insert(0, PLACE_COL, '')
         return df
 
     result_df = df.copy()
+    result_df.insert(0, PLACE_COL, '')
 
-    if not current_ranks:
-        result_df.insert(0, PLACE_COL, '')
-        return result_df
-
-    def get_current_rank(row):
+    def get_rank_info(row):
         if split_mode == 'line':
-            return current_ranks.get(row['insurer'], -1)
-        return current_ranks.get(row['linemain'], {}).get(row['insurer'], -1)
+            insurer = row[INSURER_COL]
+            curr = current_ranks.get(insurer)
+            prev = prev_ranks.get(insurer) if prev_ranks else None
+        else:  # split_mode == 'insurer'
+            line, insurer = row[LINE_COL], row[INSURER_COL]
+            line_ranks = current_ranks.get(line.lower(), {})
+            curr = line_ranks.get(insurer)
+            prev = prev_ranks.get(line.lower(), {}).get(insurer) if prev_ranks else None
+        
+        return get_rank_change(curr, prev) if curr is not None else '-'  # Changed to '-'
 
-    def format_rank_change(row, current_rank):
-        if current_rank == -1:
-            return ''
-
-        if split_mode == 'line':
-            previous = prev_ranks.get(row['insurer']) if prev_ranks else None
-        else:
-            line_prev_ranks = prev_ranks.get(row['linemain'], {}) if prev_ranks else {}
-            previous = line_prev_ranks.get(row['insurer'])
-
-        if previous is None:
-            return str(current_rank)
-
-        diff = previous - current_rank
-        change = '-' if diff == 0 else f"+{diff}" if diff > 0 else str(diff)
-        return f"{current_rank} ({change})"
-
-    current_ranks_list = result_df.apply(get_current_rank, axis=1)
-    result_df.insert(0, PLACE_COL, current_ranks_list)
-
-    if prev_ranks:
-        result_df[PLACE_COL] = result_df.apply(
-            lambda row: format_rank_change(row, int(row[PLACE_COL])), 
-            axis=1
-        )
-    else:
-        result_df[PLACE_COL] = result_df[PLACE_COL].apply(
-            lambda x: str(x) if x != -1 else ''
-        )
-
-    return result_df
-
+    result_df[PLACE_COL] = result_df.apply(get_rank_info, axis=1)
+    logger.info(f"Completed ranking column formatting")
+    return result_df.replace(['', 0], '-').fillna('-')  # Added '' to replacement
 
 def process_group_data(
     df: pd.DataFrame,
@@ -98,100 +96,138 @@ def process_group_data(
     current_ranks: Optional[Dict[str, int]] = None,
     split_mode: str = 'line'
 ) -> pd.DataFrame:
+    """Process group data with enhanced metric ordering and pivot operations."""
+    logger.info(f"Processing group data: split_mode={split_mode}, rows={len(df)}")
+    
+    if df.empty:
+        return pd.DataFrame()
     try:
-        logger.info(f"Processing group data with type: {split_mode}")
-        unique_metrics = df['metric'].unique()
-        logger.debug(f"Unique metrics in order before pivot: {unique_metrics}")
-
         df['year_quarter'] = pd.to_datetime(df['year_quarter']).dt.to_period('Q').astype(str)
+        logger.debug(f"Unique quarters found: {df['year_quarter'].unique()}")
+
+        logger.debug("Creating column names")
         df['column_name'] = df['metric'] + '_' + df['year_quarter']
-        all_quarters = sorted(df['year_quarter'].unique(), reverse=True)
+        
+        # Get and organize metrics - only use metrics that exist in the data
+        logger.debug("Organizing metrics and their roots")
+        metrics = sorted(df['metric'].unique())
+        logger.debug(f"Found unique metrics: {metrics}")
 
-        # Group metrics by their root metric while preserving original order
-        metric_groups = {}
-        root_metrics_order = []  # To preserve order of root metrics
+        # Find root metrics with logging - only for existing metrics
+        root_metrics = {}
+        for m in metrics:
+            possible_roots = [r for r in metrics if m.startswith(r)]
+            if not possible_roots:
+                logger.debug(f"No root found for metric: {m}")
+                continue
+            root = min(possible_roots, key=len)
+            root_metrics[m] = root
+            logger.debug(f"Metric '{m}' assigned to root '{root}'")
 
-        for metric in unique_metrics:
-            # Find the shortest metric that is a prefix of this metric
-            root_metric = min(
-                (m for m in unique_metrics if metric.startswith(m)),
-                key=len
+        # Create metric groups DataFrame - only for existing combinations
+        logger.debug("Creating metric groups DataFrame")
+        try:
+            metric_groups = pd.DataFrame({
+                'metric': metrics,
+                'root': [root_metrics[m] for m in metrics]
+            })
+            metric_groups = metric_groups.sort_values(['root', 'metric'])
+            logger.debug(f"Metric groups structure:\n{metric_groups}")
+        except Exception as e:
+            logger.error(f"Error creating metric groups DataFrame: {e}")
+            raise
+
+        # Create ordered columns - only for existing combinations
+        logger.debug("Creating ordered column list")
+        quarters = sorted(df['year_quarter'].unique(), reverse=True)
+        logger.debug(f"Processing quarters in order: {quarters}")
+
+        # Get actual data combinations before any transformations
+        actual_combinations = df.groupby(['metric', 'year_quarter']).size()
+        logger.debug("Raw metric-quarter combinations in data:")
+        logger.debug(actual_combinations)
+        
+        # Create explicit set of existing combinations
+        existing_combinations = set()
+        for (metric, quarter) in actual_combinations.index:
+            combo = f"{metric}_{quarter}"
+            existing_combinations.add(combo)
+            logger.debug(f"Found existing combination: {combo}")
+        
+        logger.debug(f"All existing combinations: {sorted(existing_combinations)}")
+        
+        ordered_cols = []
+        for _, group in metric_groups.groupby('root'):
+            root_name = group['root'].iloc[0]
+            logger.debug(f"Processing metric group for root: {root_name}")
+            for metric in group['metric']:
+                for quarter in quarters:
+                    col_name = f"{metric}_{quarter}"
+                    # Strict check - must exist in original data
+                    if col_name in existing_combinations:
+                        ordered_cols.append(col_name)
+                        logger.debug(f"✓ Adding column: {col_name}")
+                    else:
+                        logger.debug(f"✗ Skipping non-existent column: {col_name}")
+        
+        logger.debug("Final ordered columns:")
+        for col in ordered_cols:
+            logger.debug(f"- {col}")
+
+        logger.info(f"debug {len(ordered_cols)} ordered columns")
+        logger.debug(f"First few ordered columns: {ordered_cols[:5]}")
+
+        # Update column_name categoricals - only for existing combinations
+        logger.debug("Setting up column ordering")
+        try:
+            df['column_name'] = pd.Categorical(
+                df['column_name'],
+                categories=ordered_cols,
+                ordered=True
             )
-            if root_metric not in metric_groups:
-                root_metrics_order.append(root_metric)
-            metric_groups.setdefault(root_metric, []).append(metric)
-
-        # Sort metrics within each group by length (shorter names come first)
-        for root_metric in metric_groups:
-            metric_groups[root_metric] = sorted(metric_groups[root_metric], key=len)
-
-        # Create ordered column names using original root metrics order
-        ordered_column_names = []
-        for root_metric in root_metrics_order:  # Use preserved order instead of sorting
-            for metric in metric_groups[root_metric]:
-                for quarter in all_quarters:
-                    ordered_column_names.append(f"{metric}_{quarter}")
-
-        logger.debug(f"ordered_column_names : {ordered_column_names}")
-
-        df['column_name'] = pd.Categorical(
-            df['column_name'],
-            categories=ordered_column_names,
-            ordered=True
-        )
-
-        # Rest of your existing code...
-        save_df_to_csv(df, "transform_before_pivot_df.csv")
-        # Create a copy of the DataFrame first to avoid the SettingWithCopydebug
-        #df_copy = df.copy()
-
+            logger.debug("Successfully set column ordering")
+        except Exception as e:
+            logger.error(f"Error setting column categories: {e}")
+            logger.debug(f"Current column_name values: {df['column_name'].unique()}")
+            logger.debug(f"Ordered columns: {ordered_cols[:10]}...")
+            raise
+        
+        # Pivot and process data - use observed=True to only create columns that exist
         pivot_df = df.pivot_table(
-            index=['insurer', 'linemain'],
+            index=[INSURER_COL, LINE_COL],
             columns='column_name',
             values='value',
             aggfunc='first',
-            observed=True  # Add this parameter
+            observed=True,  # Changed to True to only include existing combinations
+            dropna=False  
         ).reset_index()
-        save_df_to_csv(pivot_df, "transform_pivot_df.csv")
 
-        # Process rankings and summary rows
-        is_summary = pivot_df['insurer'].str.lower().str.contains('^top|^total')
-        if is_summary.any():
-            regular_data = format_ranking_column(
-                pivot_df[~is_summary],
-                prev_ranks,
-                current_ranks,
-                split_mode
-            )
-            summary_data = format_summary_rows(pivot_df[is_summary])
-            result_df = pd.concat([regular_data, summary_data], ignore_index=True)
-        else:
-            result_df = format_ranking_column(
-                pivot_df,
-                prev_ranks,
-                current_ranks,
-                split_mode
-            )
+        # Split and process summary/regular rows
+        is_summary = pivot_df[INSURER_COL].str.lower().str.contains('^top|^total')
+        result_df = pd.concat([
+            format_ranking_column(pivot_df[~is_summary], prev_ranks, current_ranks, split_mode),
+            format_summary_rows(pivot_df[is_summary])
+        ], ignore_index=True) if is_summary.any() else format_ranking_column(
+            pivot_df, prev_ranks, current_ranks, split_mode
+        )
 
-        # Create final structure using ordered metric columns
-        columns = pivot_df.columns.tolist()
-        base_cols = {INSURER_COL, LINE_COL}
-        final_cols = ([PLACE_COL] if PLACE_COL in result_df.columns else []) + \
-                    [INSURER_COL, LINE_COL] + \
-                    [col for col in columns if col not in base_cols] + \
-                    [SECTION_HEADER_COL]
-
-        # Map values
+        # Apply mappings and formatting
         result_df[INSURER_COL] = result_df[INSURER_COL].apply(map_insurer)
         result_df[LINE_COL] = result_df[LINE_COL].apply(map_line)
         result_df[SECTION_HEADER_COL] = False
-
+        
+        # Organize final columns - only include columns that exist
+        base_cols = {INSURER_COL, LINE_COL}
+        metric_cols = [col for col in pivot_df.columns if col not in base_cols]
+        final_cols = ([PLACE_COL] if PLACE_COL in result_df.columns else []) + \
+                    [INSURER_COL, LINE_COL] + metric_cols + [SECTION_HEADER_COL]
+        
+        logger.info(f"Successfully processed group data: output_rows={len(result_df)}")
         return result_df[final_cols].replace(0, '-').fillna('-')
 
     except Exception as e:
         logger.error(f"Error processing group data: {str(e)}", exc_info=True)
         return pd.DataFrame()
-
 
 def transform_table_data(
     df: pd.DataFrame,
@@ -200,37 +236,25 @@ def transform_table_data(
     current_ranks: Optional[Dict[str, Dict[str, int]]] = None,
     split_mode: Literal['line', 'insurer'] = 'line'
 ) -> pd.DataFrame:
-    """Transform and format table data based on specified grouping type."""
+    """Transform and format table data with enhanced error handling and logging."""
+    logger.info(f"Starting table transformation: split_mode={split_mode}, rows={len(df)}")
+    
     try:
-        logger.info(f"Starting table transformation with split_mode: {split_mode}")
-
-        # Define grouping configuration
-        if split_mode == 'line':
-            group_col = LINE_COL
-            item_col = INSURER_COL
-            group_mapper = map_line
-            item_mapper = map_insurer
-        else:  # split_mode == 'insurer'
-            group_col = INSURER_COL
-            item_col = LINE_COL
-            group_mapper = map_insurer
-            item_mapper = map_line
-
+        # Configure grouping
+        group_configs = {
+            'line': (LINE_COL, INSURER_COL, map_line, map_insurer),
+            'insurer': (INSURER_COL, LINE_COL, map_insurer, map_line)
+        }
+        group_col, item_col, group_mapper, item_mapper = group_configs[split_mode]
+        
         transformed_dfs = []
-
         for group in df[group_col].unique():
             logger.debug(f"Processing group: {group}")
-
+            
             # Get group-specific ranks
-            if split_mode == 'line':
-                group_prev_ranks = prev_ranks.get(group.lower()) if prev_ranks else None
-                group_current_ranks = current_ranks.get(group.lower()) if current_ranks else None
-            else:
-                group_prev_ranks = prev_ranks
-                group_current_ranks = current_ranks
+            group_prev_ranks = prev_ranks.get(group.lower(), {}) if split_mode == 'line' and prev_ranks else prev_ranks
+            group_current_ranks = current_ranks.get(group.lower(), {}) if split_mode == 'line' and current_ranks else current_ranks
 
-            save_df_to_csv(df[df[group_col] == group], "transform_before_group.csv")
-            # Process group data
             group_df = process_group_data(
                 df[df[group_col] == group].copy(),
                 group_col,
@@ -241,64 +265,43 @@ def transform_table_data(
                 split_mode
             )
 
-            save_df_to_csv(group_df, "group_df_transform_before_concat.csv")
-            if not group_df.empty:
-                # Sort within group by first metric
-                metric_cols = [col for col in group_df.columns 
-                             if col not in [PLACE_COL, INSURER_COL, LINE_COL, SECTION_HEADER_COL]]
+            metric_cols = [col for col in group_df.columns 
+                         if col not in [PLACE_COL, INSURER_COL, LINE_COL, SECTION_HEADER_COL]]
+            
+            # Sort non-summary rows by first metric
+            is_summary = group_df[INSURER_COL].str.lower().str.contains(
+                '^топ|^total|весь рынок', 
+                na=False
+            )
+            regular_rows = group_df[~is_summary].copy()
+            if not regular_rows.empty:
+                regular_rows['_sort_value'] = pd.to_numeric(
+                    regular_rows[metric_cols[0]].replace('-', float('-inf')), 
+                    errors='coerce'
+                )
+                regular_rows = regular_rows.sort_values(
+                    '_sort_value', 
+                    ascending=False
+                ).drop(columns=['_sort_value'])
+            
+            transformed_dfs.append(pd.concat([regular_rows, group_df[is_summary]]))
 
-                if metric_cols:
-                    sort_metric = metric_cols[0]
-                    logger.debug(f"Sorting group {group} by metric: {sort_metric}")
+        if not transformed_dfs:
+            logger.debug("No data to transform")
+            return pd.DataFrame()
 
-                    # Separate summary and regular rows within group
-                    is_summary = group_df[INSURER_COL].str.lower().str.contains(
-                        '^топ|^total|весь рынок', 
-                        na=False
-                    )
-                    regular_rows = group_df[~is_summary].copy()
-                    summary_rows = group_df[is_summary]
-
-                    # Sort regular rows within group
-                    if not regular_rows.empty:
-                        regular_rows['_sort_value'] = pd.to_numeric(
-                            regular_rows[sort_metric].replace('-', float('-inf')), 
-                            errors='coerce'
-                        ).fillna(float('-inf'))
-
-                        regular_rows = regular_rows.sort_values(
-                            '_sort_value', 
-                            ascending=False
-                        ).drop(columns=['_sort_value'])
-
-                    # Combine sorted regular rows with summary rows for this group
-                    group_df = pd.concat([regular_rows, summary_rows])
-                    logger.debug(f"Sorting group {group_df}")
-
-                transformed_dfs.append(group_df)
-
-        # Combine results
-        result_df = pd.concat(transformed_dfs, ignore_index=True) if transformed_dfs else pd.DataFrame()
-        logger.debug(f"result_df {result_df}")
-        save_df_to_csv(result_df, "df_transform_after_concat.csv")
-        # Drop appropriate column based on grouping type
-        if not result_df.empty:
-            drop_col = LINE_COL if split_mode == 'line' else INSURER_COL
-            result_df = result_df.drop(columns=[drop_col])
-
-            # Reorder columns for line grouping
-            if split_mode == 'line':
-                cols = result_df.columns.tolist()
-                desired_order = ['N', 'insurer'] + [col for col in cols if col not in ['N', 'insurer']]
-                result_df = result_df[desired_order]
-            else:  # split_mode == 'insurer'
-                cols = result_df.columns.tolist()
-                desired_order = ['linemain', 'N'] + [col for col in cols if col not in ['linemain', 'N']]
-                result_df = result_df[desired_order]
-
+        # Combine and format final output
+        result_df = pd.concat(transformed_dfs, ignore_index=True)
+        drop_col = LINE_COL if split_mode == 'line' else INSURER_COL
+        result_df = result_df.drop(columns=[drop_col])
+        
+        # Reorder columns
+        base_cols = ['N', 'insurer'] if split_mode == 'line' else ['linemain', 'N']
+        other_cols = [col for col in result_df.columns if col not in base_cols]
+        
         logger.info("Table transformation completed successfully")
-        return result_df
+        return result_df[base_cols + other_cols]
 
     except Exception as e:
-        logger.error(f"Error in table transformation: {e}", exc_info=True)
+        logger.error(f"Error in table transformation: {str(e)}", exc_info=True)
         raise

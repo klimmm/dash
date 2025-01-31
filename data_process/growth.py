@@ -12,7 +12,6 @@ logger = get_logger(__name__)
 def calculate_growth(
     df: pd.DataFrame,
     selected_insurers: List[str],
-    show_data_table: bool,
     num_periods_selected: int = 2,
     period_type: str = 'qoq'
 ) -> pd.DataFrame:
@@ -24,7 +23,6 @@ def calculate_growth(
         # Ensure datetime type
         if not pd.api.types.is_datetime64_any_dtype(df['year_quarter']):
             df['year_quarter'] = pd.to_datetime(df['year_quarter'], errors='coerce')
-
         group_cols = [col for col in df.columns if col not in ['year_quarter', 'metric', 'value']]
         df_sorted = df.sort_values(by=group_cols + ['year_quarter']).copy()
         save_df_to_csv(df_sorted, "df_sorted_growth.csv")
@@ -63,27 +61,28 @@ def calculate_growth(
             processed_dfs.append(growth_market.drop(columns=['growth']))
 
         growth_df = pd.concat(processed_dfs, ignore_index=True) if processed_dfs else pd.DataFrame(columns=df.columns)
+        logger.debug(f" num_periods_selected {num_periods_selected}")
 
-        # Filter periods if needed
-        if show_data_table:
-            num_periods_growth = num_periods_selected - 1
+        num_periods_growth = num_periods_selected - 1
+        logger.debug(f" num_periods_growth {num_periods_growth}")
+        recent_periods = (df_sorted['year_quarter']
+                          .drop_duplicates()
+                          .sort_values(ascending=False)
+                          .iloc[:num_periods_selected])
+        logger.debug(f" recent_periods {recent_periods}")
+        recent_growth_periods = (df_sorted['year_quarter']
+                                 .drop_duplicates()
+                                 .sort_values(ascending=False)
+                                 .iloc[:max(num_periods_growth, 1)])
+        logger.debug(f" recent_growth_periods {recent_growth_periods}")
 
-            recent_periods = (df_sorted['year_quarter']
-                              .drop_duplicates()
-                              .sort_values(ascending=False)
-                              .iloc[:num_periods_selected])
+        df_filtered = df_sorted[df_sorted['year_quarter'].isin(recent_periods)].copy()
+        logger.debug(f" df_filtered periods {df_filtered['year_quarter'].unique()}")
+        growth_filtered = growth_df[growth_df['year_quarter'].isin(recent_growth_periods)].copy()
+        logger.debug(f" df_growth_periods {growth_filtered['year_quarter'].unique()}")
+        result = pd.concat([df_filtered, growth_filtered], ignore_index=True)
+        logger.debug(f" result_periods {result['year_quarter'].unique()}")
 
-            recent_growth_periods = (df_sorted['year_quarter']
-                                     .drop_duplicates()
-                                     .sort_values(ascending=False)
-                                     .iloc[:max(num_periods_growth, 1)])
-
-            df_filtered = df_sorted[df_sorted['year_quarter'].isin(recent_periods)].copy()
-            growth_filtered = growth_df[growth_df['year_quarter'].isin(recent_growth_periods)].copy()
-
-            result = pd.concat([df_filtered, growth_filtered], ignore_index=True)
-        else:
-            result = pd.concat([df_sorted, growth_df], ignore_index=True)
 
         save_df_to_csv(result, "result_growth_before_sort.csv")
 

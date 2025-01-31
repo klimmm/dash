@@ -59,15 +59,20 @@ def setup_prepare_data(app: dash.Dash, df_162, df_158):
             checklist_component, business_type_selection = get_checklist_config(selected_metrics, reporting_form, current_business_type_selection)
             required_metrics = get_required_metrics(selected_metrics, business_type_selection)
 
-            logger.debug(f"lines {lines}")
+            logger.debug("Starting DataFrame filtering process")
+            logger.debug(f"Initial DataFrame shape: {df.shape}")
 
+            logger.debug("Starting DataFrame transformations")
             df = (df[df['linemain'].isin(lines) & df['metric'].isin(required_metrics)]
                   .pipe(filter_by_period, end_quarter, period_type, num_periods_selected)
                   .pipe(filter_by_period_type, period_type=period_type)
                   .pipe(add_top_n_rows, top_n_list=TOP_N_LIST)
                   .pipe(calculate_metrics, selected_metrics, required_metrics)
-                  )
+                 )
 
+            logger.debug(f"Final DataFrame shape: {df.shape}")
+            logger.debug("DataFrame filtering completed successfully")
+            logger.debug(f"df {df}")
             save_df_to_csv(df, "df_after_prepare.csv")
 
             insurer_options_store = get_insurer_options(df, selected_metrics, lines)
@@ -92,5 +97,5 @@ def setup_prepare_data(app: dash.Dash, df_162, df_158):
             return result
 
         except Exception as e:
-            logger.error(f"Error in prepare data: {str(e)}", exc_info=True)
+            logger.error(f"Error in prepare data: {str(e)}", exc_debug=True)
             raise

@@ -242,11 +242,11 @@ def create_lines_checklist_buttons() -> dbc.Row:
         [
             dbc.Col([
                 dbc.Button("Показать все", id="expand-all-button",
-                          style={"display": "none"}, color="secondary"),
+                          style={"display": "none"}, className="btn-custom btn-period"),
                 dbc.Button("Показать иерархию", id="collapse-button",
                           style={"display": "none"}, color="info", className="ms-1"),
                 dbc.Button("Drill down", id="detailize-button",
-                          style={"display": "none"}, color="info", className="ms-1"),
+                          style={"display": "none"}, color="info", className="btn-custom btn-period"),
             ])
         ],
         className="mb-3"

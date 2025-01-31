@@ -7,18 +7,11 @@ from config.callback_logging import log_callback
 from config.logging_config import get_logger
 from data_process.insurer_filters import filter_by_insurer
 from data_process.table.data import get_data_table
+from data_process.io import save_df_to_csv
 
 logger = get_logger(__name__)
 
 empty_table = html.Div("No data available for the selected filters", className="text-center p-4")
-empty_chart = {
-    'data': [],
-    'layout': {
-        'title': 'No data available',
-        'xaxis': {'visible': False},
-        'yaxis': {'visible': False}
-    }
-}
 
 
 def create_data_section(title: str, table_data: tuple) -> html.Div:
@@ -64,7 +57,6 @@ def setup_ui(app):
             period_type: str,
             end_quarter: str,
         ) -> List:
-            """Update tables based on processed data, splitting by either line or insurer."""
             logger.info("Starting process_ui callback")
 
             try:
@@ -81,10 +73,13 @@ def setup_ui(app):
 
                 # Convert year_quarter
                 df['year_quarter'] = pd.to_datetime(df['year_quarter'])
+                logger.debug(f"split_mode {split_mode}")
 
+                number_of_insurers = 20
                 # Process insurers data
                 df = filter_by_insurer(df, filter_state['selected_metrics'], 
-                                     selected_insurers, top_n_list)
+                                     selected_insurers, top_n_list, split_mode)
+                save_df_to_csv(df, "df_after_filter_insurers.csv")
 
                 # Determine split column and order based on split mode
                 split_column = 'linemain' if split_mode == 'line' else 'insurer'
@@ -93,11 +88,31 @@ def setup_ui(app):
                 if split_mode == 'line':
                     # Use the order from selected_lines
                     ordered_values = [line for line in filter_state['selected_lines'] 
-                                    if line in df[split_column].unique()]
+                                      if line in df[split_column].unique()]
                 else:
                     # Use the order from selected_insurers (already a list)
-                    ordered_values = [ins for ins in df[split_column].unique()]
+                    first_year_quarter = df['year_quarter'].max()
+                    first_metric = df['metric'].iloc[0]
 
+                    filtered_df = df[
+                        (df['year_quarter'] == first_year_quarter) & 
+                        (df['metric'] == first_metric)
+                    ]
+
+                    # Get both frequency and total value for each insurer
+                    insurer_stats = filtered_df.groupby('insurer').agg({
+                        'value': 'sum'
+                    })
+                    logger.debug(f"insurer_stats {insurer_stats} ")
+
+                    sorted_insurers = insurer_stats.sort_values(
+                        by=['value'], 
+                        ascending=[False]
+                    ).index.tolist()
+
+                    ordered_values = [ins for ins in sorted_insurers]
+
+                logger.debug(f"selected_insurers {selected_insurers} ")
                 logger.debug(f"ordered_values {ordered_values} tables split by {split_mode}")
                 # Create tables for each value in the specified order
                 all_tables = []

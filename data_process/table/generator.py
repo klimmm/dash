@@ -67,8 +67,8 @@ def get_row_type(row: Dict[str, Any]) -> RowType:
 
 COLUMNS = {
     ColumnType.RANK: {
-        'width': '3.8rem',
-        'min': '3.8rem',
+        'width': '3.9rem',
+        'min': '3.9rem',
         'max': '4rem',
         'align': 'center',
         'id': 'N'
@@ -76,7 +76,7 @@ COLUMNS = {
     ColumnType.INSURER: {
         'width': '17rem',
         'min': '17rem',
-        'max': 'none',  # Remove max width constraint
+        'max': '40rem',  # Remove max width constraint
         'align': 'left',
         'id': 'insurer'
     },
@@ -87,9 +87,9 @@ COLUMNS = {
         'align': 'right'
     },
     ColumnType.LINE: {
-        'width': '14rem',
+        'width': 'max-content',
         'min': '14rem',
-        'max': 'none',  # Remove max width constraint
+        'max': 'max-content',  # Remove max width constraint
         'align': 'left',
         'id': 'linemain'
     },

@@ -1,6 +1,6 @@
 from .buttons_callbacks import setup_single_choice_buttons, setup_multi_choice_buttons
 from .insurer_callbacks import setup_insurer_selection
-from .layout_callbacks import setup_sidebar, setup_debug_panel, setup_resize_observer
+from .layout_callbacks import setup_sidebar, setup_debug_panel
 from .line_callbacks import setup_line_selection
 from .line_tree_view_callbacks import setup_line_tree_view
 from .metrics_callbacks import setup_metric_selection
@@ -16,7 +16,6 @@ def setup_all_callbacks(app, lines_tree_162, lines_tree_158, df_162, df_158):
     # Layout and UI setup
     setup_sidebar(app)
     setup_debug_panel(app)
-    setup_resize_observer(app)
     setup_ui(app)
 
     # Button callbacks

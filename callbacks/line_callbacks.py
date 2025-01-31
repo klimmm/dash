@@ -50,7 +50,7 @@ def setup_line_selection(app: dash.Dash, insurance_lines_tree_162, insurance_lin
 
                 if detailed != [selected_line]:
                     logger.info(f"Detailed selection changed for index {dropdown_index}")
-                    result = [line for line in current_state if line != selected_line]
+                    result = [] #[line for line in current_state if line != selected_line]
                     for item in detailed:
                         if item not in result:
                             result.append(item)

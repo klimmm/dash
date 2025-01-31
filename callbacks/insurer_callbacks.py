@@ -4,7 +4,7 @@ from typing import List, Dict, Set, Tuple, Any
 import dash
 from dash import Dash, ALL, Input, Output, State
 from dash.exceptions import PreventUpdate
-
+import pandas as pd
 
 from application.components.dropdown import create_insurer_dropdown
 from config.default_values import MAX_DROPDOWNS, DEFAULT_INSURER
@@ -114,8 +114,9 @@ def setup_insurer_selection(app: Dash) -> None:
             def validate_selection(value: str, options: List[Dict[str, Any]]) -> str:
                 """Validate if the selected value exists in options."""
                 valid_values = {opt['value'] for opt in options}
-                return value if value in valid_values else None            
-             # Clean up and validate selected insurers
+                return value if value in valid_values else None
+
+            # Clean up and validate selected insurers
             selected_insurers = [
                 validate_selection(v, insurer_options_store['insurer_options'])
                 for v in (selected_insurers or [])

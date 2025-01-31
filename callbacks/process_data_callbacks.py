@@ -38,7 +38,7 @@ def setup_process_data(app: dash.Dash):
 
         ctx = dash.callback_context
         if not ctx.triggered:
-            logger.warning("Callback context not triggered")
+            logger.debug("Callback context not triggered")
             raise PreventUpdate
 
         trigger_id = ctx.triggered[0]['prop_id']
@@ -84,7 +84,7 @@ def setup_process_data(app: dash.Dash):
             logger.debug(f"DataFrame shape after market share: {df.shape}")
             logger.info("Adding growth calculations")
             save_df_to_csv(df, "df_after_market_share.csv")
-            df = calculate_growth(df, selected_insurers, show_data_table, num_periods_selected, period_type)
+            df = calculate_growth(df, selected_insurers, num_periods_selected, period_type)
             logger.debug(f"DataFrame shape after growth: {df.shape}")
             logger.info("Formatting date columns")
             save_df_to_csv(df, "df_after_growth.csv")

@@ -34,30 +34,31 @@ def get_insurer_options(
             df['insurer'].apply(lambda i: i not in {'total', 'top-5', 'top-10', 'top-20'})
         ]
 
-        # Find first available metric
+        logger.debug(f"all_metrics: {all_metrics}")
         try:
             metric_to_use = next(m for m in all_metrics if m in filtered_df['metric'].unique())
-            logger.info(f"Selected metric: {metric_to_use}")
+            logger.debug(f"Selected metric: {metric_to_use}")
         except StopIteration:
             logger.error("No valid metrics found in data")
-
+        logger.debug(f"metric_to_use: {metric_to_use}")
         # Get metric-filtered data
         metric_df = filtered_df[filtered_df['metric'] == metric_to_use]
         quarters = sorted(metric_df['year_quarter'].unique())
 
         if not quarters:
-            logger.warning("No quarters found in data")
+            logger.debug("No quarters found in data")
             return {
                 'top5': [], 'top10': [], 'top20': [], 'insurer_options': [],
                 'current_ranks': {}, 'prev_ranks': {}
             }
 
         # Get latest quarter data for first line
+        # Get latest quarter data aggregated across all specified lines
         latest_quarter = quarters[-1]
         latest_data = metric_df[
-            (metric_df['linemain'] == lines[0]) & 
+            (metric_df['linemain'].isin(lines)) & 
             (metric_df['year_quarter'] == latest_quarter)
-        ].sort_values('value', ascending=False)
+        ].groupby('insurer')['value'].sum().reset_index().sort_values('value', ascending=False)
 
         logger.debug(f"Processing data for quarter {latest_quarter}")
 
@@ -100,7 +101,7 @@ def get_insurer_options(
             for i in ['top-5', 'top-10', 'top-20'] + all_insurers
         ]
 
-        logger.info(f"Generated options for {len(all_insurers)} insurers")
+        logger.debug(f"Generated options for {len(all_insurers)} insurers")
 
         return {
             'top5': all_insurers[:5],

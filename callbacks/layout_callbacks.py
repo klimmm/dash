@@ -10,37 +10,6 @@ from constants.style_constants import StyleConstants
 logger = get_logger(__name__)
 
 
-def setup_resize_observer(app: dash.Dash) -> None:
-    """Setup callback for observing datatable container resize."""
-    app.clientside_callback(
-        """
-        function() {
-            const resizeObserver = new ResizeObserver(entries => {
-                for (let entry of entries) {
-                    if (entry.target.classList.contains('datatable-container')) {
-                        document.documentElement.style.setProperty(
-                            '--datatable-width', 
-                            `${entry.target.offsetWidth}px`
-                        );
-                    }
-                }
-            });
-
-            // Find and observe the datatable container
-            const datatableContainer = document.querySelector('.datatable-container');
-            if (datatableContainer) {
-                resizeObserver.observe(datatableContainer);
-            }
-
-            // Return null since Dash expects a return value
-            return null;
-        }
-        """,
-        Output("dummy-output", "children"),
-        Input("dummy-trigger", "children"),
-    )
-
-
 def setup_debug_panel(app: dash.Dash) -> None:
     """Setup callbacks for debug panel functionality."""
 
@@ -62,7 +31,6 @@ def setup_debug_panel(app: dash.Dash) -> None:
             raise
 
 
-
 @dataclass
 class SidebarState:
     """Manages sidebar-related classes and states."""
@@ -75,20 +43,20 @@ class SidebarState:
     def expanded(cls) -> 'SidebarState':
         """Create expanded sidebar state."""
         return cls(
-            chart_cont_class = StyleConstants.CONTAINER["CHART"],
+            chart_cont_class=StyleConstants.CONTAINER["CHART"],
             sidebar_col_class=StyleConstants.SIDEBAR,
             inner_btn_text="Hide Filters",
-            inner_btn_class = StyleConstants.BTN["SIDEBAR_HIDE"]
+            inner_btn_class=StyleConstants.BTN["SIDEBAR_HIDE"]
         )
 
     @classmethod
     def collapsed(cls) -> 'SidebarState':
         """Create collapsed sidebar state."""
         return cls(
-            chart_cont_class = StyleConstants.CONTAINER["CHART_COLLAPSED"],
+            chart_cont_class=StyleConstants.CONTAINER["CHART_COLLAPSED"],
             sidebar_col_class=StyleConstants.SIDEBAR_COLLAPSED,
             inner_btn_text="Show Filters",
-            inner_btn_class = StyleConstants.BTN["SIDEBAR_SHOW"]
+            inner_btn_class=StyleConstants.BTN["SIDEBAR_SHOW"]
         )
 
     def to_tuple(self) -> Tuple[str, str, str, str, str]:
