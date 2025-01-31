@@ -1,14 +1,18 @@
 from __future__ import annotations
-import logging
-import time
-from enum import IntEnum
-from colorama import Fore, Back, Style, init
-from functools import wraps
-from logging.handlers import RotatingFileHandler
-from pathlib import Path
-from typing import List, Any, Callable
-from config.memory_monitor import MemoryMonitor
 
+from dataclasses import dataclass
+from enum import IntEnum
+from functools import wraps
+import logging
+import os
+from pathlib import Path
+import psutil
+import time
+from typing import Callable, Any, List
+
+from colorama import Fore, Back, Style, init
+
+from logging.handlers import RotatingFileHandler
 
 init(autoreset=True)
 
@@ -120,6 +124,44 @@ def setup_logging(console_level=logging.DEBUG,
             logger = logging.getLogger(base_name)
             logger.setLevel(config)
 
+
+@dataclass
+class MemoryStats:
+    """Data class for memory statistics"""
+    rss: float
+    vms: float
+    percent: float
+    system_used: float
+
+
+class MemoryMonitor:
+    """Memory monitoring utility class"""
+
+    def __init__(self):
+        self.process = psutil.Process(os.getpid())
+        self.start_time = self.last_check = time.time()
+        self.check_interval = 60
+
+    def get_memory_usage(self) -> MemoryStats:
+        mem = self.process.memory_info()
+        return MemoryStats(
+            rss=mem.rss / (1024 * 1024),
+            vms=mem.vms / (1024 * 1024),
+            percent=self.process.memory_percent(),
+            system_used=psutil.virtual_memory().percent
+        )
+
+    def log_memory(self, tag: str, logger: logging.Logger) -> None:
+        try:
+            stats = self.get_memory_usage()
+            logger.info(
+                f"Memory at {tag}: RSS={stats.rss:.1f}MB, "
+                f"Process=%{stats.percent:.1f}, System=%{stats.system_used:.1f}"
+            )
+            self.last_check = time.time()
+
+        except Exception as e:
+            logger.error(f"Error monitoring memory: {str(e)}")
 
 memory_monitor = MemoryMonitor()
 
