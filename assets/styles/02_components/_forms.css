@@ -31,6 +31,7 @@
     font-weight: 500 !important;
     display: flex;
     border: 0;
+    height: 100%;
     align-items: center;
     margin: 0;
     padding: 0 !important;
@@ -154,20 +155,49 @@
     font-size: var(--font-size-dd);
     padding: 0;
     margin-bottom: 0;
-    height: 2rem;
+    margin-top: 0;
+    height: 100%;
     line-height: 1.25;
     display: flex;
     align-items: center;
 }
 
+
+/* Value and label styling */
+.dd-control .Select-value,
+.dd-control .Select-value-label,
+.Select-value-label {
+    margin: 0;
+    padding: 0 !important;
+    font-size: var(--font-size-dd);
+    height: 100%;
+    display: flex;
+    align-items: center !important;
+    
+}
+
+.dd-control .Select-value {
+
+    background: #e9ecef;
+    
+
+
+}
+
+.dd-control .Select-value-label {
+
+
+}
+
+
 /* Value, placeholder and control heights */
 .dd-control .Select-value,
 .dd-control .Select-control {
-    height: 2rem;
+    border: 0 !important;
 }
 
 .dd-control .Select-placeholder {
-    height: 100% important!;
+    height: 100% !important!;
 }
 
 
@@ -214,36 +244,9 @@ input[autocomplete="off"][role="combobox"] {
 /* Option styling */
 .dd-control .Select-option,
 .Select-option {
-    height: 2rem;
+    height: 1.7rem;
     padding: 0;
-    line-height: 2rem;
-}
-
-
-/* Value and label styling */
-.dd-control .Select-value,
-.dd-control .Select-value-label,
-.Select-value-label {
-    margin: 0;
-    padding: 0 !important;
-    font-size: var(--font-size-dd);
-    height: 100%;
-    display: flex;
-    align-items: center !important;
-    
-}
-
-.dd-control .Select-value {
-
-    background: #e9ecef;
-    
-
-
-}
-
-.dd-control .Select-value-label {
-
-
+    line-height: 1.7em;
 }
 
 

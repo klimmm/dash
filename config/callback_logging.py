@@ -4,227 +4,270 @@ import time
 import dash
 import traceback
 from colorama import Fore, Style, init
-from typing import Any, Callable, List, Optional, Dict, Tuple
+from typing import Any, Callable, Dict, List, Union
 from functools import wraps
 
-# Initialize colorama
+# Initialize colorama and setup constants
 init(autoreset=True)
-
-# Custom log level for callbacks
-CALLBACK = 25  # Between INFO (20) and WARNING (30)
+CALLBACK = 25
 logging.addLevelName(CALLBACK, 'CALLBACK')
 
-class CallbackFormatter(logging.Formatter):
-    """Specific formatter for callback logs with customized colors"""
-    def __init__(self):
-        super().__init__('%(name)s - %(message)s')
-        
-    def format(self, record):
-        # Replace 'None' module name with empty string and color the module name
-        if record.name == 'root':
-            record.name = ''
-        else:
-            record.name = f"{Fore.LIGHTBLACK_EX}{record.name}{Style.RESET_ALL}"
-        return super().format(record)
-
-class CallbackFilter(logging.Filter):
-    """Filter to separate callback logs from regular logs"""
-    def __init__(self, for_callbacks: bool):
-        super().__init__()
-        self.for_callbacks = for_callbacks
-        
-    def filter(self, record):
-        is_callback = getattr(record, 'is_callback', False)
-        # Always allow callback logs regardless of module level when callback handler is used
-        if self.for_callbacks and is_callback:
-            return True
-        return is_callback if self.for_callbacks else not is_callback
-
 def setup_callback_logging(level: int = CALLBACK) -> None:
-    """Configure callback-specific logging"""
-    # Create callback handler with specific formatter
-    callback_handler = logging.StreamHandler()
-    callback_handler.setLevel(level)
-    callback_handler.setFormatter(CallbackFormatter())
-    callback_handler.addFilter(CallbackFilter(for_callbacks=True))
-
-    # Get root logger
+    """Configure enhanced callback-specific logging"""
     root_logger = logging.getLogger()
-    
-    # Remove any existing callback handlers
-    for handler in root_logger.handlers[:]:
-        if isinstance(handler.formatter, CallbackFormatter):
-            root_logger.removeHandler(handler)
-        else:
-            # Add callback filter to non-callback handlers to prevent duplicate logs
-            handler.addFilter(CallbackFilter(for_callbacks=False))
-    
-    # Add new callback handler
-    root_logger.addHandler(callback_handler)
-    
-    # Update root logger level if needed
-    current_level = root_logger.getEffectiveLevel()
-    if level < current_level:
-        root_logger.setLevel(level)
-
-    # Configure callback logger
     callback_logger = logging.getLogger('callbacks')
-    callback_logger.setLevel(level)
 
-def format_data(data: Any) -> str:
-    """Format data for logging with focus on key information"""
-    if isinstance(data, tuple):
-        categories = [item for item in data if isinstance(item, str)]
-        return f"{', '.join(categories)}"
-    elif isinstance(data, dict):
-        if 'df' in data and 'prev_ranks' in data:
-            df_info = {}
-            if isinstance(data['df'], list):
-                df_info['rows'] = len(data['df'])
-                if data['df'] and isinstance(data['df'][0], dict):
-                    df_info['columns'] = list(data['df'][0].keys())
-            elif hasattr(data['df'], 'shape'):
-                df_info['shape'] = data['df'].shape
-                df_info['columns'] = list(data['df'].columns)
-            
-            ranks_info = {}
-            if isinstance(data['prev_ranks'], dict):
-                ranks_info['items'] = len(data['prev_ranks'])
-                ranks_info['value_type'] = type(next(iter(data['prev_ranks'].values()))).__name__ if data['prev_ranks'] else 'empty'
-            return f"<DataFrame: {df_info}, Rankings: {ranks_info}>"
-        elif 'display' in data:
-            return f"Display: {data['display']}"
-    elif isinstance(data, list):
-        if data and isinstance(data[0], dict) and set(data[0].keys()) == {'label', 'value'}:
-            values = [opt['value'] for opt in data[:3]]
-            return f"Options: {', '.join(values)}..."
-    elif isinstance(data, str):
-        return f"'{data}'"
-    return str(data)
+    try:
+        callback_handler = logging.StreamHandler()
+        callback_handler.setLevel(level)
+        callback_handler.setFormatter(logging.Formatter('%(name)s - %(message)s'))
+        callback_handler.addFilter(lambda record: getattr(record, 'is_callback', False))
 
-def track_callback(logger_name: str, callback_name: str, ctx: dash.callback_context) -> Tuple[float, Dict]:
-    """Track callback execution start"""
-    trigger_info = ctx.triggered[0] if ctx.triggered else {'prop_id': 'no_trigger', 'value': None}
-    stack = traceback.extract_stack()
-    caller_info = stack[-2]
+        # Update existing handlers to exclude callback logs
+        for handler in root_logger.handlers[:]:
+            if isinstance(handler.formatter, logging.Formatter):
+                handler.addFilter(lambda record: not getattr(record, 'is_callback', False))
+
+        root_logger.addHandler(callback_handler)
+        if level < root_logger.getEffectiveLevel():
+            root_logger.setLevel(level)
+        callback_logger.setLevel(level)
+
+        logging.debug("Callback logging setup completed")
+    except Exception as e:
+        logging.error(f"Failed to setup callback logging: {str(e)}")
+        raise
+
+def get_callback_context(ctx: dash.callback_context) -> Dict[str, Any]:
+    """Get callback context information with enhanced output analysis"""
+    # Check if there are any triggered inputs
+    if ctx.triggered and ctx.triggered[0]['prop_id'] != '.':
+        trigger_info = ctx.triggered[0]
+    # Check if there are any inputs at all
+    elif ctx.inputs and list(ctx.inputs.values()):
+        trigger_info = {'prop_id': list(ctx.inputs.keys())[0], 'value': list(ctx.inputs.values())[0]}
+    else:
+        trigger_info = {'prop_id': 'initial_load', 'value': None}
+
+    caller_info = traceback.extract_stack()[-2]
     
-    # Get output IDs from callback context
+    # Enhanced output processing
     outputs = []
-    if hasattr(ctx, 'outputs_list') and ctx.outputs_list:
-        for output in ctx.outputs_list:
-            if isinstance(output, str):
-                outputs.append(output)
-            elif isinstance(output, dict):
-                outputs.append(str(output))
-            else:
-                outputs.append(str(output))
+    no_update_indices = []
     
-    return time.time(), {
+    # Get outputs from context
+    output_specs = getattr(ctx, 'outputs_list', [])
+    outputs = [str(output) for output in output_specs]
+    
+    return {
         'trigger': trigger_info['prop_id'].split('.')[0],
         'trigger_value': trigger_info['value'],
         'start_timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
         'caller_info': f"{caller_info.filename}:{caller_info.lineno}",
-        'outputs': outputs
+        'outputs': outputs,
+        'no_update_outputs': no_update_indices,
     }
 
-def track_callback_end(logger_name: str, callback_name: str, 
-                      start_info: Tuple[float, Dict], result: Any = None, 
-                      error: Exception = None, message_no_update: str = None) -> None:
-    """Log callback execution completion"""
-    logger = logging.getLogger(logger_name if logger_name != "__main__" else "callbacks")
-    start_time, context = start_info
-    execution_time = (time.time() - start_time) * 1000
-    extra = {'is_callback': True}
-    
-    # Colors for both field names and their values
-    FIELD_COLORS = {
-        'callback': {'label': Fore.LIGHTBLACK_EX, 'value': Fore.LIGHTBLACK_EX},
-        'time': {'label': Fore.LIGHTBLACK_EX, 'value': Fore.LIGHTBLACK_EX},
-        'trigger': {'label': Fore.LIGHTBLACK_EX, 'value': Fore.LIGHTBLACK_EX},
-        'execution': {'label': Fore.GREEN, 'value': Fore.GREEN},
-        'outputs': {'label': Fore.LIGHTBLACK_EX, 'value': Fore.LIGHTBLACK_EX},
-        'result': {'label': Fore.LIGHTBLACK_EX, 'value': Fore.LIGHTBLACK_EX}
-    }
-    
-    STATUS_COLORS = {
-        'Completed': Fore.BLUE,
-        'Prevented': Fore.LIGHTBLUE_EX,
-        'Error': Fore.RED,
-        'Default': Fore.WHITE
-    }
 
-    # Start with execution time and determine status
-    status_part = None
-    error_part = None
+def format_callback_message(execution_time: float,
+                            context: Dict[str, Any],
+                            callback_name: str,
+                            result: Any = None,
+                            error: Exception = None,
+                            message_no_update: str = None
+                            ) -> str:
+    DEFAULT_COLOR = Fore.LIGHTBLACK_EX
+
+    # Start with execution time
+    parts = [f"{Fore.GREEN}Execution: {execution_time:.2f}ms{Style.RESET_ALL}"]
+
+    # Status formatting
     if isinstance(error, dash.exceptions.PreventUpdate):
-        status_color = STATUS_COLORS['Prevented']
-        status_part = f"{Fore.LIGHTBLACK_EX}Status:{Style.RESET_ALL} {status_color}Prevented{Style.RESET_ALL}"
-        error_part = f"{Fore.LIGHTBLACK_EX}Reason:{Style.RESET_ALL} {Fore.LIGHTBLACK_EX}{message_no_update or 'Update prevented by callback'}{Style.RESET_ALL}"
+        status = f"{Fore.LIGHTBLUE_EX}Prevented{Style.RESET_ALL}"
+        reason = message_no_update or 'Update prevented'
+        parts.extend([
+            f"{DEFAULT_COLOR}Status: {status}",
+            f"{DEFAULT_COLOR}Reason: {reason}{Style.RESET_ALL}"
+        ])
     elif error:
-        status_color = STATUS_COLORS['Error']
-        status_part = f"{Fore.LIGHTBLACK_EX}Status:{Style.RESET_ALL} {status_color}Error{Style.RESET_ALL}"
-        error_part = f"{status_color}Error: {str(error)}{Style.RESET_ALL}"
+        status = f"{Fore.RED}Error{Style.RESET_ALL}"
+        parts.extend([
+            f"{DEFAULT_COLOR}Status: {status}",
+            f"Error: {str(error)}{Style.RESET_ALL}"
+        ])
     else:
-        status_color = STATUS_COLORS['Completed']
-        status_part = f"{Fore.LIGHTBLACK_EX}Status:{Style.RESET_ALL} {status_color}Completed{Style.RESET_ALL}"
+        parts.append(f"{DEFAULT_COLOR}Status: {Fore.LIGHTBLACK_EX}Completed{Style.RESET_ALL}")
 
-    # Apply colors to fields and build parts array
-    parts = [
-        f"{FIELD_COLORS['execution']['label']}Execution:{Style.RESET_ALL} {FIELD_COLORS['execution']['value']}{execution_time:.2f}ms{Style.RESET_ALL}",
-        status_part,
-        f"{Fore.LIGHTBLACK_EX}Callback:{Style.RESET_ALL} {Fore.LIGHTBLACK_EX}{callback_name}{Style.RESET_ALL}",
-        f"{FIELD_COLORS['time']['label']}Time:{Style.RESET_ALL} {FIELD_COLORS['time']['value']}{context['start_timestamp']}{Style.RESET_ALL}",
-        f"{FIELD_COLORS['trigger']['label']}Trigger:{Style.RESET_ALL} {FIELD_COLORS['trigger']['value']}{context['trigger']}{Style.RESET_ALL}",
-        f"{FIELD_COLORS['outputs']['label']}Outputs:{Style.RESET_ALL} {FIELD_COLORS['outputs']['value']}{' | '.join(context['outputs']) if context['outputs'] else 'None'}{Style.RESET_ALL}"
-    ]
+    # Add context information with default color
+    parts.extend([
+        f"{DEFAULT_COLOR}Callback: {callback_name}{Style.RESET_ALL}",
+        f"{DEFAULT_COLOR}Time: {Fore.LIGHTBLACK_EX}{context['start_timestamp']}{Style.RESET_ALL}",
+        f"{DEFAULT_COLOR}Trigger: {Fore.LIGHTBLACK_EX}{context['trigger']}{Style.RESET_ALL}"
+    ])
 
-    if error_part:
-        parts.append(error_part)
-    elif result is not None:
-        result_str = format_data(result) if result is not None else 'None'
-        parts.append(f"{FIELD_COLORS['result']['label']}Result:{Style.RESET_ALL} {FIELD_COLORS['result']['value']}{result_str}{Style.RESET_ALL}")
+    # Enhanced output formatting with properly colored IDs
+    def format_output(output_str: str) -> str:
+        """Format individual output with colored component ID"""
+        try:
+            # Convert string representation to dictionary safely
+            output_dict = eval(output_str, {'__builtins__': {}}, {})
+            if isinstance(output_dict, dict) and 'id' in output_dict:
+                # Return only the ID in cyan color
+                return f"{Fore.LIGHTBLACK_EX}{output_dict['id']}{Style.RESET_ALL}"
+            return output_str
+        except:
+            return output_str
 
-    # Log with appropriate level
-    log_level = logging.ERROR if error and not isinstance(error, dash.exceptions.PreventUpdate) else CALLBACK
-    logger.log(log_level, " | ".join(parts), extra=extra)
-    
-    if execution_time > 1000:
-        logger.warning(f"Slow callback detected: {callback_name} took {execution_time:.2f}ms", 
-                      extra=extra)
+    # Format outputs list maintaining color codes
+    outputs_str = [format_output(str(output)) for output in context['outputs']]
+    parts.append(f"{DEFAULT_COLOR}Outputs: [{', '.join(outputs_str)}]{Style.RESET_ALL}")
+
+    # Result formatting with accurate update status
+    if not error and result is not None:
+        formatted_result = format_data(result)
+
+        # Update status formatting
+        update_status = []
+        no_update_indices = context.get('no_update_outputs', [])
+
+        if isinstance(result, (list, tuple)):
+            for idx, _ in enumerate(result):
+                is_no_update = idx in no_update_indices
+                status_color = Fore.LIGHTBLUE_EX if is_no_update else Fore.LIGHTBLACK_EX
+                update_status.append(
+                    f"{idx}:{status_color}{'NoUpdate' if is_no_update else 'Updated'}{Style.RESET_ALL}"
+                )
+        else:
+            is_no_update = 0 in no_update_indices
+            status_color = Fore.LIGHTBLUE_EX if is_no_update else Fore.LIGHTBLACK_EX
+            update_status.append(
+                f"0:{status_color}{'NoUpdate' if is_no_update else 'Updated'}{Style.RESET_ALL}"
+            )
+
+        status_str = f" [{', '.join(update_status)}]"
+
+        # Truncate long results
+        if len(formatted_result) > 200:
+            formatted_result = f"{formatted_result[:197]}..."
+
+        parts.append(f"{DEFAULT_COLOR}Result: {status_str}{Style.RESET_ALL}")
+
+    # Join parts with default color separator
+    return ' | '.join(parts)
+
 
 def log_callback(func: Callable) -> Callable:
-    """Decorator for logging callback execution"""
+    """Decorator for comprehensive callback logging with error handling"""
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         callback_name = func.__name__
         module_name = func.__module__
         ctx = dash.callback_context
-        start_info = track_callback(module_name, callback_name, ctx)
-        
+        start_time = time.time()
+        context = get_callback_context(ctx)
+
+        logger = logging.getLogger(module_name if module_name != "__main__" else "callbacks")
+        original_level = logger.level
+        logger.setLevel(CALLBACK)
+
         try:
             result = func(*args, **kwargs)
-            track_callback_end(module_name, callback_name, start_info, result=result)
-            return result
-        except Exception as e:
-            if isinstance(e, dash.exceptions.PreventUpdate):
-                track_callback_end(
-                    module_name,
-                    callback_name,
-                    start_info,
-                    error=e,
-                    message_no_update="Update prevented by callback"
+            execution_time = (time.time() - start_time) * 1000
+
+            # Enhanced NoUpdate detection
+            def is_no_update(value):
+                """Helper to detect NoUpdate in various forms"""
+                if hasattr(value, '__class__'):
+                    class_str = str(value.__class__)
+                    return ('NoUpdate' in class_str or 
+                           isinstance(value, dash._callback.NoUpdate))
+                return False
+
+            # Detect NoUpdate in results
+            if isinstance(result, (list, tuple)):
+                for idx, value in enumerate(result):
+                    if is_no_update(value):
+                        context['no_update_outputs'].append(idx)
+            elif is_no_update(result):
+                context['no_update_outputs'].append(0)
+
+            message = format_callback_message(execution_time, context, callback_name, result=result)
+            logger.log(CALLBACK, message, extra={'is_callback': True})
+
+            if execution_time > 1000:
+                logger.warning(
+                    f"Slow callback detected: {callback_name} took {execution_time:.2f}ms",
+                    extra={'is_callback': True}
                 )
-                raise
-            else:
-                track_callback_end(module_name, callback_name, start_info, error=e)
-                raise
+            return result
+
+        except Exception as e:
+            execution_time = (time.time() - start_time) * 1000
+            is_prevent_update = isinstance(e, dash.exceptions.PreventUpdate)
+
+            message = format_callback_message(
+                execution_time, context, callback_name,
+                error=e,
+                message_no_update="Update prevented by callback" if is_prevent_update else None
+            )
+
+            logger.log(
+                CALLBACK if is_prevent_update else logging.ERROR,
+                message,
+                extra={'is_callback': True}
+            )
+            raise
+
+        finally:
+            logger.setLevel(original_level)
+
     return wrapper
 
-def get_triggered_index(ctx: dash.callback_context, button_values: List[str], 
-                       prefix: str) -> Optional[int]:
-    """Helper function to get the index of triggered button"""
-    if not ctx.triggered:
-        return None
-    triggered = ctx.triggered[0]["prop_id"].split(".")[0]
-    return next((i for i, val in enumerate(button_values) 
-                 if f"{prefix}{val}" == triggered), None)
+
+def format_data(data, max_items=2, depth=0, max_depth=3):
+    """Simplified unified data formatter with improved readability"""
+
+    # Handle maximum recursion depth
+    if depth >= max_depth:
+        return f"{type(data).__name__}(...)"
+
+    # Handle None and primitive types
+    if data is None or isinstance(data, (bool, int, float)):
+        return str(data)
+
+    # Handle strings
+    if isinstance(data, str):
+        return f"'{data[:47]}...'" if len(data) > 50 else f"'{data}'"
+
+    # Handle sequences (lists, tuples)
+    if isinstance(data, (list, tuple)):
+        if not data:
+            return '[]' if isinstance(data, list) else '()'
+
+        # Format items
+        items = [format_data(item, max_items, depth + 1, max_depth) 
+                 for item in data[:max_items]]
+
+        # Add length indicator if truncated
+        if len(data) > max_items:
+            items.append(f"...({len(data)} total)")
+
+        return f"[{', '.join(items)}]" if isinstance(data, list) else f"({', '.join(items)})"
+
+    # Handle dictionaries
+    if isinstance(data, dict):
+        if not data:
+            return '{}'
+
+        # Format key-value pairs
+        pairs = [f"{k}: {format_data(v, max_items, depth + 1, max_depth)}" 
+                 for k, v in list(data.items())[:max_items]]
+
+        # Add length indicator if truncated
+        if len(data) > max_items:
+            pairs.append(f"...({len(data)} total)")
+
+        return f"{{{', '.join(pairs)}}}"
+
+    # Handle objects
+    return f"{type(data).__name__}({str(data)})"

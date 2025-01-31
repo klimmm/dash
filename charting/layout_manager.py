@@ -1,14 +1,13 @@
+import logging
 import pandas as pd
 import plotly.graph_objects as go
-import logging
-from typing import Optional, Tuple, Dict, Any, Union, List
 from dataclasses import dataclass
-
-from data_process.data_utils import map_insurer, map_line
-from constants.translations import translate
-from constants.filter_options import METRICS
+from typing import Optional, Tuple, Dict, Any, Union, List
 from .color import ColorFormatter
 from .config import ChartConfig
+from constants.metrics import METRICS
+from constants.translations import translate
+from data_process.mappings import map_insurer, map_line
 
 logger = logging.getLogger(__name__)
 

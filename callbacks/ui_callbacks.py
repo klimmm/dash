@@ -1,12 +1,15 @@
-from dash import html
-from dash import Input, Output, State
 from typing import Dict, List
+
+import dash
+from dash import Input, Output, State, html
 import pandas as pd
-from data_process.table_data import get_data_table
-from charting.chart import create_chart
-from config.logging_config import get_logger, memory_monitor
+
 from config.callback_logging import log_callback
-from data_process.filter_insurers import process_insurers_data
+from config.logging_config import get_logger, memory_monitor
+from data_process.insurer_filters import filter_by_insurer
+from data_process.table.data import get_data_table
+from data_process.io import save_df_to_csv
+
 
 logger = get_logger(__name__)
 
@@ -20,20 +23,32 @@ empty_chart = {
     }
 }
 
-def setup_ui_callbacks(app):
+
+def create_data_section(title: str, table_data: tuple) -> html.Div:
+    """Create a section with title and table data.
+    
+    Args:
+        title: Section title (line or insurer name)
+        table_data: Tuple containing (table, title, subtitle) from get_data_table
+    
+    Returns:
+        html.Div containing the formatted section
+    """
+    return html.Div([
+        html.H3(table_data[1], className="table-title", style={"display": "none"}),
+        html.H4(table_data[2], className="table-subtitle", style={"display": "none"}),
+        table_data[0]
+    ], className="data-section mb-8")
+
+def setup_ui(app):
     @app.callback(
-        [Output('data-table', 'children'),
-         Output('table-title', 'children'),
-         Output('table-subtitle', 'children'),
-         Output('table-title-chart', 'children'),
-         Output('table-subtitle-chart', 'children'),
-         Output('graph', 'figure')],
+        Output('tables-container', 'children'),
         [Input('processed-data-store', 'data'),
          Input('top-n-rows', 'data'),
          Input('selected-insurers-all-values', 'data'),
          Input('toggle-selected-market-share', 'data'),
          Input('toggle-selected-qtoq', 'data'),
-        ],
+         Input('table-split-mode', 'data')],
         [State('filter-state-store', 'data'),
          State('period-type', 'data'),
          State('end-quarter', 'value')],
@@ -41,73 +56,85 @@ def setup_ui_callbacks(app):
     )
     @log_callback
     def process_ui(
-        processed_data: Dict,
-        top_n_list: List[int],
-        selected_insurers: str,
-        toggle_selected_market_share: bool,
-        toggle_selected_qtoq: bool,
-        filter_state: Dict,
-        period_type: str,
-        end_quarter: str,
-    ) -> List:
-        """Update table based on processed data."""
-        logger.info("Starting process_ui callback")
-        logger.debug(f"Input parameters: top_n_list={top_n_list}, selected_insurers={selected_insurers}, "
-                    f"toggle_market_share={toggle_selected_market_share}, toggle_qtoq={toggle_selected_qtoq}")
-        logger.debug(f"Filter state: {filter_state}")
-        logger.debug(f"Period type: {period_type}, End quarter: {end_quarter}")
+            processed_data: Dict,
+            top_n_list: List[int],
+            selected_insurers: str,
+            toggle_show_market_share: bool,
+            toggle_show_change: bool,
+            split_mode: str,
+            filter_state: Dict,
+            period_type: str,
+            end_quarter: str,
+        ) -> List:
+            """Update tables based on processed data, splitting by either line or insurer."""
+            logger.info("Starting process_ui callback")
+            
+            try:
+                # Handle empty processed data
+                if not processed_data['df']:
+                    logger.warning("Empty processed data received")
+                    return [empty_table]
+                
+                df = pd.DataFrame.from_records(processed_data['df'])
+                
+                if df.empty:
+                    logger.warning("Empty DataFrame after conversion")
+                    return [empty_table]
+                    
+                # Convert year_quarter
+                df['year_quarter'] = pd.to_datetime(df['year_quarter'])
+                
+                # Process insurers data
+                df = filter_by_insurer(df, filter_state['selected_metrics'], 
+                                     selected_insurers, top_n_list)
 
-        memory_monitor.log_memory("before_process_ui", logger)
-        
-        try:
-            # Handle empty processed data
-            if not processed_data['df']:
-                logger.warning("Empty processed data received")
-                return empty_table, "No Data", "", "No Data", "", empty_chart
-            
-            logger.info("Creating DataFrame from processed data")
-            df = pd.DataFrame.from_records(processed_data['df'])
-            
-            if df.empty:
-                logger.warning("Empty DataFrame after conversion")
-                return empty_table, "No Data", "", "No Data", "", empty_chart
-            
-            logger.debug(f"DataFrame shape after initial creation: {df.shape}")
-            
-            # Convert year_quarter
-            logger.debug("Converting year_quarter to datetime")
-            df['year_quarter'] = pd.to_datetime(df['year_quarter'])
-            
-            # Process insurers data
-            logger.info("Processing insurers data")
-            logger.debug(f"Selected metrics: {filter_state['selected_metrics']}")
-            df = process_insurers_data(df, filter_state['selected_metrics'], selected_insurers, top_n_list)
-            logger.debug(f"DataFrame shape after processing insurers: {df.shape}")
-            
-            # Get table data
-            logger.info("Generating table data")
-            table_data = get_data_table(
-                df=df,
-                table_selected_metric=filter_state['selected_metrics'],
-                selected_linemains=filter_state['selected_lines'],
-                period_type=period_type,
-                number_of_insurers=top_n_list,
-                toggle_selected_market_share=toggle_selected_market_share,
-                toggle_selected_qtoq=toggle_selected_qtoq,
-                prev_ranks=processed_data['prev_ranks'],
-                current_ranks=processed_data['current_ranks'],
-            )
-            
-            logger.info("Successfully generated table data")
-            output = table_data[0], table_data[1], table_data[2], table_data[1], table_data[2], empty_chart
-            
-            memory_monitor.log_memory("after_process_ui", logger)
-            return output
-            
-        except Exception as e:
-            logger.error(f"Error in process_ui: {str(e)}", exc_info=True)
-            logger.debug("Stack trace:", exc_info=True)
-            output = empty_table, "Error", str(e), "Error", str(e), empty_chart
-            return output
-        finally:
-            logger.info("Completed process_ui callback")
+                
+                # Determine split column and order based on split mode
+                split_column = 'linemain' if split_mode == 'line' else 'insurer'
+                
+                # Get the order from selected values
+                if split_mode == 'line':
+                    # Use the order from selected_lines
+                    ordered_values = [line for line in filter_state['selected_lines'] 
+                                    if line in df[split_column].unique()]
+                else:
+                    # Use the order from selected_insurers (already a list)
+                    ordered_values = [ins for ins in df[split_column].unique()]
+                    
+                logger.warning(f"ordered_values {ordered_values} tables split by {split_mode}")
+                # Create tables for each value in the specified order
+                all_tables = []
+                for value in ordered_values:
+                    # Filter data for current value
+                    df_filtered = df[df[split_column] == value]
+                    
+                    # Get table data
+                    table_data = get_data_table(
+                        df=df_filtered,
+                        split_mode=split_mode,
+                        table_selected_metric=filter_state['selected_metrics'],
+                        selected_linemains=filter_state['selected_lines'],
+                        period_type=period_type,
+                        number_of_insurers=top_n_list,
+                        toggle_show_market_share=toggle_show_market_share,
+                        toggle_show_change=toggle_show_change,
+                        prev_ranks=processed_data['prev_ranks'],
+                        current_ranks=processed_data['current_ranks'],
+                    )
+                    
+                    # Create section using generic function
+                    section = create_data_section(value, table_data)
+                    all_tables.append(section)
+                    
+                logger.warning(f"Generated {len(ordered_values)} tables split by {split_mode}")
+                return all_tables
+                
+            except Exception as e:
+                logger.error(f"Error in process_ui: {str(e)}", exc_info=True)
+                return [html.Div([
+                    html.H3("Error"),
+                    html.P(str(e))
+                ], className="error-container")]
+                
+            finally:
+                logger.info("Completed process_ui callback")

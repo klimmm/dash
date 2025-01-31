@@ -1,12 +1,11 @@
 .container-fluid {
     min-width: 100%;
     padding-right: 0px;
-    padding-left: 15px;
+    padding-left: 5px;
     margin-right: auto;
     min-width: 375px;
     
 }
-
 
 
 .main-navbar {    
@@ -61,11 +60,38 @@
 }
 
 
-.sidebar-col.row {
+.fltr-row {
     max-width: 430px;
     min-width: 375px;
+    min-height: 2.5rem;
+    max-height: 100%;
+    display: flex;
+    margin: 0 !important;
+    padding-bottom: 0.3rem !important;
+    padding-top: 0.2rem !important;
+    align-items: center;   
+    position: relative;
+    border-top: 0.1px solid #e9ecef;
+    border-bottom: 0.1px solid #e9ecef;   
+    border-collapse: collapse !important;
 }
-    
+
+.fltr-row-large {
+    max-width: 430px;
+    min-width: 375px;
+    min-height: 2.5rem;
+    max-height: 100%;
+    display: flex;
+    margin-top: 0.4rem !important;
+    padding-bottom: 0.3rem !important;
+    padding-top: 0.2rem !important;
+    align-items: center;   
+    position: relative;
+    border-top: 0.1px solid #e9ecef;
+    border-bottom: 0.1px solid #e9ecef;   
+    border-collapse: collapse !important;
+}
+
 .sidebar-col.collapsed {
     width: 100%;
     max-width: 100%;

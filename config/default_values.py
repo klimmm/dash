@@ -1,48 +1,18 @@
 MAX_DROPDOWNS = 5
-
 DEFAULT_PERIOD_TYPE = 'ytd'
 DEFAULT_START_QUARTER = '2022Q1'
 DEFAULT_END_QUARTER = '2024Q3'
 DEFAULT_REPORTING_FORM = '0420162'
 TOP_N_LIST = [5, 10, 20]
-# default_values.py
-DEFAULT_CHECKED_LINES = ["все линии"]
+DEFAULT_CHECKED_LINES = ['все линии']
 DEFAULT_PRIMARY_METRICS = 'direct_premiums'
 DEFAULT_PRIMARY_METRICS_158 = ['total_premiums']
-DEFAULT_INSURER = 'top-20'
-DEFAULT_NUMBER_OF_INSURERS = [20]
+DEFAULT_INSURER = 'top-10'
+DEFAULT_NUMBER_OF_INSURERS = [999]
 DEFAULT_NUMBER_OF_PERIODS = 2
 DEFAULT_PRIMARY_METRICS_INWARD = ['ceded_premiums', 'inward_premiums']
 DEFAULT_SECONDARY_METRICS = []
-
 DEFAULT_BUSINESS_TYPE = ['direct']
-
-DEFAULT_SHOW_MARKET_SHARE = ['show']
-DEFAULT_SHOW_CHANGES= []
-
-
-# Main period selector buttons (YTD, YoY, QoQ, etc.)
-button_period_main = "py-0 period-main-btn"
-button_period_main_active = "py-0 period-main-btn-active"
-
-# Sub period selector buttons (3M, 1H, etc.)
-button_period_sub = "py-0 period-sub-btn"
-button_period_sub_active = "py-0 period-sub-btn-active"
-
-# Range selector buttons (1Y, 2Y, etc.)
-button_range_main = "py-0 range-main-btn"
-button_range_main_active = "py-0 range-main-btn-active"
-
-# Custom range button
-button_range_custom = "py-0 range-custom-btn"
-button_range_custom_active = "py-0 range-custom-btn-active"
-
-
-button_toggle_chart = 'py-0 w-100 toggle-btn'
-button_toggle_chart_active = 'py-0 w-100 toggle-btn-active'
-
-INSURANCE_TAB = "insurance-tab"
-REINSURANCE_TAB = "reinsurance-tab"
-DATA_TABLE_TAB = "data-table-tab"
-ACTIVE_CLASS = "me-1 tab-like-button active"
-INACTIVE_CLASS = "tab-like-button"
+DEFAULT_SHOW_MARKET_SHARE = []
+DEFAULT_SHOW_CHANGES= ['show']
+DEFAULT_SPLIT_MODE='line'

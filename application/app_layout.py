@@ -1,24 +1,60 @@
 import dash_bootstrap_components as dbc
 from dash import dcc, html
-from application.filters import create_filters
-from application.navbar_and_stores import create_navbar, create_stores
-from constants.style_config import StyleConstants
+from typing import List
+
+from application.filters_panel import create_filters
+from application.components.lines_tree import create_lines_checklist_buttons, initial_state
+from constants.style_constants import StyleConstants
+from config.default_values import (
+     DEFAULT_REPORTING_FORM,
+     DEFAULT_NUMBER_OF_PERIODS,
+     DEFAULT_NUMBER_OF_INSURERS,
+     DEFAULT_PERIOD_TYPE, 
+     DEFAULT_SHOW_MARKET_SHARE,
+     DEFAULT_SHOW_CHANGES,
+     DEFAULT_SPLIT_MODE
+    )
 
 
-def create_lines_checklist_buttons() -> dbc.Row:
-    """Create hierarchy control buttons."""
-    return dbc.Row(
+def create_stores() -> List[html.Div]:
+    """Create store components for app state management."""
+    return [
+        dcc.Store(id="show-data-table", data=True),
+        dcc.Store(id="processed-data-store"),
+        dcc.Store(id='intermediate-data-store', storage_type='memory'),
+        dcc.Store(id='insurer-options-store', storage_type='memory'),
+        dcc.Store(id="filter-state-store"),
+        dcc.Store(id='insurance-lines-all-values', data=initial_state, storage_type='memory'),
+        dcc.Store(id='expansion-state', data={'states': {}, 'all_expanded': False}),
+        dcc.Store(id='period-type', data=DEFAULT_PERIOD_TYPE),
+        dcc.Store(id='reporting-form', data=DEFAULT_REPORTING_FORM),
+        dcc.Store(id='toggle-selected-market-share', data=DEFAULT_SHOW_MARKET_SHARE),
+        dcc.Store(id='toggle-selected-qtoq', data=DEFAULT_SHOW_CHANGES),
+        dcc.Store(id='top-n-rows', data=DEFAULT_NUMBER_OF_INSURERS),
+        dcc.Store(id='number-of-periods-data-table', data=DEFAULT_NUMBER_OF_PERIODS),
+        dcc.Store(id='table-split-mode', data=DEFAULT_SPLIT_MODE),
+    ]
+
+def create_navbar() -> dbc.Navbar:
+    """Create navigation bar component."""
+    return dbc.Navbar(
         [
-            dbc.Col([
-                dbc.Button("Показать все", id="expand-all-button",
-                          style={"display": "none"}, color="secondary"),
-                dbc.Button("Показать иерархию", id="collapse-button",
-                          style={"display": "none"}, color="info", className="ms-1"),
-                dbc.Button("Drill down", id="detailize-button",
-                          style={"display": "none"}, color="info", className="ms-1"),
-            ])
+            dbc.Container(
+                # fluid=True,
+                children=[
+                    dbc.NavbarToggler(id="navbar-toggler", n_clicks=0),
+                    dbc.Button(
+                        "Data Table",
+                        id="data-table-tab",
+                        color="light",
+                        className=StyleConstants.BTN["TABLE_TAB"]
+                    )
+                ]
+            )
         ],
-        className="mb-3"
+        color="dark",
+        dark=True,
+        className=StyleConstants.NAV
     )
 
 
@@ -31,14 +67,13 @@ def create_debug_footer() -> html.Div:
             dbc.Button(
                 "Toggle Debug Logs",
                 id="debug-toggle",
-                color="secondary",
-                className="btn-custom btn-debug-toggle"
+                className=StyleConstants.BTN["DEBUG"]
             ),
             dbc.Collapse(
                 dbc.Card(
                     dbc.CardBody([
-                        html.H4("Debug Logs", className="debug-title"),
-                        html.Pre(id="debug-output", className="debug-output")
+                        html.H4("Debug Logs", className=StyleConstants.DEBUG["DEBUG_TITLE"]),
+                        html.Pre(id="debug-output", className=StyleConstants.DEBUG["DEBUG_OUTPUT"])
                     ]),
                     className="debug-card"
                 ),
@@ -47,6 +82,9 @@ def create_debug_footer() -> html.Div:
             )
         ], style={"display": "none"},
     )
+
+
+
 def create_app_layout():
     try:
         return dbc.Container([
@@ -55,7 +93,6 @@ def create_app_layout():
             html.Div(id="dummy-output", style={"display": "none"}),
             html.Div(id="dummy-trigger", style={"display": "none"}),
             html.Div(id="tree-container", className=StyleConstants.CONTAINER["TREE"]),
-            
             dbc.CardBody([
                 dbc.Row([
                     dbc.Col([
@@ -64,24 +101,19 @@ def create_app_layout():
                             id="toggle-sidebar-button-sidebar",
                             className=StyleConstants.BTN["SIDEBAR_SHOW"],
                             style={"display": "none"}
-
                         ),
                         create_lines_checklist_buttons(),
                         create_filters(),
-                        dbc.Row([
-                            dbc.Col([
-                                html.H4(id="table-title", className=StyleConstants.TABLE["TITLE"]),
-                                html.H4(id="table-subtitle", className=StyleConstants.TABLE["SUBTITLE"], 
-                                       style={"display": "none"}),
-                            ], className=StyleConstants.CONTAINER["TITLES"], style={"display": "none"}),
-                        ]),
                         html.Div([
                             dcc.Loading(
-                                id="loading-data-table",
+                                id="loading-data-tables",
                                 type="default",
-                                children=html.Div(id="data-table")
+                                children=html.Div(
+                                    id="tables-container",
+                                    className=StyleConstants.CONTAINER["DATA_TABLE"]
+                                )
                             )
-                        ], className=StyleConstants.CONTAINER["DATA_TABLE"]),
+                        ])
                     ], md=12),
                 ])
             ], className=StyleConstants.LAYOUT),

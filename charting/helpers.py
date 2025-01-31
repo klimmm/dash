@@ -1,6 +1,7 @@
-from typing import List
 import pandas as pd
+from typing import List
 from config.logging_config import get_logger
+
 logger = get_logger(__name__)
 
 

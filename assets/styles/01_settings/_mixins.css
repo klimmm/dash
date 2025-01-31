@@ -33,8 +33,8 @@
 
 
 /* Mobile and small screens (up to 768px) */
-
-
+.fltr-row
+.fltr-row-large
 .sidebar-col.row {
     max-width: 430px;
 }
@@ -58,7 +58,7 @@
 /* Tablet */
 @media screen and (min-width: 768px) {
     :root {
-        font-size: 11px;
+        font-size: 12px;
     }
 
 }
@@ -66,8 +66,15 @@
 /* Tablet */
 @media screen and (min-width: 860px) {
     :root {
-        font-size: 12px;
+        font-size: 13px;
     }
+    .fltr-row,
+    .fltr-row-large,
+    .sidebar-col.row {
+        max-width: 480px !important;
+    }
+
+    
 }
 
 
@@ -76,10 +83,9 @@
     :root {
         font-size: 13px;
     }
+    .fltr-row,
+    .fltr-row-large,
     .sidebar-col.row {
-        max-width: 480px !important;
-    }
-    .filter-row {
         max-width: 480px !important;
     }
 

@@ -4,9 +4,9 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from typing import List, Optional, Tuple, Union
 from .config import ChartConfig
-from .trace_generator import ChartTraceGenerator
-from .layout_manager import ChartLayoutManager
 from .get_y_ranges import get_axis_ranges
+from .layout_manager import ChartLayoutManager
+from .trace_generator import ChartTraceGenerator
 from config.logging_config import get_logger
 
 logger = get_logger(__name__)

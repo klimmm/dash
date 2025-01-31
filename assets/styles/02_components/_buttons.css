@@ -99,6 +99,7 @@
     background-color: #4a4a4a;
     color: #ffffff;
     border-color: #4a4a4a;
+    max-width: 30%;
 }
 
 /* Hover and focus states for non-active buttons */
@@ -109,6 +110,7 @@
     background-color: #e8e8e8;
     color: #333333;
     border-color: #d3d3d3;
+    max-width: 30%;
 }
 
 

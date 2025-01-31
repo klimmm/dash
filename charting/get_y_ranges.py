@@ -1,7 +1,8 @@
-from typing import List, Optional, Tuple, Union
 import math
 import plotly.graph_objects as go
+from typing import List, Optional, Tuple, Union
 from config.logging_config import get_logger
+
 logger = get_logger(__name__)
 
 

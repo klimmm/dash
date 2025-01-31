@@ -1,9 +1,8 @@
-import re
 import random
+import re
 from typing import Optional
-
-from config.logging_config import get_logger
 from .config import ColorConfig
+from config.logging_config import get_logger
 
 logger = get_logger(__name__)
 

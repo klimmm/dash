@@ -6,6 +6,8 @@ from typing import Dict, List, Any
 APP_TITLE: str = "Insurance Data Dashboard"
 DEBUG_MODE: bool = True
 PORT: int = 8051
+#dev_tools_hot_reload
+HOT_RELOAD: bool = True
 
 DATA_FILE_REINSURANCE: str = './data_files/reinsurance_market.csv'
 DATA_FILE_158: str = './data_files/3rd_158_net.csv'
