@@ -79,9 +79,9 @@ def main():
         port = int(os.environ.get("PORT", 8051))
         print(f"Starting server on port {port}...")
         app.run_server(
-            host='127.0.0.1',
+            host='0.0.0.1',
             port=port,
-            debug=True
+            debug=False
         )
     except Exception as e:
         print(f"Error during startup: {e}")
