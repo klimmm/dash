@@ -5,7 +5,7 @@ import pandas as pd
 
 from config.logging_config import get_logger
 from constants.translations import translate
-from data_process.io import save_df_to_csv
+# from data_process.io import save_df_to_csv
 from data_process.mappings import map_line
 from .config import create_datatable
 from .transformers import transform_table_data
@@ -14,10 +14,12 @@ from config.main_config import LINES_162_DICTIONARY, LINES_158_DICTIONARY
 
 
 logger = get_logger(__name__)
-import time
-from functools import wraps
+
 
 def timer(func):
+    import time
+    from functools import wraps
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         start = time.time()
@@ -26,7 +28,8 @@ def timer(func):
         print(f"{func.__name__} took {(end-start)*1000:.2f}ms to execute")
         return result
     return wrapper
-    
+
+
 @timer
 def get_data_table(
     df: pd.DataFrame,
@@ -54,7 +57,7 @@ def get_data_table(
         current_ranks,
         split_mode
     )
-    #save_df_to_csv(table_data, "df_after_pivot.csv")
+    # save_df_to_csv(table_data, "df_after_pivot.csv")
 
     if split_mode == 'insurer':
 

@@ -8,15 +8,11 @@ from .process_group import process_group_data
 
 logger = get_logger(__name__)
 
-# Constants
-PLACE_COL = 'N'
-INSURER_COL = 'insurer'
-LINE_COL = 'linemain'
-SECTION_HEADER_COL = 'is_section_header'
-import time
-from functools import wraps
 
 def timer(func):
+    import time
+    from functools import wraps
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         start = time.time()
@@ -25,6 +21,13 @@ def timer(func):
         print(f"{func.__name__} took {(end-start)*1000:.2f}ms to execute")
         return result
     return wrapper
+
+# Constants
+PLACE_COL = 'N'
+INSURER_COL = 'insurer'
+LINE_COL = 'linemain'
+SECTION_HEADER_COL = 'is_section_header'
+
     
 @timer
 def transform_table_data(
@@ -36,7 +39,7 @@ def transform_table_data(
 ) -> pd.DataFrame:
     """Transform and format table data with enhanced error handling and logging."""
     logger.info(f"Starting table transformation: split_mode={split_mode}, rows={len(df)}")
-    
+
     try:
         # Configure grouping
         group_configs = {
@@ -44,11 +47,11 @@ def transform_table_data(
             'insurer': (INSURER_COL, LINE_COL, map_insurer, map_line)
         }
         group_col, item_col, group_mapper, item_mapper = group_configs[split_mode]
-        
+
         transformed_dfs = []
         for group in df[group_col].unique():
             logger.debug(f"Processing group: {group}")
-            
+
             # Get group-specific ranks
             group_prev_ranks = prev_ranks.get(group.lower(), {}) if split_mode == 'line' and prev_ranks else prev_ranks
             group_current_ranks = current_ranks.get(group.lower(), {}) if split_mode == 'line' and current_ranks else current_ranks

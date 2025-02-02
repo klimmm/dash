@@ -143,6 +143,7 @@ def get_column_format(col_name: str) -> Format:
             group_delimiter=','
         )
 
+
 def format_summary_rows(df: pd.DataFrame) -> pd.DataFrame:
     """Process summary data rows with sorting logic for totals and top-N entries."""
     logger.debug("Processing summary rows")
@@ -165,13 +166,14 @@ def format_summary_rows(df: pd.DataFrame) -> pd.DataFrame:
         by=INSURER_COL, 
         key=lambda x: pd.Series([get_sort_priority(ins) for ins in x])
     )
-    
+
     # Initialize new columns efficiently
     df.insert(0, PLACE_COL, np.nan)
     df[SECTION_HEADER_COL] = False
-    
+
     logger.debug(f"Processed {len(df)} summary rows")
     return df.replace(0, '-').fillna('-')
+
 
 def get_rank_change(current: int, previous: Optional[int]) -> str:
     """Calculate and format rank change."""
@@ -184,6 +186,7 @@ def get_rank_change(current: int, previous: Optional[int]) -> str:
         return f"{current} (-)"
     return f"{current} ({'+' if diff > 0 else ''}{diff})"
 
+    
 def format_ranking_column(
     df: pd.DataFrame,
     prev_ranks: Optional[Dict] = None,
@@ -192,7 +195,7 @@ def format_ranking_column(
 ) -> pd.DataFrame:
     """Process insurance company rankings and format rank changes."""
     logger.info(f"Formatting ranking column: split_mode={split_mode}, rows={len(df)}")
-    
+
     if df.empty or not current_ranks:
         df.insert(0, PLACE_COL, '')
         return df
@@ -210,7 +213,7 @@ def format_ranking_column(
             line_ranks = current_ranks.get(line.lower(), {})
             curr = line_ranks.get(insurer)
             prev = prev_ranks.get(line.lower(), {}).get(insurer) if prev_ranks else None
-        
+
         return get_rank_change(curr, prev) if curr is not None else '-'  # Changed to '-'
 
     result_df[PLACE_COL] = result_df.apply(get_rank_info, axis=1)

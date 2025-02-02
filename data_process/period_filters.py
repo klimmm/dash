@@ -5,6 +5,19 @@ from data_process.io import save_df_to_csv
 
 logger = get_logger(__name__)
 
+def timer(func):
+    import time
+    from functools import wraps
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f"{func.__name__} took {(end-start)*1000:.2f}ms to execute")
+        return result
+    return wrapper
+
 
 def filter_by_end_quarter(df: pd.DataFrame, end_quarter: str) -> pd.DataFrame:
     """Filter DataFrame to include only dates up to end_quarter."""
@@ -105,18 +118,7 @@ def filter_by_num_periods(df: pd.DataFrame, period_type: str, num_periods_select
 
     return df, num_periods_available
 
-def timer(func):
-    import time
-    from functools import wraps
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        start = time.time()
-        result = func(*args, **kwargs)
-        end = time.time()
-        print(f"{func.__name__} took {(end-start)*1000:.2f}ms to execute")
-        return result
-    return wrapper
-    
+
 @timer
 def filter_by_period(df: pd.DataFrame, end_quarter: str, period_type: str, num_periods_selected: int):
 

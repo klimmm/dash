@@ -9,17 +9,11 @@ from .formatters import format_ranking_column, format_summary_rows
 
 logger = get_logger(__name__)
 
-# Constants
-PLACE_COL = 'N'
-INSURER_COL = 'insurer'
-LINE_COL = 'linemain'
-SECTION_HEADER_COL = 'is_section_header'
-
-
-import time
-from functools import wraps
 
 def timer(func):
+    import time
+    from functools import wraps
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         start = time.time()
@@ -29,6 +23,13 @@ def timer(func):
         return result
     return wrapper
     
+# Constants
+PLACE_COL = 'N'
+INSURER_COL = 'insurer'
+LINE_COL = 'linemain'
+SECTION_HEADER_COL = 'is_section_header'
+
+
 @timer
 def process_group_data(
     df: pd.DataFrame,
@@ -43,26 +44,26 @@ def process_group_data(
     Process group data with enhanced metric ordering and pivot operations.
     """
     logger.info(f"Starting group data processing: rows={len(df)}, split_mode={split_mode}")
-    
+
     if df.empty:
         logger.warning("Empty DataFrame received")
         return pd.DataFrame()
-        
+
     try:
         # Process year_quarter and create column names
         df['year_quarter'] = pd.to_datetime(df['year_quarter']).dt.to_period('Q').astype(str)
         df['column_name'] = df['metric'] + '_' + df['year_quarter']
-        
+
         # Get metrics in original order
         metrics = df['metric'].unique()
         logger.info(f"Processing {len(metrics)} unique metrics")
-        
+
         # Find root for each metric preserving original order
         root_metrics = {}
         root_order = []
-        
+
         sorted_metric_roots = sorted(METRICS, key=len, reverse=True)
-        
+
         # Process metrics in their original order
         for metric in metrics:
             root = next((root for root in sorted_metric_roots 
@@ -70,26 +71,26 @@ def process_group_data(
             root_metrics[metric] = root
             if root not in root_order:
                 root_order.append(root)
-        
+
         # Create metric groups DataFrame
         metric_groups = pd.DataFrame({
             'metric': metrics,
             'root': [root_metrics[m] for m in metrics]
         })
-        
+
         # Create root order mapping based on appearance in original data
         root_order_map = {root: idx for idx, root in enumerate(root_order)}
         metric_groups['root_order'] = metric_groups['root'].map(root_order_map)
-        
+
         # Sort metrics within each root group
         metric_groups = metric_groups.sort_values(['root_order', 'metric'])
-        
+
         # Get quarters in reverse chronological order
         quarters = sorted(df['year_quarter'].unique(), reverse=True)
-        
+
         # Create set of existing combinations for efficient lookup
         existing_combinations = set(df['column_name'].unique())
-        
+
         # Create ordered columns preserving metric grouping
         ordered_cols = []
         for _, group in metric_groups.groupby('root', sort=False):
@@ -98,7 +99,7 @@ def process_group_data(
                     col_name = f"{metric}_{quarter}"
                     if col_name in existing_combinations:
                         ordered_cols.append(col_name)
-        
+
         logger.debug(f"Created {len(ordered_cols)} ordered columns")
         logger.debug(f"before pivot {df} s")
         # Set column ordering
@@ -107,11 +108,11 @@ def process_group_data(
             categories=ordered_cols,
             ordered=True
         )
-        
+
         # Prepare line categories
         unique_lines = df[LINE_COL].unique()
         df[LINE_COL] = pd.Categorical(df[LINE_COL], categories=unique_lines, ordered=True)
-        
+
         # Pivot data
         pivot_df = df.pivot_table(
             index=[INSURER_COL, LINE_COL],
@@ -121,38 +122,38 @@ def process_group_data(
             observed=True,
             dropna=False
         ).reset_index()
-        
+
         pivot_df[LINE_COL] = pivot_df[LINE_COL].astype(str)
         logger.debug(f"pivot_df  {pivot_df} s")
         # Split and process summary/regular rows
         summary_mask = pivot_df[INSURER_COL].str.lower().str.contains('^top|^total', na=False)
         regular_rows = pivot_df[~summary_mask].copy()
         summary_rows = pivot_df[summary_mask].copy() if summary_mask.any() else None
-        
+
         # Process regular rows with ranking
         processed_regular = format_ranking_column(regular_rows, prev_ranks, current_ranks, split_mode)
-        
+
         # Process summary rows if they exist
         if summary_rows is not None:
             processed_summary = format_summary_rows(summary_rows)
             result_df = pd.concat([processed_regular, processed_summary], ignore_index=True)
         else:
             result_df = processed_regular
-        
+
         # Apply mappings
         result_df[INSURER_COL] = result_df[INSURER_COL].apply(map_insurer)
         result_df[LINE_COL] = result_df[LINE_COL].apply(map_line)
         result_df[SECTION_HEADER_COL] = False
-        
+
         # Organize final columns
         base_cols = {INSURER_COL, LINE_COL}
         metric_cols = [col for col in pivot_df.columns if col not in base_cols]
         final_cols = ([PLACE_COL] if PLACE_COL in result_df.columns else []) + \
                     [INSURER_COL, LINE_COL] + metric_cols + [SECTION_HEADER_COL]
-        
+
         logger.info(f"Successfully processed group data: output_rows={len(result_df)}")
         return result_df[final_cols].replace(0, '-').fillna('-')
-        
+
     except Exception as e:
         logger.error(f"Error in process_group_data: {str(e)}", exc_info=True)
         raise

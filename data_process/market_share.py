@@ -10,6 +10,7 @@ logger = get_logger(__name__)
 def timer(func):
     import time
     from functools import wraps
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         start = time.time()
@@ -18,7 +19,8 @@ def timer(func):
         print(f"{func.__name__} took {(end-start)*1000:.2f}ms to execute")
         return result
     return wrapper
-    
+
+
 @timer
 def calculate_market_share(
     df: pd.DataFrame,

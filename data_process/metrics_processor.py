@@ -10,9 +10,11 @@ from constants.metrics import METRICS
 
 logger = get_logger(__name__)
 
+
 def timer(func):
     import time
     from functools import wraps
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         start = time.time()
@@ -21,7 +23,8 @@ def timer(func):
         print(f"{func.__name__} took {(end-start)*1000:.2f}ms to execute")
         return result
     return wrapper
-    
+
+
 @timer
 def get_required_metrics(
     selected_metrics: List[str],
@@ -81,7 +84,7 @@ def get_calculation_order(metrics: Set[str]) -> List[str]:
     ordered = []
     remaining = metrics.copy()
     deps_cache = {m: set(METRICS[m][0]) if m in METRICS else set() for m in metrics}
-    
+
     while remaining:
         available = remaining - {m for m in remaining if deps_cache[m] & remaining}
         if not available:
@@ -89,6 +92,7 @@ def get_calculation_order(metrics: Set[str]) -> List[str]:
         ordered.extend(sorted(available))
         remaining -= available
     return ordered
+
 
 @timer
 def calculate_metrics(
@@ -99,15 +103,15 @@ def calculate_metrics(
     """Optimized metric calculation minimizing DataFrame operations"""
     existing = df['metric'].unique()
     selected_set = set(selected_metrics)
-    
-    
+
+
     if all(m in existing for m in required_metrics):
         result = df.loc[df['metric'].isin(selected_set)]
         return result
 
     calculation_order = get_calculation_order(set(required_metrics))
     grouping_cols = [col for col in df.columns if col not in ['metric', 'value']]
-    
+
     metric_calcs = {
         m: METRICS[m][1] 
         for m in calculation_order 
@@ -116,13 +120,13 @@ def calculate_metrics(
             any(m in METRICS[dep][0] for dep in selected_set if dep in METRICS)
         )
     }
-    
+
     all_groups = []
-    
+
     for _, group in df.groupby(grouping_cols):
         metrics = dict(zip(group['metric'], group['value']))
         base = {col: group[col].iloc[0] for col in grouping_cols}
-        
+
         new_metrics = []
         for metric in calculation_order:
             if metric not in metrics and metric in metric_calcs:
@@ -137,7 +141,7 @@ def calculate_metrics(
                         })
                 except Exception:
                     continue
-                    
+
         if new_metrics:
             all_groups.extend(new_metrics)
 
@@ -153,5 +157,4 @@ def calculate_metrics(
     else:
         result = df.loc[df['metric'].isin(selected_set)]
 
-    
     return result

@@ -1,22 +1,23 @@
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from typing import Tuple, Dict, List, Any
+import time
 
 import dash
 from dash import Input, Output, State
 from dash.exceptions import PreventUpdate
+from functools import wraps
 import pandas as pd
 
 from config.callback_logging import log_callback
 from config.logging_config import get_logger, memory_monitor
 from data_process.growth import calculate_growth
-from data_process.io import save_df_to_csv
 from data_process.market_share import calculate_market_share
 from data_process.options import get_rankings
+# from data_process.io import save_df_to_csv
 
 logger = get_logger(__name__)
 
-import time
-from functools import wraps
+
 def timer(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -26,35 +27,34 @@ def timer(func):
         print(f"{func.__name__} took {(end-start)*1000:.2f}ms to execute")
         return result
     return wrapper
+
     
 @dataclass
 class ProcessedData:
     df: List[Dict[str, Any]]
     prev_ranks: Dict[str, Any]
     current_ranks: Dict[str, Any]
-    
+
     def to_dict(self):
-        # Avoid double conversion by returning the existing dictionary structure
         return {
             'df': self.df,
             'prev_ranks': self.prev_ranks,
             'current_ranks': self.current_ranks
         }
 
+
 @timer
 def create_processed_data(df: pd.DataFrame, 
                          prev_ranks: Dict[str, Any], 
                          current_ranks: Dict[str, Any]) -> Dict[str, Any]:
-    # Use orient='records' with to_dict() for better performance
     records = df.to_dict('records')
-    
-    # Create ProcessedData instance directly
+
     processed = ProcessedData(
         df=records,
         prev_ranks=prev_ranks,
         current_ranks=current_ranks
     )
-    
+
     return processed.to_dict()
 
 
@@ -110,7 +110,6 @@ def setup_process_data(app: dash.Dash):
             rankings = get_rankings(df, all_metrics, lines)
             current_ranks = rankings.get('current_ranks', {})
             prev_ranks = rankings.get('prev_ranks', {})
-
 
             # Process data transformations
             df = calculate_market_share(df, selected_insurers, all_metrics, show_data_table)

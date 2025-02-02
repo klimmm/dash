@@ -21,6 +21,7 @@ from constants.translations import translate
 
 logger = get_logger(__name__)
 
+
 def get_triggered_index(ctx: dash.callback_context, 
                        buttons: List[Dict[str, str]], 
                        component_id: str) -> Optional[int]:
@@ -29,12 +30,12 @@ def get_triggered_index(ctx: dash.callback_context,
         return None
     triggered = ctx.triggered[0]["prop_id"].split(".")[0]
     expected_prefix = f"btn-{component_id}-"
-    
+
     # Extract the value part from the triggered ID
     if not triggered.startswith(expected_prefix):
         return None
     triggered_value = triggered[len(expected_prefix):]
-    
+
     # Find matching button index
     for i, btn in enumerate(buttons):
         if btn['value'] == triggered_value:
@@ -271,7 +272,6 @@ def setup_single_choice_buttons(app: dash.Dash) -> None:
 
         return [dash.no_update] * (config['total_buttons'] + 2)
 
-
     @app.callback(
         [Output(f"btn-reporting-form-{btn['value']}", "className") 
          for btn in BUTTON_CONFIG['reporting-form']['buttons']] +
@@ -280,7 +280,6 @@ def setup_single_choice_buttons(app: dash.Dash) -> None:
          for btn in BUTTON_CONFIG['reporting-form']['buttons']],
         [State('reporting-form', 'data')]
     )
-
     @log_callback
     def update_reporting_form_buttons(*args):
         """
@@ -354,9 +353,6 @@ def setup_single_choice_buttons(app: dash.Dash) -> None:
 
         return [dash.no_update] * (config['total_buttons'] + 1)
 
-
-    
-    
     @app.callback(
         [Output(f"btn-periods-data-table-{btn['value']}", "className") 
          for btn in BUTTON_CONFIG['periods-data-table']['buttons']] +

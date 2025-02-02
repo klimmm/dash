@@ -1,23 +1,17 @@
 from typing import List, Dict, Tuple
 import time
-import pandas as pd
+
+from collections import defaultdict
+from functools import wraps, lru_cache
 import numpy as np
+import pandas as pd
 
 from config.logging_config import get_logger
 from config.main_config import LINES_162_DICTIONARY, LINES_158_DICTIONARY
 from data_process.io import load_json
 from data_process.mappings import map_insurer
-from collections import defaultdict
 
 logger = get_logger(__name__)
-import time
-from functools import wraps
-from functools import lru_cache
-from numba import jit
-import numpy as np
-import pandas as pd
-from typing import List, Dict
-import logging
 
 def timer(func):
     @wraps(func)
@@ -28,26 +22,26 @@ def timer(func):
         print(f"{func.__name__} took {(end-start)*1000:.2f}ms to execute")
         return result
     return wrapper
-    
+
 
 @timer
 def get_year_quarter_options(df):
     # Get unique and sorted values in one operation
     unique_quarters = pd.Series(df['year_quarter'].unique()).sort_values()
-    
+
     # Pre-allocate result list
     result_size = len(unique_quarters)
     quarter_options = [None] * result_size
-    
+
     # Vectorized operations for extracting year and quarter
     years = unique_quarters.dt.year
     quarters = unique_quarters.dt.quarter
-    
+
     # Build options list
     for i in range(result_size):
         quarter_str = f"{years[i]}Q{quarters[i]}"
         quarter_options[i] = {'label': quarter_str, 'value': quarter_str}
-    
+
     return quarter_options
 
 
@@ -55,6 +49,8 @@ def get_year_quarter_options(df):
 def cached_map_insurer(insurer: str) -> str:
     """Cached version of map_insurer to avoid repeated mappings"""
     return map_insurer(insurer)
+
+
 @timer
 def get_insurers_and_options(
     df: pd.DataFrame,
@@ -69,13 +65,13 @@ def get_insurers_and_options(
         insurers = data[:, 2]
         linemains = data[:, 3]
         values = data[:, 4].astype(np.float64)
-        
+
         # Process quarters
         latest_quarter = np.max(year_quarters)
         quarter_mask = year_quarters == latest_quarter
         quarter_metrics = np.unique(metrics[quarter_mask])
         metric_to_use = next(m for m in all_metrics if m in quarter_metrics)
-        
+
         # Create masks
         final_mask = (
             quarter_mask & 
@@ -83,42 +79,43 @@ def get_insurers_and_options(
             np.isin(linemains, lines) & 
             ~np.isin(insurers, ['total', 'top-5', 'top-10', 'top-20'])
         )
-        
+
         # Filter and aggregate
         filtered_insurers = insurers[final_mask]
         filtered_values = values[final_mask]
-        
+
         if len(filtered_insurers) == 0:
             return []
-            
+
         unique_insurers, inverse_indices = np.unique(filtered_insurers, return_inverse=True)
         aggregated = np.zeros(len(unique_insurers))
         np.add.at(aggregated, inverse_indices, filtered_values)
-        
+
         # Sort insurers
         sort_indices = np.argsort(-aggregated)
         sorted_insurers = unique_insurers[sort_indices]
-        
+
         # Optimize result creation
         TOP_OPTIONS = ['top-5', 'top-10', 'top-20']
-        
+
         # Pre-allocate result list
         result_size = len(TOP_OPTIONS) + len(sorted_insurers)
         result = [None] * result_size
-        
+
         # Fill TOP_OPTIONS first (they don't need mapping)
         for i, option in enumerate(TOP_OPTIONS):
             result[i] = {'label': cached_map_insurer(option), 'value': option}
-            
+
         # Fill remaining insurers using cached mapping
         for i, insurer in enumerate(sorted_insurers, len(TOP_OPTIONS)):
             result[i] = {'label': cached_map_insurer(insurer), 'value': insurer}
-        
+
         return result
-        
+
     except Exception as e:
         logger.error(f"Error generating insurer options: {str(e)}", exc_info=True)
         return []
+
 
 @timer
 def get_rankings(

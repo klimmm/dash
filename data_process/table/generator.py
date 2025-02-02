@@ -6,6 +6,20 @@ from config.logging_config import get_logger
 logger = get_logger(__name__)
 
 
+def timer(func):
+    import time
+    from functools import wraps
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f"{func.__name__} took {(end-start)*1000:.2f}ms to execute")
+        return result
+    return wrapper
+
+
 class ColumnType(Enum):
     RANK = 'N'
     INSURER = 'insurer'
@@ -284,19 +298,8 @@ def generate_styles(df: pd.DataFrame) -> Dict[str, List[Dict[str, Any]]]:
                 })
 
     return styles
-import time
-from functools import wraps
 
-def timer(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        start = time.time()
-        result = func(*args, **kwargs)
-        end = time.time()
-        print(f"{func.__name__} took {(end-start)*1000:.2f}ms to execute")
-        return result
-    return wrapper
-    
+
 @timer
 def generate_datatable_config(
     df: pd.DataFrame,

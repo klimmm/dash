@@ -1,4 +1,4 @@
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from typing import List, Dict, Tuple, Any
 
 import dash
@@ -9,18 +9,18 @@ from config.default_values import TOP_N_LIST
 from config.logging_config import get_logger
 from data_process.metrics_options import get_checklist_config
 from data_process.metrics_processor import get_required_metrics, calculate_metrics
-from data_process.period_filters import filter_by_period, filter_by_period_type
-from data_process.options import get_year_quarter_options
+from data_process.period_filters import filter_by_period_type
 from data_process.top_n import add_top_n_rows
-from data_process.io import save_df_to_csv
-from constants.metrics import METRICS
+# from data_process.io import save_df_to_csv
 
 
 logger = get_logger(__name__)
 
+
 def timer(func):
     import time
     from functools import wraps
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         start = time.time()
@@ -29,7 +29,7 @@ def timer(func):
         print(f"{func.__name__} took {(end-start)*1000:.2f}ms to execute")
         return result
     return wrapper
-    
+
 
 @dataclass
 class IntermediateData:
@@ -108,7 +108,7 @@ def setup_prepare_data(app: dash.Dash, df_162, df_158, end_quarter_options_162, 
                   .pipe(calculate_metrics, selected_metrics, required_metrics)
                  )
 
-            save_df_to_csv(df, "df_after_prepare.csv")
+            # save_df_to_csv(df, "df_after_prepare.csv")
 
             intermediate_data = IntermediateData(
                 df=df.to_dict('records'),

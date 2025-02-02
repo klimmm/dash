@@ -50,7 +50,8 @@ def setup_line_selection(app: dash.Dash, insurance_lines_tree_162, insurance_lin
 
                 if detailed != [selected_line]:
                     logger.info(f"Detailed selection changed for index {dropdown_index}")
-                    result = [] #[line for line in current_state if line != selected_line]
+                    result = [] 
+                    # [line for line in current_state if line != selected_line]
                     for item in detailed:
                         if item not in result:
                             result.append(item)
@@ -114,8 +115,6 @@ def setup_line_selection(app: dash.Dash, insurance_lines_tree_162, insurance_lin
                          exc_info=True)
             raise
 
-
-    
     def _process_dynamic_selection(insurance_line: List[str], current_state: List[str],
                                  insurance_lines_tree) -> List[str]:
         """Process dynamic insurance line selection."""
@@ -210,7 +209,6 @@ def setup_line_selection(app: dash.Dash, insurance_lines_tree_162, insurance_lin
         except Exception as e:
             logger.error(f"Error in dropdown update: {str(e)}", exc_info=True)
             raise
-
 
     def _handle_remove_dropdown(existing_dropdowns: List, insurance_line: List[str],
                               removed_index: int, options: List[Dict]) -> tuple:

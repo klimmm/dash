@@ -1,12 +1,14 @@
+import time
 from typing import List
 
+from functools import wraps
 import pandas as pd
 
 from config.logging_config import get_logger
 
+
 logger = get_logger(__name__)
-import time
-from functools import wraps
+
 
 def timer(func):
     @wraps(func)
@@ -17,7 +19,8 @@ def timer(func):
         print(f"{func.__name__} took {(end-start)*1000:.2f}ms to execute")
         return result
     return wrapper
-    
+
+
 @timer
 def filter_by_insurer(
     df: pd.DataFrame,
@@ -44,7 +47,7 @@ def filter_by_insurer(
 
     latest_quarter = df['year_quarter'].max()
     excluded_insurers = ['top-5', 'top-10', 'top-20', 'total']
-    
+
     logger.debug(f" excluded_insurers {excluded_insurers}")
     # Get ranking metric
     ranking_metric = next(
@@ -138,7 +141,7 @@ def filter_by_insurer(
                 complete_df = result_df_indexed.reindex(multi_index)
                 result_df = complete_df.reset_index()
                 processed_dfs.append(result_df)
-    
+
     # Combine all processed data
     df = pd.concat(processed_dfs, ignore_index=True) if processed_dfs else df
 
@@ -179,38 +182,38 @@ def filter_by_insurer(
         df = df[~df['insurer'].str.match('|'.join(f'top-{n}' for n in numbers_to_filter))]
 
     metric_to_use = next(m for m in selected_metrics if m in df['metric'].unique())
-    latest_data = latest_df.groupby('insurer')['value'].sum().reset_index().sort_values('value', ascending=False) 
-    
+    latest_data = latest_df.groupby('insurer')['value'].sum().reset_index().sort_values('value', ascending=False)
+
     # Get sorted insurers from filtered data
     all_insurers_sorted = latest_data['insurer'].unique().tolist()
     logger.debug(f" all_insurers_sorted {all_insurers_sorted}")
-    
+
     # Add the special categories at the end for insurers
     full_insurer_categories = all_insurers_sorted + excluded_insurers
-    
+
     # Get all unique metrics from the dataframe
     all_metrics = df['metric'].unique().tolist()
-    
+
     # Create ordered list of metrics:
     # First, include metrics from selected_metrics that exist in the data
     # Then, add remaining metrics that weren't in selected_metrics
     ordered_metrics = [m for m in selected_metrics if m in all_metrics]
     remaining_metrics = [m for m in all_metrics if m not in selected_metrics]
     full_metric_categories = ordered_metrics + remaining_metrics
-    
+
     # Create and apply categorical dtypes for both insurers and metrics
     insurer_cat = pd.CategoricalDtype(categories=full_insurer_categories, ordered=True)
     metric_cat = pd.CategoricalDtype(categories=full_metric_categories, ordered=True)
-    
+
     # Convert both columns to categorical
     df['insurer'] = df['insurer'].astype(insurer_cat)
     df['metric'] = df['metric'].astype(metric_cat)
-    
+
     # Sort by both categorical columns
     df = df.sort_values(['metric', 'insurer'])
-    
+
     # Convert back to string type after sorting
     df['insurer'] = df['insurer'].astype(str)
     df['metric'] = df['metric'].astype(str)
-    
+
     return df

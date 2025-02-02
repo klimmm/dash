@@ -1,9 +1,11 @@
 import json
 from typing import List, Dict, Set, Tuple, Any
+import time
 
 import dash
 from dash import Dash, ALL, Input, Output, State
 from dash.exceptions import PreventUpdate
+from functools import wraps
 import pandas as pd
 import numpy as np
 
@@ -15,8 +17,7 @@ from data_process.mappings import map_insurer
 from data_process.options import get_insurers_and_options
 
 logger = get_logger(__name__)
-import time
-from functools import wraps
+
 
 def timer(func):
     @wraps(func)
@@ -27,8 +28,8 @@ def timer(func):
         print(f"{func.__name__} took {(end-start)*1000:.2f}ms to execute")
         return result
     return wrapper
-    
 
+    
 @timer
 def create_updated_dropdown(
     index: int,
@@ -59,6 +60,7 @@ def create_updated_dropdown(
         is_remove_button=(total_dropdowns > 1)
     )
 
+    
 @timer
 def get_consistently_top_insurers(
     df: pd.DataFrame,
@@ -94,16 +96,16 @@ def get_consistently_top_insurers(
         for line in lines:
             # Create line mask and combine with base mask
             line_mask = base_mask & (linemains == line)
-            
+
             # Get masked data
             line_insurers = insurers[line_mask]
             line_values = values[line_mask]
-            
+
             if len(line_insurers) > 0:
                 # Sort using numpy
                 sort_indices = np.argsort(-line_values)
                 sorted_insurers = line_insurers[sort_indices]
-                
+
                 # Fill sets efficiently
                 top_insurers_by_line[line]['top_5'] = set(sorted_insurers[:5])
                 top_insurers_by_line[line]['top_10'] = set(sorted_insurers[:10])
@@ -126,7 +128,7 @@ def get_consistently_top_insurers(
         return {'top_5': set(), 'top_10': set(), 'top_20': set()}
     return consistent_top_performers
 
-    
+
 def setup_insurer_selection(app: Dash) -> None:
     @app.callback(
         Output('selected-insurers-container', 'children'),
@@ -310,7 +312,6 @@ def setup_insurer_selection(app: Dash) -> None:
                     excluded_insurers=excluded_insurers,
                     has_top_selection=has_top_selection
                 ))
-
 
             logger.debug(f"options: {insurer_options}")
             logger.debug(f"Final state - Selections: {selected_insurers}, Dropdowns: {len(updated_dropdowns)}")

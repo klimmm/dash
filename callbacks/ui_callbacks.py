@@ -1,21 +1,21 @@
 from dataclasses import dataclass, asdict
 from typing import List, Dict, Any, Optional
+import time
 
 from dash import Input, Output, State, html
+from functools import wraps
 import pandas as pd
 
 from config.callback_logging import log_callback
 from config.logging_config import get_logger
 from data_process.insurer_filters import filter_by_insurer
 from data_process.table.data import get_data_table
-from data_process.io import save_df_to_csv
-from memory_profiler import profile
+# from data_process.io import save_df_to_csv
 
 logger = get_logger(__name__)
 
 empty_table = html.Div("No data available for the selected filters", className="text-center p-4")
-import time
-from functools import wraps
+
 
 def timer(func):
     @wraps(func)
@@ -47,6 +47,7 @@ class ProcessedUIData:
         """Convert dataclass to dictionary for processing."""
         return asdict(self)
 
+    
 @dataclass
 class UISettings:
     selected_insurers: str
