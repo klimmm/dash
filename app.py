@@ -79,7 +79,7 @@ def main():
         port = int(os.environ.get("PORT", 8051))
         print(f"Starting server on port {port}...")
         app.run_server(
-            host='0.0.0.1',
+            host='0.0.0.0',
             port=port,
             debug=False
         )
