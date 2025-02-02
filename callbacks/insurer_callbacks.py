@@ -143,7 +143,7 @@ def setup_insurer_selection(app: Dash) -> None:
          State('selected-insurers-container', 'children'),
          State('selected-insurers-all-values', 'data'),
          State('insurance-lines-all-values', 'data'),
-         State('primary-metric-all-values', 'data')
+         State('metric-all-values', 'data')
         ]
     )
     @log_callback
@@ -156,7 +156,7 @@ def setup_insurer_selection(app: Dash) -> None:
         existing_dropdowns: List,
         current_selected_insurers: List[str],
         lines: List[str],
-        primary_metrics: List[str],
+        selected_metrica: List[str],
     ) -> List:
         """
         @API_STABILITY: BACKWARDS_COMPATIBLE
@@ -169,8 +169,8 @@ def setup_insurer_selection(app: Dash) -> None:
         try:
             trigger_id = ctx.triggered[0]['prop_id']
             df = pd.DataFrame.from_records(intermediate_data.get('df', []))
-            insurer_options = get_insurers_and_options(df, primary_metrics, lines)
-            top_insurers = get_consistently_top_insurers(df, primary_metrics, lines)
+            insurer_options = get_insurers_and_options(df, selected_metrica, lines)
+            top_insurers = get_consistently_top_insurers(df, selected_metrica, lines)
 
             logger.debug(f"insurer_options: {insurer_options}")
             if not existing_dropdowns:

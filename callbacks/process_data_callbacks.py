@@ -28,7 +28,7 @@ def timer(func):
         return result
     return wrapper
 
-    
+
 @dataclass
 class ProcessedData:
     df: List[Dict[str, Any]]
@@ -64,7 +64,6 @@ def setup_process_data(app: dash.Dash):
          Output('processed-data-store', 'data')],
         [Input('intermediate-data-store', 'data')],
         [State('selected-insurers-all-values', 'data'),
-         State('show-data-table', 'data'),
          State('filter-state-store', 'data')],
         prevent_initial_call=True
     )
@@ -73,11 +72,9 @@ def setup_process_data(app: dash.Dash):
     def process_data(
             intermediate_data: Dict,
             selected_insurers: str,
-            show_data_table: bool,
             current_filter_state: Dict
     ) -> Tuple:
         """Second part of data processing: Insurer processing and metric calculations"""
-        logger.info("Starting process_data callback")
         memory_monitor.log_memory("start_process_data", logger)
 
         ctx = dash.callback_context
@@ -89,55 +86,33 @@ def setup_process_data(app: dash.Dash):
         logger.info(f"Callback triggered by: {trigger_id}")
 
         try:
-            # Validate intermediate data
             if not isinstance(intermediate_data, dict):
                 return dash.no_update, dash.no_update
 
-            logger.info("Creating DataFrame from intermediate data")
             df = pd.DataFrame.from_records(intermediate_data.get('df', []))
-            # save_df_to_csv(df, "df_before_market_share.csv")
-
-            # Extract parameters
-            all_metrics = intermediate_data.get('all_metrics', [])
-            business_type_checklist = intermediate_data.get('business_type_checklist', [])
+            selected_metrics = intermediate_data.get('selected_metrics', [])
             lines = intermediate_data.get('lines', [])
-            period_type = intermediate_data.get('period_type', '')
-            num_periods_selected = intermediate_data.get('num_periods_selected', 0)
 
-            logger.info("Processing data pipeline")
+            rankings = get_rankings(df, selected_metrics, lines)
 
-            # Retrieve insurer rankings
-            rankings = get_rankings(df, all_metrics, lines)
-            current_ranks = rankings.get('current_ranks', {})
-            prev_ranks = rankings.get('prev_ranks', {})
+            df = calculate_market_share(df, selected_insurers, selected_metrics)
 
-            # Process data transformations
-            df = calculate_market_share(df, selected_insurers, all_metrics, show_data_table)
-            # save_df_to_csv(df, "df_after_market_share.csv")
-            df = calculate_growth(df, selected_insurers, num_periods_selected, period_type)
-            # save_df_to_csv(df, "df_after_growth.csv")
+            df = calculate_growth(df, selected_insurers, intermediate_data.get('num_periods_selected', 2), intermediate_data.get('period_type', ''))
 
             df['year_quarter'] = df['year_quarter'].dt.strftime('%Y-%m-%d')
 
-            # Update filter state
             updated_filter_state = {
                 **(current_filter_state or {}),
-                'primary_y_metric': all_metrics[0] if all_metrics else None,
-                'secondary_y_metric': all_metrics[-1] if len(all_metrics) > 1 else None,
-                'selected_metrics': all_metrics,
-                'business_type_checklist': business_type_checklist,
+                'selected_metrics': selected_metrics,
+                'business_type_checklist': intermediate_data.get('business_type_checklist', []),
                 'selected_lines': lines,
-                'show_data_table': bool(show_data_table),
                 'reporting_form': intermediate_data.get('reporting_form'),
-                'period_type': period_type,
+                'period_type': intermediate_data.get('period_type', ''),
             }
 
-
-            processed_data = create_processed_data(df, prev_ranks, current_ranks)
-
+            processed_data = create_processed_data(df, rankings.get('prev_ranks', {}), rankings.get('current_ranks', {}))
 
             memory_monitor.log_memory("end_process_data", logger)
-            logger.info("Successfully completed process_data callback")
 
             return updated_filter_state, processed_data
 

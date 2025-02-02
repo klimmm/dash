@@ -16,7 +16,7 @@ from config.default_values import (
      DEFAULT_SPLIT_MODE,
      DEFAULT_CHECKED_LINES,
      DEFAULT_INSURER,
-     DEFAULT_PRIMARY_METRICS
+     DEFAULT_METRICS
     )
 from config.logging_config import get_logger
 
@@ -39,8 +39,8 @@ def create_stores() -> List[html.Div]:
             storage_type='memory'
         ),
         dcc.Store(
-            id='primary-metric-all-values',
-            data=DEFAULT_PRIMARY_METRICS,
+            id='metric-all-values',
+            data=DEFAULT_METRICS,
             storage_type='memory'
         ),
         dcc.Store(id="filter-state-store"),

@@ -2,10 +2,9 @@
 from config.callback_logging import setup_callback_logging, log_callback
 from config.default_values import (
     DEFAULT_REPORTING_FORM,
-    DEFAULT_SECONDARY_METRICS,
     DEFAULT_CHECKED_LINES,
     DEFAULT_BUSINESS_TYPE,
-    DEFAULT_PRIMARY_METRICS,
+    DEFAULT_METRICS,
     DEFAULT_PERIOD_TYPE,
     DEFAULT_NUMBER_OF_PERIODS,
     DEFAULT_END_QUARTER,
@@ -34,10 +33,9 @@ from config.main_config import (
 __all__ = [
     # Config values
     'DEFAULT_REPORTING_FORM',
-    'DEFAULT_SECONDARY_METRICS',
     'DEFAULT_CHECKED_LINES',
     'DEFAULT_BUSINESS_TYPE',
-    'DEFAULT_PRIMARY_METRICS',
+    'DEFAULT_METRICS',
     'DEFAULT_PERIOD_TYPE',
     'DEFAULT_NUMBER_OF_PERIODS',
     'DEFAULT_END_QUARTER',

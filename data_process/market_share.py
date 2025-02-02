@@ -26,7 +26,6 @@ def calculate_market_share(
     df: pd.DataFrame,
     selected_insurers: List[str],
     selected_metrics: List[str],
-    show_data_table: bool,
     total_insurer: str = 'total',
     suffix: str = '_market_share'
 ) -> pd.DataFrame:
@@ -106,11 +105,6 @@ def calculate_market_share(
     result = pd.concat([df] + market_shares, ignore_index=True)
     logger.debug(f"Final DataFrame shape after concat: {result.shape}")
 
-    if not show_data_table:
-        filtered_result = result[result['insurer'].isin(selected_insurers)]
-        logger.debug(f"Filtered DataFrame shape: {filtered_result.shape}")
-        logger.debug(f"Final insurers: {filtered_result['insurer'].unique()}")
-        return filtered_result
 
     logger.debug(f"Final metrics: {result['metric'].unique()}")
     return result
