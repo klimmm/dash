@@ -5,10 +5,11 @@ import dash
 from dash.dependencies import Input, Output, State
 
 from config.callback_logging import log_callback
+from config.default_values import TOP_N_LIST
 from config.logging_config import get_logger
-from data_process.bus_type_checklist import get_checklist_config
-from data_process.metrics_processor import MetricsProcessor
-from data_process.period_processor import PeriodProcessor
+from data_process.metrics_options import get_checklist_config
+from data_process.metrics_processor import get_required_metrics, calculate_metrics
+from data_process.period_filters import filter_by_period_type
 from data_process.top_n import add_top_n_rows
 # from data_process.io import save_df_to_csv
 
@@ -33,7 +34,7 @@ def timer(func):
 @dataclass
 class IntermediateData:
     df: List[Dict[str, Any]]
-    selected_metrics: List[str]
+    all_metrics: List[str]
     business_type_checklist: List[str]
     required_metrics: List[str]
     lines: List[str]
@@ -45,7 +46,7 @@ class IntermediateData:
         # Avoid using asdict() which creates unnecessary deep copies
         return {
             'df': self.df,
-            'selected_metrics': self.selected_metrics,
+            'all_metrics': self.all_metrics,
             'business_type_checklist': self.business_type_checklist,
             'required_metrics': self.required_metrics,
             'lines': self.lines,
@@ -53,21 +54,6 @@ class IntermediateData:
             'num_periods_selected': self.num_periods_selected,
             'reporting_form': self.reporting_form
         }
-@timer
-def create_intermediate_data(df, selected_metrics, business_type_selection, required_metrics, lines, period_type, num_periods_selected, reporting_form):
-    records = df.to_dict('records')
-
-    intermediate_data = IntermediateData(
-        df=records,
-        selected_metrics=selected_metrics,
-        business_type_checklist=business_type_selection,
-        required_metrics=required_metrics,
-        lines=lines,
-        period_type=period_type,
-        num_periods_selected=num_periods_selected,
-        reporting_form=reporting_form
-    )
-    return intermediate_data.to_dict()
 
 
 def setup_prepare_data(app: dash.Dash, df_162, df_158, end_quarter_options_162, end_quarter_options_158):
@@ -76,12 +62,13 @@ def setup_prepare_data(app: dash.Dash, df_162, df_158, end_quarter_options_162, 
          Output('business-type-checklist-container', 'children'),
          Output('intermediate-data-store', 'data')
         ],
-        [Input('metric-all-values', 'data'),
+        [Input('primary-metric-all-values', 'data'),
          Input('business-type-checklist', 'value'),
          Input('number-of-periods-data-table', 'data'),
          Input('end-quarter', 'value'),
          Input('insurance-lines-all-values', 'data'),
          Input('period-type', 'data'),
+         Input('secondary-y-metric', 'value'),
          Input('reporting-form', 'data'),
         ],
         [State('show-data-table', 'data'),
@@ -90,12 +77,13 @@ def setup_prepare_data(app: dash.Dash, df_162, df_158, end_quarter_options_162, 
     @log_callback
     @timer
     def prepare_data(
-            selected_metrics: List[str],
+            primary_metrics: List[str],
             current_business_type_selection: List[str],
             num_periods_selected: int,
             end_quarter: str,
             lines: List[str],
             period_type: str,
+            secondary_metric: str,
             reporting_form: str,
             show_data_table: bool,
             current_filter_state: Dict
@@ -106,27 +94,37 @@ def setup_prepare_data(app: dash.Dash, df_162, df_158, end_quarter_options_162, 
             df = df_162 if reporting_form == '0420162' else df_158
             end_quarter_options = end_quarter_options_162 if reporting_form == '0420162' else end_quarter_options_158
 
+            selected_metrics = (primary_metrics or []) + (
+                [secondary_metric] if isinstance(secondary_metric, str) else (secondary_metric or [])
+            )
             checklist_component, business_type_selection = get_checklist_config(
                 selected_metrics, reporting_form, current_business_type_selection
             )
-            required_metrics = MetricsProcessor.get_required_metrics(selected_metrics, business_type_selection)
-            logger.warning(f" required_metrics {required_metrics}")
+            required_metrics = get_required_metrics(selected_metrics, business_type_selection)
 
-            period_processor = PeriodProcessor(df)
+            df = (df.loc[df['linemain'].isin(lines) & df['metric'].isin(required_metrics)]
+                  .pipe(filter_by_period_type, end_quarter, num_periods_selected, period_type)
+                  .pipe(add_top_n_rows)
+                  .pipe(calculate_metrics, selected_metrics, required_metrics)
+                 )
 
-            df = (df.loc[df['linemain'].isin(lines) & df['metric'].isin(required_metrics)])
-            df = period_processor.filter_by_period_type(end_quarter=end_quarter, num_periods_selected=num_periods_selected, period_type=period_type)
+            # save_df_to_csv(df, "df_after_prepare.csv")
 
-            df = add_top_n_rows(df)
-
-            df = MetricsProcessor.calculate_metrics(df, selected_metrics, required_metrics)
-
-            intermediate_data = create_intermediate_data(df, selected_metrics, business_type_selection, required_metrics, lines, period_type, num_periods_selected, reporting_form)
+            intermediate_data = IntermediateData(
+                df=df.to_dict('records'),
+                all_metrics=selected_metrics,
+                business_type_checklist=business_type_selection,
+                required_metrics=required_metrics,
+                lines=lines,
+                period_type=period_type,
+                num_periods_selected=num_periods_selected,
+                reporting_form=reporting_form
+            )
 
             return (
                 end_quarter_options,
                 [checklist_component],
-                intermediate_data
+                intermediate_data.to_dict()  # Convert to dict before returning
             )
 
         except Exception as e:

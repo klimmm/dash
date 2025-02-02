@@ -1,11 +1,11 @@
 import json
+from typing import List, Dict, Set, Tuple, Any
 import time
-from functools import wraps
-from typing import List, Dict, Set, Any
 
 import dash
 from dash import Dash, ALL, Input, Output, State
 from dash.exceptions import PreventUpdate
+from functools import wraps
 import pandas as pd
 import numpy as np
 
@@ -13,7 +13,8 @@ from application.components.dropdown import create_dynamic_dropdown
 from config.default_values import MAX_DROPDOWNS, DEFAULT_INSURER
 from config.callback_logging import log_callback
 from config.logging_config import get_logger
-from data_process.insurer_processor import InsurerDataProcessor
+from data_process.mappings import map_insurer
+from data_process.options import get_insurers_and_options
 
 logger = get_logger(__name__)
 
@@ -24,11 +25,11 @@ def timer(func):
         start = time.time()
         result = func(*args, **kwargs)
         end = time.time()
-        logger.debug(f"{func.__name__} took {(end - start) * 1000:.2f}ms to execute")
+        print(f"{func.__name__} took {(end-start)*1000:.2f}ms to execute")
         return result
     return wrapper
 
-
+    
 @timer
 def create_updated_dropdown(
     index: int,
@@ -38,21 +39,18 @@ def create_updated_dropdown(
     excluded_insurers: Set[str] = None,
     has_top_selection: bool = False
 ) -> Dict:
-    """
-    Create a dropdown with filtered options based on current selections.
-    """
+    """Create a dropdown with filtered options based on current selections."""
     if excluded_insurers is None:
         excluded_insurers = set()
 
-    # Filter out options whose value is in the exclusion set unless it is the currently selected value
     filtered_options = [
-        opt for opt in options
-        if (opt['value'] not in excluded_insurers and
-            (not has_top_selection or not opt['value'].startswith('top-') or value == opt['value']))
+        opt for opt in options 
+        if (
+            opt['value'] not in excluded_insurers and
+            (not has_top_selection or not opt['value'].startswith('top-') or value == opt['value'])
+        )
     ]
 
-    logger.debug(f"Creating updated dropdown at index {index} with value {value} "
-                 f"and {len(filtered_options)} filtered options.")
     return create_dynamic_dropdown(
         dropdown_type='selected-insurers',
         index=index,
@@ -62,22 +60,90 @@ def create_updated_dropdown(
         is_remove_button=(total_dropdowns > 1)
     )
 
+    
+@timer
+def get_consistently_top_insurers(
+    df: pd.DataFrame,
+    all_metrics: List[str],
+    lines: List[str]
+) -> Dict[str, Set[str]]:
+    try:
+        # Extract arrays once
+        data = df[['year_quarter', 'metric', 'insurer', 'linemain', 'value']].values
+        year_quarters = data[:, 0]
+        metrics = data[:, 1]
+        insurers = data[:, 2]
+        linemains = data[:, 3]
+        values = data[:, 4].astype(np.float64)
+
+        # Get metric and latest quarter using numpy
+        latest_quarter = np.max(year_quarters)
+        metric_to_use = next(m for m in all_metrics if m in np.unique(metrics))
+
+        # Create base masks
+        quarter_mask = year_quarters == latest_quarter
+        metric_mask = metrics == metric_to_use
+        exclude_mask = np.isin(insurers, ['total', 'top-5', 'top-10', 'top-20'])
+        base_mask = quarter_mask & metric_mask & ~exclude_mask
+
+        # Pre-allocate dictionary for results
+        top_insurers_by_line = {
+            line: {'top_5': set(), 'top_10': set(), 'top_20': set()}
+            for line in lines
+        }
+
+        # Process each line using numpy operations
+        for line in lines:
+            # Create line mask and combine with base mask
+            line_mask = base_mask & (linemains == line)
+
+            # Get masked data
+            line_insurers = insurers[line_mask]
+            line_values = values[line_mask]
+
+            if len(line_insurers) > 0:
+                # Sort using numpy
+                sort_indices = np.argsort(-line_values)
+                sorted_insurers = line_insurers[sort_indices]
+
+                # Fill sets efficiently
+                top_insurers_by_line[line]['top_5'] = set(sorted_insurers[:5])
+                top_insurers_by_line[line]['top_10'] = set(sorted_insurers[:10])
+                top_insurers_by_line[line]['top_20'] = set(sorted_insurers[:20])
+
+        # Calculate intersections efficiently
+        consistent_top_performers = {
+            ranking: set.intersection(*(
+                top_insurers_by_line[line][ranking]
+                for line in lines
+                if top_insurers_by_line[line][ranking]  # Only include non-empty sets
+            )) if all(top_insurers_by_line[line][ranking] for line in lines) else set()
+            for ranking in ['top_5', 'top_10', 'top_20']
+        }
+
+        return consistent_top_performers
+
+    except Exception as e:
+        logger.error(f"Error finding consistently top insurers: {str(e)}", exc_info=True)
+        return {'top_5': set(), 'top_10': set(), 'top_20': set()}
+    return consistent_top_performers
+
 
 def setup_insurer_selection(app: Dash) -> None:
     @app.callback(
         Output('selected-insurers-container', 'children'),
         Output('selected-insurers-all-values', 'data'),
         [
-            Input({'type': 'dynamic-selected-insurers', 'index': ALL}, 'value'),
-            Input('selected-insurers-add-btn', 'n_clicks'),
-            Input({'type': 'remove-selected-insurers-btn', 'index': ALL}, 'n_clicks'),
-            Input('intermediate-data-store', 'data')
+         Input({'type': 'dynamic-selected-insurers', 'index': ALL}, 'value'),
+         Input('selected-insurers-add-btn', 'n_clicks'),
+         Input({'type': 'remove-selected-insurers-btn', 'index': ALL}, 'n_clicks'),
+         Input('intermediate-data-store', 'data')
         ],
         [
-            State('selected-insurers-container', 'children'),
-            State('selected-insurers-all-values', 'data'),
-            State('insurance-lines-all-values', 'data'),
-            State('metric-all-values', 'data')
+         State('selected-insurers-container', 'children'),
+         State('selected-insurers-all-values', 'data'),
+         State('insurance-lines-all-values', 'data'),
+         State('primary-metric-all-values', 'data')
         ]
     )
     @log_callback
@@ -96,147 +162,166 @@ def setup_insurer_selection(app: Dash) -> None:
         @API_STABILITY: BACKWARDS_COMPATIBLE
         Updates insurer selection dropdowns based on user interactions.
         """
-        logger.debug("Entered update_insurers_selections callback.")
         ctx = dash.callback_context
         if not ctx.triggered:
-            logger.debug("No triggered input, preventing update.")
             raise PreventUpdate
 
-        trigger_id = ctx.triggered[0]['prop_id']
-        logger.debug(f"Triggered by: {trigger_id}")
-
         try:
-
-            # Rebuild DataFrame and options
+            trigger_id = ctx.triggered[0]['prop_id']
             df = pd.DataFrame.from_records(intermediate_data.get('df', []))
-            processor = InsurerDataProcessor(df)
-            insurer_options = processor.get_insurer_options(all_metrics=primary_metrics, lines=lines)
-            top_insurers = processor.get_consistently_top_insurers(all_metrics=primary_metrics, lines=lines)
-            logger.debug(f"Insurer options obtained: {insurer_options}")
+            insurer_options = get_insurers_and_options(df, primary_metrics, lines)
+            top_insurers = get_consistently_top_insurers(df, primary_metrics, lines)
 
-            # Initialize first dropdown if none exist
+            logger.debug(f"insurer_options: {insurer_options}")
             if not existing_dropdowns:
-                logger.debug("No existing dropdowns found; initializing first dropdown.")
-                initial_dropdown = create_dynamic_dropdown(
+                logger.debug("Initializing first dropdown")
+                return [create_dynamic_dropdown(
                     dropdown_type='selected-insurers',
                     index=0,
                     options=insurer_options,
                     is_add_button=True,
                     is_remove_button=False
-                )
-                return [initial_dropdown], []
+                )], []
 
-            # Filter selected insurers to only valid options
-            valid_options = {opt['value'] for opt in insurer_options}
-            selected_insurers = [v for v in (selected_insurers or []) if v in valid_options]
+            logger.debug(f"selected_insurers {selected_insurers}")
+            logger.debug(f"insurer_options: {insurer_options}")
+
+            selected_insurers = [v for v in (selected_insurers or []) if
+                                 v in {opt['value']
+                                 for opt in insurer_options}]
+
+            logger.debug(f"selected_insurers: {selected_insurers}")
+            # If no valid selections, use default
             if not selected_insurers:
                 selected_insurers = [DEFAULT_INSURER]
-            logger.debug(f"Filtered selected insurers: {selected_insurers}")
+            logger.debug(f"Current selections: {selected_insurers}")
 
-            # Process remove action
+            # Handle remove button click
             if 'remove-selected-insurers-btn' in trigger_id:
                 if len(existing_dropdowns) <= 1:
-                    logger.debug("Attempted to remove last dropdown; update prevented.")
+                    logger.debug("Cannot remove last dropdown")
                     raise PreventUpdate
 
-                comp_id = json.loads(trigger_id.split('.')[0])
-                removed_index = int(comp_id['index'])
-                logger.debug(f"Processing removal of dropdown at index {removed_index}.")
+                component_id = json.loads(trigger_id.split('.')[0])
+                removed_index = int(component_id['index'])
+                logger.debug(f"Removing dropdown at index {removed_index}")
+
+                # Preserve last selection if needed
                 removed_value = selected_insurers[removed_index] if removed_index < len(selected_insurers) else None
                 selected_insurers = [v for i, v in enumerate(selected_insurers) if i != removed_index]
-                # If removal leaves no valid selections, preserve the removed value as fallback
-                if removed_value and all(v is None for v in selected_insurers):
+
+                if removed_value and not [v for v in selected_insurers if v is not None]:
                     selected_insurers = [removed_value] + [None] * (len(existing_dropdowns) - 2)
+
                 existing_dropdowns.pop(removed_index)
 
-            # Process add action
+            # Handle add button click
             elif 'selected-insurers-add-btn' in trigger_id:
                 if len(existing_dropdowns) >= MAX_DROPDOWNS:
-                    logger.debug(f"Maximum dropdowns ({MAX_DROPDOWNS}) reached; add action prevented.")
+                    logger.debug(f"Maximum dropdowns ({MAX_DROPDOWNS}) reached")
                     raise PreventUpdate
 
-                logger.debug("Processing add action for a new dropdown.")
-                # Update last dropdown: remove add button and enable removal
-                last_index = len(existing_dropdowns) - 1
-                existing_dropdowns[last_index] = create_dynamic_dropdown(
-                    dropdown_type='selected-insurers',
-                    index=last_index,
-                    options=insurer_options,
-                    value=selected_insurers[last_index] if last_index < len(selected_insurers) else None,
-                    is_add_button=False,
-                    is_remove_button=True
-                )
-                existing_dropdowns.append(None)  # Placeholder for the new dropdown
+                logger.debug("Adding new dropdown")
+                # Update last dropdown to remove add button
+                if existing_dropdowns:
+                    last_index = len(existing_dropdowns) - 1
+                    existing_dropdowns[last_index] = create_dynamic_dropdown(
+                        dropdown_type='selected-insurers',
+                        index=last_index,
+                        options=insurer_options,
+                        value=selected_insurers[last_index] if last_index < len(selected_insurers) else None,
+                        is_add_button=False,
+                        is_remove_button=True
+                    )
+                existing_dropdowns.append(None)  # Placeholder for new dropdown
 
-            # Prepare mapping for top insurer groups (preserving original mapping for backward compatibility)
+            # Process selections and update dropdowns
             top_n_groups = {
-                'top-5': top_insurers['top_5'],
+                'top-5':  top_insurers['top_5'],
                 'top-10': top_insurers['top_10'],
-                'top-20': top_insurers['top_10']  # Intentionally mapped as in original code
+                'top-20': top_insurers['top_10']
             }
 
-            # Helper to compute exclusions for a given dropdown index
-            def compute_exclusions(idx: int) -> (Set[str], bool):
-                others = [v for j, v in enumerate(selected_insurers) if j != idx and v]
-                exclusions = set()
-                has_top = False
-                for sel in others:
-                    if sel.startswith('top-'):
-                        has_top = True
-                        exclusions.update(top_n_groups.get(sel, set()))
-                    else:
-                        exclusions.add(sel)
-                return exclusions, has_top
-
-            # Identify dropdowns with conflicting selections
+            # Track which dropdowns need to be removed
             dropdowns_to_remove = []
-            for i, _ in enumerate(existing_dropdowns):
-                current_sel = selected_insurers[i] if i < len(selected_insurers) else None
-                if not current_sel:
+            for i, dropdown in enumerate(existing_dropdowns):
+                current_selected = selected_insurers[i] if i < len(selected_insurers) else None
+                other_selected = [v for i2, v in enumerate(selected_insurers) if i2 != i and v is not None]
+
+                if not current_selected:
                     continue
-                exclusions, has_top = compute_exclusions(i)
-                if (has_top and current_sel.startswith('top-')) or (current_sel in exclusions):
-                    logger.debug(f"Dropdown at index {i} marked for removal due to conflict with selection '{current_sel}'.")
+
+                # Calculate excluded insurers directly
+                excluded_insurers = set()
+                has_top_selection = False
+                for selected in (other_selected or []):  # Handle None case explicitly
+                    if not selected:
+                        continue
+                    if selected.startswith('top-'):
+                        has_top_selection = True
+                        excluded_insurers.update(set(top_n_groups.get(selected, [])))
+                    else:
+                        excluded_insurers.add(selected)
+
+                # Check if current selection conflicts with others
+                if (has_top_selection and current_selected.startswith('top-')) or \
+                   (current_selected in excluded_insurers):
+                    logger.debug(f"Marking dropdown {i} for removal due to selection conflict")
                     dropdowns_to_remove.append(i)
 
-            # Remove dropdowns with conflicts (from highest index to lowest to avoid reindexing issues)
+            # Remove conflicting dropdowns
             for index in sorted(dropdowns_to_remove, reverse=True):
-                removed_val = selected_insurers.pop(index) if index < len(selected_insurers) else None
                 existing_dropdowns.pop(index)
-                logger.debug(f"Removed dropdown at index {index} with selection '{removed_val}'.")
+                if index < len(selected_insurers):
+                    selected_insurers.pop(index)
 
-            # Ensure at least one dropdown remains
+            # Ensure at least one dropdown exists
             if not existing_dropdowns:
-                logger.debug("All dropdowns removed due to conflicts; restoring single dropdown.")
-                new_dropdown = create_dynamic_dropdown(
+                logger.debug("Restoring single dropdown after conflicts")
+                return [create_dynamic_dropdown(
                     dropdown_type='selected-insurers',
                     index=0,
                     options=insurer_options,
                     is_add_button=True,
                     is_remove_button=False
-                )
-                return [new_dropdown], [None]
+                )], [None]
 
-            # Update remaining dropdowns with recalculated exclusions
+            # Update remaining dropdowns
             updated_dropdowns = []
-            for i, _ in enumerate(existing_dropdowns):
-                current_sel = selected_insurers[i] if i < len(selected_insurers) else None
-                exclusions, has_top = compute_exclusions(i)
-                updated_dropdown = create_updated_dropdown(
+            for i, dropdown in enumerate(existing_dropdowns):
+                current_selected = selected_insurers[i] if i < len(selected_insurers) else None
+                other_selected = [v for i2, v in enumerate(selected_insurers) if i2 != i and v is not None]
+
+                # Calculate excluded insurers for updated dropdown
+                excluded_insurers = set()
+                has_top_selection = False
+                for selected in (other_selected or []):
+                    if not selected:
+                        continue
+                    if selected.startswith('top-'):
+                        has_top_selection = True
+                        excluded_insurers.update(set(top_n_groups.get(selected, [])))
+                    else:
+                        excluded_insurers.add(selected)
+
+                updated_dropdowns.append(create_updated_dropdown(
                     index=i,
                     total_dropdowns=len(existing_dropdowns),
                     options=insurer_options,
-                    value=current_sel,
-                    excluded_insurers=exclusions,
-                    has_top_selection=has_top
-                )
-                updated_dropdowns.append(updated_dropdown)
+                    value=current_selected,
+                    excluded_insurers=excluded_insurers,
+                    has_top_selection=has_top_selection
+                ))
 
-            logger.debug(f"Final state: selections = {selected_insurers}, dropdowns count = {len(updated_dropdowns)}")
+            logger.debug(f"options: {insurer_options}")
+            logger.debug(f"Final state - Selections: {selected_insurers}, Dropdowns: {len(updated_dropdowns)}")
+
+            # Only update values if they've changed
             final_values = selected_insurers if selected_insurers != current_selected_insurers else dash.no_update
 
-            logger.debug("Exiting update_insurers_selections callback successfully.")
-            return updated_dropdowns, final_values
+            output = (updated_dropdowns, final_values)
+
+            return output
 
         except Exception as e:
             logger.error(f"Error in update_insurers_selections: {str(e)}", exc_info=True)

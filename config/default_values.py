@@ -5,11 +5,11 @@ DEFAULT_END_QUARTER = '2024Q3'
 DEFAULT_REPORTING_FORM = '0420162'
 TOP_N_LIST = [999]
 DEFAULT_CHECKED_LINES = ['осаго']
-DEFAULT_METRICS = ['direct_premiums']
+DEFAULT_PRIMARY_METRICS = ['direct_premiums']
 DEFAULT_INSURER = ['top-10']
 
 
-DEFAULT_METRICS_158 = ['total_premiums']
+DEFAULT_PRIMARY_METRICS_158 = ['total_premiums']
 
 DEFAULT_NUMBER_OF_PERIODS = 2
 DEFAULT_PRIMARY_METRICS_INWARD = ['ceded_premiums', 'inward_premiums']
