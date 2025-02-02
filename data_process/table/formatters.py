@@ -1,7 +1,12 @@
 from typing import List, Optional, Dict
 
+import numpy as np
+import pandas as pd
+
 from config.logging_config import get_logger
 from dash.dash_table.Format import Format, Scheme, Group
+from config.logging_config import get_logger
+from constants.metrics import METRICS
 
 logger = get_logger(__name__)
 
@@ -14,6 +19,12 @@ YTD_FORMATS: Dict[str, str] = {
 }
 
 PERCENTAGE_INDICATORS = {'market_share', 'change', 'ratio', 'rate'}
+
+# Constants
+PLACE_COL = 'N'
+INSURER_COL = 'insurer'
+LINE_COL = 'linemain'
+SECTION_HEADER_COL = 'is_section_header'
 
 
 def format_period(quarter_str: str, period_type: str = '', comparison: bool = False) -> str:
@@ -131,3 +142,77 @@ def get_column_format(col_name: str) -> Format:
             groups=3,
             group_delimiter=','
         )
+
+def format_summary_rows(df: pd.DataFrame) -> pd.DataFrame:
+    """Process summary data rows with sorting logic for totals and top-N entries."""
+    logger.debug("Processing summary rows")
+    if df.empty:
+        return df
+
+    # Simplified sort key function
+    def get_sort_priority(ins: str) -> tuple:
+        ins_lower = ins.lower()
+        if ins_lower.startswith('total'): return (2, 0)
+        if ins_lower.startswith('top-'):
+            try:
+                return (1, int(ins.split('-')[1]))
+            except (IndexError, ValueError):
+                logger.debug(f"Invalid top-N format: {ins}")
+                return (1, 0)
+        return (0, 0)
+
+    df = df.sort_values(
+        by=INSURER_COL, 
+        key=lambda x: pd.Series([get_sort_priority(ins) for ins in x])
+    )
+    
+    # Initialize new columns efficiently
+    df.insert(0, PLACE_COL, np.nan)
+    df[SECTION_HEADER_COL] = False
+    
+    logger.debug(f"Processed {len(df)} summary rows")
+    return df.replace(0, '-').fillna('-')
+
+def get_rank_change(current: int, previous: Optional[int]) -> str:
+    """Calculate and format rank change."""
+    if previous is None and current is None:
+        return f"-"
+    if previous is None:
+        return str(current)
+    diff = previous - current
+    if diff == 0:
+        return f"{current} (-)"
+    return f"{current} ({'+' if diff > 0 else ''}{diff})"
+
+def format_ranking_column(
+    df: pd.DataFrame,
+    prev_ranks: Optional[Dict] = None,
+    current_ranks: Optional[Dict] = None,
+    split_mode: str = 'line'
+) -> pd.DataFrame:
+    """Process insurance company rankings and format rank changes."""
+    logger.info(f"Formatting ranking column: split_mode={split_mode}, rows={len(df)}")
+    
+    if df.empty or not current_ranks:
+        df.insert(0, PLACE_COL, '')
+        return df
+
+    result_df = df.copy()
+    result_df.insert(0, PLACE_COL, '')
+
+    def get_rank_info(row):
+        if split_mode == 'line':
+            insurer = row[INSURER_COL]
+            curr = current_ranks.get(insurer)
+            prev = prev_ranks.get(insurer) if prev_ranks else None
+        else:  # split_mode == 'insurer'
+            line, insurer = row[LINE_COL], row[INSURER_COL]
+            line_ranks = current_ranks.get(line.lower(), {})
+            curr = line_ranks.get(insurer)
+            prev = prev_ranks.get(line.lower(), {}).get(insurer) if prev_ranks else None
+        
+        return get_rank_change(curr, prev) if curr is not None else '-'  # Changed to '-'
+
+    result_df[PLACE_COL] = result_df.apply(get_rank_info, axis=1)
+    logger.info(f"Completed ranking column formatting")
+    return result_df.replace(['', 0], '-').fillna('-') 

@@ -1,5 +1,6 @@
 import logging
 import os
+import shutil
 
 import dash
 import dash_bootstrap_components as dbc
@@ -7,11 +8,16 @@ import dash_bootstrap_components as dbc
 from application import create_app_layout, lines_tree_162, lines_tree_158
 from callbacks.setup import setup_all_callbacks
 from config import setup_logging, setup_callback_logging, get_logger
-from data_process import load_insurance_dataframes
+from data_process import load_insurance_dataframes, get_year_quarter_options
 
 logger = get_logger(__name__)
 setup_logging(console_level=logging.DEBUG, file_level=logging.DEBUG)
-setup_callback_logging(logging.DEBUG)
+setup_callback_logging()
+
+RANK_COL = 'N'
+INSURER_COL = 'insurer'
+SECTION_HEADER_COL = 'is_section_header'
+LINE_COL = 'linemain'
 
 dbc._js_dist = [
     {
@@ -29,7 +35,8 @@ app = dash.Dash(
     assets_folder='assets',
     external_stylesheets=[dbc.themes.BOOTSTRAP],
     suppress_callback_exceptions=True,
-    update_title=None
+    update_title=None,
+    assets_ignore=r'.*\.(ipynb|ipynb_checkpoints).*'
 )
 
 app._favicon = None  # prevent favicon errors
@@ -68,17 +75,21 @@ app.layout = create_app_layout()
 server = app.server
 
 df_162, df_158 = load_insurance_dataframes()
+end_quarter_options_162 = get_year_quarter_options(df_162)
+end_quarter_options_158 = get_year_quarter_options(df_158)
+setup_all_callbacks(app, lines_tree_162, lines_tree_158, df_162, df_158, end_quarter_options_162, end_quarter_options_158)
 
-setup_all_callbacks(app, lines_tree_162, lines_tree_158, df_162, df_158)
 
 
 def main():
     try:
         port = int(os.environ.get("PORT", 8051))
         print(f"Starting server on port {port}...")
-        app.run_server(debug=True,
-                       port=port, host='0.0.0.0',
-                       dev_tools_hot_reload=False)
+        app.run_server(
+            host='0.0.0.0', 
+            port=port,
+            debug=True
+        )
     except Exception as e:
         print(f"Error during startup: {e}")
         raise

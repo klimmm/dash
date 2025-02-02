@@ -7,6 +7,7 @@
 @import url('./01_settings/_reset.css');
 
 /* Components - order matters for specificity */
+@import url('./02_components/_tree.css');
 @import url('./02_components/_layout.css');
 @import url('./02_components/_data-table.css');
 @import url('./02_components/_forms.css');

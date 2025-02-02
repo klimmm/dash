@@ -166,7 +166,7 @@ def get_css_rules(df: pd.DataFrame) -> Dict[str, str]:
             border-bottom-width: 0 !important;
         ''',
         '.dash-header.column-2.cell--right-last': '''
-            border-bottom-width: 0.1rem !important;
+            border-bottom-width: 0.05rem !important;
             background-color: '#FFFFFF' !important;
         ''',
         'th.dash-header.column-0': '''
@@ -249,7 +249,7 @@ def generate_styles(df: pd.DataFrame) -> Dict[str, List[Dict[str, Any]]]:
                     **base_style,
                     'textAlign': 'center' if idx == 1 and col_type == ColumnType.RANK else 'left',
                     'verticalAlign': 'bottom' if idx == 0 else 'bottom',
-                    'paddingLeft': '15px' if idx == 0 else '0px',
+                    'paddingLeft': '15px' if idx == 0 else '3px',
                     'marginBottom': '-10px' if idx == 1 else '3px',
                     'paddingBottom': '6px' if idx == 0 else '0px',
                     'paddingTop': '3px' if idx == 1 else '3px',
@@ -257,13 +257,14 @@ def generate_styles(df: pd.DataFrame) -> Dict[str, List[Dict[str, Any]]]:
                     'height': 'auto',      # Allow content to determine height
                     'whiteSpace': 'normal',  # Allow text wrapping
                     'overflow': 'visible',   # Show overflow content
-                    'marginLeft': '6px' if idx == 0 else '0px',
-                    'borderTop': '0.1rem solid #D3D3D3' if idx == 1 else '0px',
-                    'borderBottom': '0.1rem solid #D3D3D3' if idx == 0 or idx == 2 else '0px',
-                    'borderLeft': '0.1rem solid #D3D3D3' if idx == 2 or idx == 1 else '0px',
+                    'marginLeft': '6px' if idx == 0 else '6px',
+                    'borderTop': '0.5rem solid #D3D3D3' if idx == 1 else '0px',
+                    'borderBottom': '0.05rem solid #D3D3D3' if idx == 0 or idx == 2 else '0px',
+                    'borderLeft': '0.05rem solid #D3D3D3' if idx == 2 or idx == 1 else '0px',
                     'color': '#000000' if idx == 0 or idx == 1 else 'transparent',
                     'fontWeight': 'bold' if idx == 0 else 'normal',
-                    'backgroundColor': '#FFFFFF' if idx == 0 else '#f8f9fa'
+                    'backgroundColor': '#FFFFFF' if idx == 0 else '#f8f9fa',
+                    'borderRight': '0.05rem solid #D3D3D3',
                 })
 
 
@@ -273,18 +274,30 @@ def generate_styles(df: pd.DataFrame) -> Dict[str, List[Dict[str, Any]]]:
                 styles['header'].append({
                     'if': {'column_id': col, 'header_index': idx},
                     **base_style,
-                    'borderTop': '0.1rem solid #D3D3D3 !importa' if idx == 1 else '0px',
-                    'borderBottom': '0.1rem solid #D3D3D3' if idx == 2 or idx == 0 else '0px',
+                    'borderTop': '0.05rem solid #D3D3D3 !importa' if idx == 1 else '0px',
+                    'borderBottom': '0.05rem solid #D3D3D3' if idx == 2 or idx == 0 else '0px',
                     'fontWeight': 'bold' if idx == 0 else 'normal',
                     'paddingBottom': '6px' if idx == 0 else '0px',
-                    'borderRight': '0.1rem solid #D3D3D3' if idx == 2 or idx == 1 else '0px',
-                    'borderLeft': '0.1rem solid #D3D3D3' if idx == 2 or idx == 1 else '0px',
+                    'borderRight': '0.05rem solid #D3D3D3' if idx == 2 or idx == 1 else '0.05rem solid #D3D3D3',
+                    'borderLeft': '0.05rem solid #D3D3D3' if idx == 2 or idx == 1 else '0.05rem solid #D3D3D3',
                     'backgroundColor': '#FFFFFF' if idx == 0 else header_bg
                 })
 
     return styles
+import time
+from functools import wraps
 
-
+def timer(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f"{func.__name__} took {(end-start)*1000:.2f}ms to execute")
+        return result
+    return wrapper
+    
+@timer
 def generate_datatable_config(
     df: pd.DataFrame,
     columns: List[Dict[str, Any]],
@@ -327,7 +340,7 @@ def generate_datatable_config(
         'sort_as_null': ['', 'No answer', 'No Answer', 'N/A', 'NA'],
         'column_selectable': False,
         'row_selectable': False,
-        'cell_selectable': False,
+        'cell_selectable': True,
         'page_action': 'none',
         'editable': False
     }

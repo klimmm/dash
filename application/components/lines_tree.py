@@ -41,16 +41,18 @@ class TreeItem(html.Div):
         # Always add either an expand button or a placeholder div
         if has_children:
             expand_button = html.Button(
-                "▾" if is_expanded else "▸",
-                id={'type': 'category-expand', 'index': code},
-                className="expand-button me-2",
+                # "⌄" if is_expanded else "›",
+
+                "−" if is_expanded else "+",
+                id={'type': 'insurance-line-expand', 'index': code},
+                className="expand-button",
                 n_clicks=None
             )
             container_children.append(expand_button)
         else:
             # Add placeholder div with same width as expand button
             container_children.append(
-                html.Div(className="expand-button-placeholder me-2")
+                html.Div(className="expand-button-placeholder")
             )
 
         checkbox_classes = ["insurance-line-checkbox"]
@@ -59,7 +61,7 @@ class TreeItem(html.Div):
         if is_selected:
             checkbox_classes.append("selected")
 
-        label_classes = ["ms-2", "insurance-line-label"]
+        label_classes = ["insurance-line-label"]
 
         checkbox = html.Div([
             dbc.Checkbox(
@@ -78,7 +80,7 @@ class TreeItem(html.Div):
         super().__init__(
             container_children,
             className=f"tree-item level-{level} {'has-selected' if has_selected_descendants else ''}",
-            style={'marginLeft': f'{level * 20}px'},
+            style={'marginLeft': f'{level * 10.4}px'},
             id={'type': 'tree-item', 'index': code}
         )
 
@@ -214,7 +216,7 @@ class InsuranceLinesTree:
                 if child_items:
                     collapse = dbc.Collapse(
                         html.Div(child_items, className="tree-children"),
-                        id={'type': 'category-collapse', 'index': code},
+                        id={'type': 'insurance-line-collapse', 'index': code},
                         is_open=True  # Always open for ancestors of selected
                     )
                     items.append(collapse)
@@ -244,7 +246,7 @@ def create_lines_checklist_buttons() -> dbc.Row:
                 dbc.Button("Показать все", id="expand-all-button",
                           style={"display": "none"}, className="btn-custom btn-period"),
                 dbc.Button("Показать иерархию", id="collapse-button",
-                          style={"display": "none"}, color="info", className="ms-1"),
+                          style={"display": "none"}, className="btn-custom btn-period"),
                 dbc.Button("Drill down", id="detailize-button",
                           style={"display": "none"}, color="info", className="btn-custom btn-period"),
             ])

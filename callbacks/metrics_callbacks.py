@@ -5,23 +5,13 @@ import dash
 from dash import Dash, ALL, Input, Output, State
 from dash.exceptions import PreventUpdate
  
-from application.components.dropdown import create_primary_metric_dropdown
+from application.components.dropdown import create_dynamic_dropdown
 from config.callback_logging import log_callback
 from config.logging_config import get_logger
 from data_process.metrics_options import get_metric_options
 from constants.translations import translate
 
 logger = get_logger(__name__)
-
-
-def _filter_primary_metrics(primary_metric: List[str], valid_metrics: List[str]) -> List[str]:
-    """Helper function to clean up selected primary metrics."""
-    filtered_metrics = [v for v in (primary_metric or []) if v is not None and v in valid_metrics] or valid_metrics
-    logger.debug(
-        f"Filtered metrics | Input: {primary_metric} | Valid metrics: {valid_metrics} | "
-        f"Result: {filtered_metrics}"
-    )
-    return filtered_metrics
 
 
 def _create_updated_dropdown(
@@ -45,13 +35,16 @@ def _create_updated_dropdown(
         f"Available options: {[opt['value'] for opt in filtered_options]}"
     )
 
-    return create_primary_metric_dropdown(
+    return create_dynamic_dropdown(
+        dropdown_type='primary-metric',
         index=index,
         options=filtered_options,
         value=value,
         is_add_button=(index == total_dropdowns - 1),
-        is_remove_button=(total_dropdowns > 1)
+        is_remove_button=(total_dropdowns > 1),
+        placeholder="Select metric"
     )
+
 
 def setup_metric_selection(app: Dash) -> None:
     """Setup callbacks for metric selection handling."""
@@ -116,8 +109,12 @@ def setup_metric_selection(app: Dash) -> None:
                         secondary_metric_options, [])
 
             initial_dropdowns = existing_dropdowns
-            # Clean up selected metrics
-            primary_metric = _filter_primary_metrics(primary_metric, valid_selected_primary_metrics)
+
+            primary_metric = [v for v in (primary_metric or []) if
+                              v is not None and
+                              v in valid_selected_primary_metrics
+                              ] or valid_selected_primary_metrics
+
             trigger_id = trigger['prop_id']
 
             # Handle remove button click
@@ -183,7 +180,6 @@ def setup_metric_selection(app: Dash) -> None:
                 f"Total dropdowns: {len(updated_dropdowns)}\n"
                 f"Secondary options: {len(secondary_metric_options)}"
             )
-
 
             if primary_metric == all_selected_primary_metric:
                 logger.info("No change detected in selected metrics - maintaining current state")

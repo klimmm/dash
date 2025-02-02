@@ -1,0 +1,63 @@
+.tree-container {
+  max-width: 430px;
+    
+}
+
+
+
+.tree-item {
+  display: flex;
+  margin: 0;
+  padding-top: 3px !important;
+  padding-bottom: 0 !important;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+/* If you need to adjust spacing between elements */
+.expand-button {
+  padding: 0 ;
+  margin-right: 3px;
+  margin-left: 3px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  line-height: 1;
+  width: 5.9px;
+  margin-top: 0;  /* Remove default margin if any */
+  vertical-align: top;  /* Align with neighboring text */
+    
+}
+
+.form-check-input {
+  margin-top: 0;  /* Remove default margin if any */
+  vertical-align: middle;  /* Align with neighboring text */
+}
+
+/* If the above isn't sufficient, you can also try */
+.form-check {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
+  min-height: 100% !important;
+  max-height: 100% !important;
+}
+
+/* For parent of selected items */
+.parent-of-selected .form-check-input {
+  background: rgba(13, 110, 253, 0.1);  /* Light blue background */
+}
+
+
+/* For the placeholder that replaces expand button */
+.expand-button-placeholder {
+  width: 11.9px;  /* Same width as expand button */
+  min-width: 11.9px;  /* Same width as expand button */
+  display: inline-block;
+}
+
+.insurance-line-label {
+  margin: 0;
+    
+}

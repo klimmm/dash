@@ -9,7 +9,7 @@ from config.default_values import (
     DEFAULT_PERIOD_TYPE,
     DEFAULT_SHOW_MARKET_SHARE,
     DEFAULT_SHOW_CHANGES,
-    DEFAULT_NUMBER_OF_INSURERS,
+    TOP_N_LIST,
     DEFAULT_NUMBER_OF_PERIODS,
     DEFAULT_SPLIT_MODE
 )
@@ -176,7 +176,7 @@ def setup_multi_choice_buttons(app: dash.Dash) -> None:
         @API_STABILITY: BACKWARDS_COMPATIBLE.
         Updates insurer selection with improved multi-select support.
         """
-        current_state = args[-1] if args[-1] is not None else DEFAULT_NUMBER_OF_INSURERS
+        current_state = args[-1] if args[-1] is not None else TOP_N_LIST
         config = BUTTON_CONFIG['top-insurers']
         ctx = dash.callback_context
         logger.debug(f" current_state {current_state}")

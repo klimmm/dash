@@ -9,6 +9,19 @@ from data_process.io import save_df_to_csv
 logger = get_logger(__name__)
 
 
+def timer(func):
+    import time
+    from functools import wraps
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f"{func.__name__} took {(end-start)*1000:.2f}ms to execute")
+        return result
+    return wrapper
+    
+@timer
 def calculate_growth(
     df: pd.DataFrame,
     selected_insurers: List[str],

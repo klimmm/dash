@@ -1,16 +1,61 @@
-from typing import Tuple, Dict
+from dataclasses import dataclass, asdict
+from typing import Tuple, Dict, List, Any
 
 import dash
 from dash import Input, Output, State
+from dash.exceptions import PreventUpdate
 import pandas as pd
 
 from config.callback_logging import log_callback
 from config.logging_config import get_logger, memory_monitor
 from data_process.growth import calculate_growth
-from data_process.market_share import calculate_market_share
 from data_process.io import save_df_to_csv
+from data_process.market_share import calculate_market_share
+from data_process.options import get_rankings
 
 logger = get_logger(__name__)
+
+import time
+from functools import wraps
+def timer(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f"{func.__name__} took {(end-start)*1000:.2f}ms to execute")
+        return result
+    return wrapper
+    
+@dataclass
+class ProcessedData:
+    df: List[Dict[str, Any]]
+    prev_ranks: Dict[str, Any]
+    current_ranks: Dict[str, Any]
+    
+    def to_dict(self):
+        # Avoid double conversion by returning the existing dictionary structure
+        return {
+            'df': self.df,
+            'prev_ranks': self.prev_ranks,
+            'current_ranks': self.current_ranks
+        }
+
+@timer
+def create_processed_data(df: pd.DataFrame, 
+                         prev_ranks: Dict[str, Any], 
+                         current_ranks: Dict[str, Any]) -> Dict[str, Any]:
+    # Use orient='records' with to_dict() for better performance
+    records = df.to_dict('records')
+    
+    # Create ProcessedData instance directly
+    processed = ProcessedData(
+        df=records,
+        prev_ranks=prev_ranks,
+        current_ranks=current_ranks
+    )
+    
+    return processed.to_dict()
 
 
 def setup_process_data(app: dash.Dash):
@@ -20,17 +65,16 @@ def setup_process_data(app: dash.Dash):
         [Input('intermediate-data-store', 'data')],
         [State('selected-insurers-all-values', 'data'),
          State('show-data-table', 'data'),
-         State('filter-state-store', 'data'),
-         State('insurer-options-store', 'data')],
+         State('filter-state-store', 'data')],
         prevent_initial_call=True
     )
     @log_callback
+    @timer
     def process_data(
             intermediate_data: Dict,
             selected_insurers: str,
             show_data_table: bool,
-            current_filter_state: Dict,
-            insurer_options_store: Dict
+            current_filter_state: Dict
     ) -> Tuple:
         """Second part of data processing: Insurer processing and metric calculations"""
         logger.info("Starting process_data callback")
@@ -43,56 +87,40 @@ def setup_process_data(app: dash.Dash):
 
         trigger_id = ctx.triggered[0]['prop_id']
         logger.info(f"Callback triggered by: {trigger_id}")
-        logger.debug(f"Selected insurers: {selected_insurers}")
-        logger.debug(f"Show data table: {show_data_table}")
-        logger.debug(f"Current filter state: {current_filter_state}")
 
         try:
             # Validate intermediate data
             if not isinstance(intermediate_data, dict):
-                # logger.error(f"Invalid intermediate_data type: {type(intermediate_data)}")
                 return dash.no_update, dash.no_update
 
             logger.info("Creating DataFrame from intermediate data")
             df = pd.DataFrame.from_records(intermediate_data.get('df', []))
-            logger.debug(f"Initial DataFrame shape: {df.shape}")
-            save_df_to_csv(df, "df_before_market_share.csv")
-            # Extract parameters from intermediate data
+            # save_df_to_csv(df, "df_before_market_share.csv")
+
+            # Extract parameters
             all_metrics = intermediate_data.get('all_metrics', [])
             business_type_checklist = intermediate_data.get('business_type_checklist', [])
             lines = intermediate_data.get('lines', [])
             period_type = intermediate_data.get('period_type', '')
             num_periods_selected = intermediate_data.get('num_periods_selected', 0)
 
-            logger.debug(f"Extracted metrics: {all_metrics}")
-            logger.debug(f"Business types: {business_type_checklist}")
-            logger.debug(f"Lines: {lines}")
-            logger.debug(f"Period type: {period_type}")
-            logger.debug(f"Number of periods: {num_periods_selected}")
+            logger.info("Processing data pipeline")
 
-            # Get ranks from insurer options store
-            current_ranks = insurer_options_store['current_ranks']
-            prev_ranks = insurer_options_store['prev_ranks']
-            logger.debug(f"Current ranks count: {len(current_ranks)}")
-            logger.debug(f"Previous ranks count: {len(prev_ranks)}")
+            # Retrieve insurer rankings
+            rankings = get_rankings(df, all_metrics, lines)
+            current_ranks = rankings.get('current_ranks', {})
+            prev_ranks = rankings.get('prev_ranks', {})
 
-            # Process data through pipeline
-            logger.info("Starting data processing pipeline")
 
-            logger.info("Adding market share calculations")
+            # Process data transformations
             df = calculate_market_share(df, selected_insurers, all_metrics, show_data_table)
-            logger.debug(f"DataFrame shape after market share: {df.shape}")
-            logger.info("Adding growth calculations")
-            save_df_to_csv(df, "df_after_market_share.csv")
+            # save_df_to_csv(df, "df_after_market_share.csv")
             df = calculate_growth(df, selected_insurers, num_periods_selected, period_type)
-            logger.debug(f"DataFrame shape after growth: {df.shape}")
-            logger.info("Formatting date columns")
-            save_df_to_csv(df, "df_after_growth.csv")
-            
+            # save_df_to_csv(df, "df_after_growth.csv")
+
             df['year_quarter'] = df['year_quarter'].dt.strftime('%Y-%m-%d')
 
             # Update filter state
-            logger.info("Updating filter state")
             updated_filter_state = {
                 **(current_filter_state or {}),
                 'primary_y_metric': all_metrics[0] if all_metrics else None,
@@ -104,21 +132,17 @@ def setup_process_data(app: dash.Dash):
                 'reporting_form': intermediate_data.get('reporting_form'),
                 'period_type': period_type,
             }
-            logger.debug(f"Updated filter state: {updated_filter_state}")
 
-            # Prepare final result
-            logger.info("Preparing final result")
-            result = (
-                updated_filter_state,
-                {'df': df.to_dict('records'), 'prev_ranks': prev_ranks, 'current_ranks': current_ranks}
-            )
+
+            processed_data = create_processed_data(df, prev_ranks, current_ranks)
+
 
             memory_monitor.log_memory("end_process_data", logger)
             logger.info("Successfully completed process_data callback")
-            return result
+
+            return updated_filter_state, processed_data
 
         except Exception as e:
-            # logger.error(f"Error in process_data: {str(e)}", exc_info=True)
-            logger.debug("Stack trace:", exc_info=True)
             memory_monitor.log_memory("error_process_data", logger)
+            logger.error(f"Error in process data: {str(e)}", exc_info=True)
             raise

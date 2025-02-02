@@ -4,7 +4,7 @@
 from data_process.io import load_insurance_dataframes, save_df_to_csv, load_json
 from data_process.mappings import map_line, map_insurer
 from data_process.metrics_options import get_metric_options, get_checklist_config
-from data_process.options import get_year_quarter_options, get_insurer_options, get_insurance_line_options
+from data_process.options import get_year_quarter_options, get_insurers_and_options, get_rankings, get_insurance_line_options
 from data_process.growth import calculate_growth
 from data_process.insurer_filters import filter_by_insurer
 from data_process.market_share import calculate_market_share
@@ -21,7 +21,8 @@ __all__ = [
     'map_insurer',
     'get_year_quarter_options',
     'get_checklist_config',
-    'get_insurer_options',
+    'get_insurers_and_options',
+    'get_rankings',
     'add_top_n_rows',
     'calculate_growth',
     'calculate_market_share',

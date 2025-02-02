@@ -1,72 +1,145 @@
+from typing import List, Dict, Tuple
+import time
 import pandas as pd
-from typing import List, Dict
+import numpy as np
+
 from config.logging_config import get_logger
 from config.main_config import LINES_162_DICTIONARY, LINES_158_DICTIONARY
-from data_process.mappings import map_insurer
 from data_process.io import load_json
+from data_process.mappings import map_insurer
+from collections import defaultdict
 
 logger = get_logger(__name__)
+import time
+from functools import wraps
+from functools import lru_cache
+from numba import jit
+import numpy as np
+import pandas as pd
+from typing import List, Dict
+import logging
 
+def timer(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f"{func.__name__} took {(end-start)*1000:.2f}ms to execute")
+        return result
+    return wrapper
+    
 
+@timer
 def get_year_quarter_options(df):
+    # Get unique and sorted values in one operation
+    unique_quarters = pd.Series(df['year_quarter'].unique()).sort_values()
+    
+    # Pre-allocate result list
+    result_size = len(unique_quarters)
+    quarter_options = [None] * result_size
+    
+    # Vectorized operations for extracting year and quarter
+    years = unique_quarters.dt.year
+    quarters = unique_quarters.dt.quarter
+    
+    # Build options list
+    for i in range(result_size):
+        quarter_str = f"{years[i]}Q{quarters[i]}"
+        quarter_options[i] = {'label': quarter_str, 'value': quarter_str}
+    
+    return quarter_options
 
-    end_quarter_options = [
-        {'label': p.strftime('%YQ%q'), 'value': p.strftime('%YQ%q')} 
-        for p in pd.PeriodIndex(df['year_quarter'].dt.to_period('Q')).unique()
-    ]
-    return end_quarter_options
 
-
-def get_insurer_options(
+@lru_cache(maxsize=1024)
+def cached_map_insurer(insurer: str) -> str:
+    """Cached version of map_insurer to avoid repeated mappings"""
+    return map_insurer(insurer)
+@timer
+def get_insurers_and_options(
     df: pd.DataFrame,
     all_metrics: List[str],
     lines: List[str]
-) -> Dict[str, List[str]]:
-    """
-    Generate insurer options and rankings.
+) -> List[Dict[str, str]]:
+    try:
+        # Fast array operations for data processing
+        data = df[['year_quarter', 'metric', 'insurer', 'linemain', 'value']].values
+        year_quarters = data[:, 0]
+        metrics = data[:, 1]
+        insurers = data[:, 2]
+        linemains = data[:, 3]
+        values = data[:, 4].astype(np.float64)
+        
+        # Process quarters
+        latest_quarter = np.max(year_quarters)
+        quarter_mask = year_quarters == latest_quarter
+        quarter_metrics = np.unique(metrics[quarter_mask])
+        metric_to_use = next(m for m in all_metrics if m in quarter_metrics)
+        
+        # Create masks
+        final_mask = (
+            quarter_mask & 
+            (metrics == metric_to_use) & 
+            np.isin(linemains, lines) & 
+            ~np.isin(insurers, ['total', 'top-5', 'top-10', 'top-20'])
+        )
+        
+        # Filter and aggregate
+        filtered_insurers = insurers[final_mask]
+        filtered_values = values[final_mask]
+        
+        if len(filtered_insurers) == 0:
+            return []
+            
+        unique_insurers, inverse_indices = np.unique(filtered_insurers, return_inverse=True)
+        aggregated = np.zeros(len(unique_insurers))
+        np.add.at(aggregated, inverse_indices, filtered_values)
+        
+        # Sort insurers
+        sort_indices = np.argsort(-aggregated)
+        sorted_insurers = unique_insurers[sort_indices]
+        
+        # Optimize result creation
+        TOP_OPTIONS = ['top-5', 'top-10', 'top-20']
+        
+        # Pre-allocate result list
+        result_size = len(TOP_OPTIONS) + len(sorted_insurers)
+        result = [None] * result_size
+        
+        # Fill TOP_OPTIONS first (they don't need mapping)
+        for i, option in enumerate(TOP_OPTIONS):
+            result[i] = {'label': cached_map_insurer(option), 'value': option}
+            
+        # Fill remaining insurers using cached mapping
+        for i, insurer in enumerate(sorted_insurers, len(TOP_OPTIONS)):
+            result[i] = {'label': cached_map_insurer(insurer), 'value': insurer}
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error generating insurer options: {str(e)}", exc_info=True)
+        return []
 
-    @API_STABILITY: BACKWARDS_COMPATIBLE
-    """
-    logger.info("Starting insurer options and rankings generation")
-
+@timer
+def get_rankings(
+    df: pd.DataFrame,
+    all_metrics: List[str],
+    lines: List[str]
+) -> Dict[str, Dict[str, Dict[str, int]]]:
     try:
         filtered_df = df[
             df['insurer'].apply(lambda i: i not in {'total', 'top-5', 'top-10', 'top-20'})
         ]
 
-        logger.debug(f"all_metrics: {all_metrics}")
-        try:
-            metric_to_use = next(m for m in all_metrics if m in filtered_df['metric'].unique())
-            logger.debug(f"Selected metric: {metric_to_use}")
-        except StopIteration:
-            logger.error("No valid metrics found in data")
-        logger.debug(f"metric_to_use: {metric_to_use}")
-        # Get metric-filtered data
+        metric_to_use = next(m for m in all_metrics if m in filtered_df['metric'].unique())
+        logger.debug(f"metric to use {metric_to_use}")
         metric_df = filtered_df[filtered_df['metric'] == metric_to_use]
+
         quarters = sorted(metric_df['year_quarter'].unique())
-
         if not quarters:
-            logger.debug("No quarters found in data")
-            return {
-                'top5': [], 'top10': [], 'top20': [], 'insurer_options': [],
-                'current_ranks': {}, 'prev_ranks': {}
-            }
+            return {'current_ranks': {}, 'prev_ranks': {}}
 
-        # Get latest quarter data for first line
-        # Get latest quarter data aggregated across all specified lines
-        latest_quarter = quarters[-1]
-        latest_data = metric_df[
-            (metric_df['linemain'].isin(lines)) & 
-            (metric_df['year_quarter'] == latest_quarter)
-        ].groupby('insurer')['value'].sum().reset_index().sort_values('value', ascending=False)
-
-        logger.debug(f"Processing data for quarter {latest_quarter}")
-
-        # Get sorted insurers from filtered data
-        all_insurers = latest_data['insurer'].unique().tolist()
-
-        # Generate rankings for current and previous quarters
-        current_quarter = latest_quarter
+        current_quarter = quarters[-1]
         prev_quarter = quarters[-2] if len(quarters) > 1 else None
 
         rankings = {'current_ranks': {}, 'prev_ranks': {}}
@@ -82,46 +155,19 @@ def get_insurer_options(
 
                 for line_id in metric_df['linemain'].unique():
                     line_df = quarter_df[quarter_df['linemain'] == line_id]
-
                     if not line_df.empty:
-                        logger.debug(f"Processing {period} for line_id: {line_id}")
-                        # save_df_to_csv(line_df, f"{line_id}_{target_quarter}_line_df.csv")
-
                         rankings[period][line_id] = dict(
                             zip(
                                 line_df.sort_values('value', ascending=False)['insurer'].astype(str),
                                 range(1, len(line_df) + 1)
                             )
                         )
-                        logger.debug(f"Generated {len(rankings[period][line_id])} rankings for line_id {line_id}")
 
-        # Create options with mapped labels
-        insurer_options = [
-            {'label': map_insurer(i), 'value': i} 
-            for i in ['top-5', 'top-10', 'top-20'] + all_insurers
-        ]
-
-        logger.debug(f"Generated options for {len(all_insurers)} insurers")
-
-        return {
-            'top5': all_insurers[:5],
-            'top10': all_insurers[:10],
-            'top20': all_insurers[:20],
-            'insurer_options': insurer_options,
-            'current_ranks': rankings['current_ranks'],
-            'prev_ranks': rankings['prev_ranks']
-        }
+        return rankings
 
     except Exception as e:
-        logger.error(f"Error generating insurer options: {str(e)}", exc_info=True)
-        return {
-            'top5': [],
-            'top10': [],
-            'top20': [],
-            'insurer_options': [],
-            'current_ranks': {},
-            'prev_ranks': {}
-        }
+        logger.error(f"Error generating rankings: {str(e)}", exc_info=True)
+        return {'current_ranks': {}, 'prev_ranks': {}}
 
 
 def get_insurance_line_options(reporting_form, level=1, indent_char="\u2003"):

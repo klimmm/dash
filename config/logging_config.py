@@ -105,7 +105,7 @@ def setup_logging(console_level=logging.DEBUG,
             'get_y_ranges': logging.WARNING,
         },
         'constants': logging.WARNING,
-        'callbacks': logging.WARNING,
+        'callbacks': logging.DEBUG,
         'data_process.insurer_filters': logging.WARNING,
         'data_process.options': logging.WARNING,
         'data_process.table.data': logging.WARNING,
@@ -164,7 +164,6 @@ class MemoryMonitor:
             logger.error(f"Error monitoring memory: {str(e)}")
 
 memory_monitor = MemoryMonitor()
-
 
 def monitor_memory(func: Callable) -> Callable:
     """Monitor memory usage of decorated functions"""

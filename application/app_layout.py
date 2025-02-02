@@ -9,13 +9,18 @@ from constants.style_constants import StyleConstants
 from config.default_values import (
      DEFAULT_REPORTING_FORM,
      DEFAULT_NUMBER_OF_PERIODS,
-     DEFAULT_NUMBER_OF_INSURERS,
+     TOP_N_LIST,
      DEFAULT_PERIOD_TYPE,
      DEFAULT_SHOW_MARKET_SHARE,
      DEFAULT_SHOW_CHANGES,
-     DEFAULT_SPLIT_MODE
+     DEFAULT_SPLIT_MODE,
+     DEFAULT_CHECKED_LINES,
+     DEFAULT_INSURER,
+     DEFAULT_PRIMARY_METRICS
     )
+from config.logging_config import get_logger
 
+logger = get_logger(__name__)
 
 def create_stores() -> List[html.Div]:
     """Create store components for app state management."""
@@ -23,7 +28,21 @@ def create_stores() -> List[html.Div]:
         dcc.Store(id="show-data-table", data=True),
         dcc.Store(id="processed-data-store"),
         dcc.Store(id='intermediate-data-store', storage_type='memory'),
-        dcc.Store(id='insurer-options-store', storage_type='memory'),
+        dcc.Store(
+            id='insurance-line-all-values',
+            data=DEFAULT_CHECKED_LINES,
+            storage_type='memory'
+        ),
+        dcc.Store(
+            id='selected-insurers-all-values',
+            data=DEFAULT_INSURER,  # Wrap single value in list
+            storage_type='memory'
+        ),
+        dcc.Store(
+            id='primary-metric-all-values',
+            data=DEFAULT_PRIMARY_METRICS,
+            storage_type='memory'
+        ),
         dcc.Store(id="filter-state-store"),
         dcc.Store(id='insurance-lines-all-values', data=initial_state, storage_type='memory'),
         dcc.Store(id='expansion-state', data={'states': {}, 'all_expanded': False}),
@@ -31,9 +50,9 @@ def create_stores() -> List[html.Div]:
         dcc.Store(id='reporting-form', data=DEFAULT_REPORTING_FORM),
         dcc.Store(id='toggle-selected-market-share', data=DEFAULT_SHOW_MARKET_SHARE),
         dcc.Store(id='toggle-selected-qtoq', data=DEFAULT_SHOW_CHANGES),
-        dcc.Store(id='top-n-rows', data=DEFAULT_NUMBER_OF_INSURERS),
+        dcc.Store(id='top-n-rows', data=TOP_N_LIST),
         dcc.Store(id='number-of-periods-data-table', data=DEFAULT_NUMBER_OF_PERIODS),
-        dcc.Store(id='table-split-mode', data=DEFAULT_SPLIT_MODE),
+        dcc.Store(id='table-split-mode', data=DEFAULT_SPLIT_MODE)
     ]
 
 
@@ -88,10 +107,12 @@ def create_debug_footer() -> html.Div:
 
 def create_app_layout():
     try:
+
+        logger.warning(f"initial_state {initial_state}")
+
         return dbc.Container([
             *create_stores(),
             create_navbar(),
-
             html.Div(id="tree-container", className=StyleConstants.CONTAINER["TREE"]),
             dbc.CardBody([
                 dbc.Row([

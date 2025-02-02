@@ -14,8 +14,20 @@ from config.main_config import LINES_162_DICTIONARY, LINES_158_DICTIONARY
 
 
 logger = get_logger(__name__)
+import time
+from functools import wraps
 
-
+def timer(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f"{func.__name__} took {(end-start)*1000:.2f}ms to execute")
+        return result
+    return wrapper
+    
+@timer
 def get_data_table(
     df: pd.DataFrame,
     split_mode: str,
@@ -30,10 +42,10 @@ def get_data_table(
 ) -> Tuple[dash_table.DataTable, str, str]:
     """Generate table configuration with styles and formatting."""
     df.loc[:, 'metric'] = df['metric'].str.replace('_q_to_q', '')
-
-    save_df_to_csv(df, "df_before_pivot.csv")
-    line = df['linemain'].unique()
     insurer = df['insurer'].unique()
+    # save_df_to_csv(df, "df_before_pivot.csv")
+    # save_df_to_csv(df,f"{insurer[0]}df_before_pivot.csv")
+    line = df['linemain'].unique()
 
     table_data = transform_table_data(
         df, 
@@ -42,7 +54,7 @@ def get_data_table(
         current_ranks,
         split_mode
     )
-    save_df_to_csv(table_data, "df_after_pivot.csv")
+    #save_df_to_csv(table_data, "df_after_pivot.csv")
 
     if split_mode == 'insurer':
 
@@ -51,7 +63,8 @@ def get_data_table(
         logger.debug(f" line uniquw {table_data['linemain'].unique()} ")
         table_data = sort_and_indent_df(table_data, json_str)
 
-    save_df_to_csv(table_data, "df_after_pivot_aftersort.csv")
+    # save_df_to_csv(table_data, "df_after_pivot_aftersort.csv")
+    # save_df_to_csv(table_data,f"{insurer[0]}df_after_pivot.csv")
     datatable = create_datatable(
         table_data,
         table_selected_metric,

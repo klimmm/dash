@@ -105,7 +105,19 @@ def filter_by_num_periods(df: pd.DataFrame, period_type: str, num_periods_select
 
     return df, num_periods_available
 
-
+def timer(func):
+    import time
+    from functools import wraps
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f"{func.__name__} took {(end-start)*1000:.2f}ms to execute")
+        return result
+    return wrapper
+    
+@timer
 def filter_by_period(df: pd.DataFrame, end_quarter: str, period_type: str, num_periods_selected: int):
 
     save_df_to_csv(df, "before_filter_by_period.csv")
@@ -126,9 +138,11 @@ def filter_by_period(df: pd.DataFrame, end_quarter: str, period_type: str, num_p
 
     return df
 
-
+@timer
 def filter_by_period_type(
     df: pd.DataFrame,
+    end_quarter: str, 
+    num_periods_selected: int,
     period_type: str
 ) -> pd.DataFrame:
 
@@ -136,7 +150,9 @@ def filter_by_period_type(
 
     grouping_cols = [col for col in df.columns if col not in {'year_quarter', 'value', 'quarter'}]
 
-    end_quarter_num = df['year_quarter'].max().quarter
+    end_quarter_num = int(end_quarter[-1])
+
+    earliest_date = get_earliest_valid_date(df, period_type, end_quarter)
 
     if period_type == 'yoy_q':
         df.loc[:, 'quarter'] = df['year_quarter'].dt.quarter
@@ -164,6 +180,7 @@ def filter_by_period_type(
               .reset_index(drop=True))
 
         df = df.drop(columns=['year'])
+        df = df[df['year_quarter'].dt.quarter == end_quarter_num]
 
     elif period_type in ['mat', 'yoy_y']:
         df = df.sort_values(grouping_cols + ['year_quarter'])
@@ -182,10 +199,18 @@ def filter_by_period_type(
             df.loc[:, 'quarter'] = df['year_quarter'].dt.quarter
             df = df[df['quarter'] == end_quarter_num]
             df = df.drop(columns=['quarter'])
+        df = df[df['year_quarter'].dt.quarter == end_quarter_num]
+
 
     elif period_type == 'cumulative_sum':
         df['value'] = df.groupby(grouping_cols)['value'].cumsum()
 
+    quarters = sorted(df['year_quarter'].unique(), reverse=True)
+    num_periods_available = len(quarters)
+    num_periods_to_keep = min(num_periods_selected, num_periods_available - 1) + 1
+    df = df[df['year_quarter'].isin(quarters[:num_periods_to_keep])]    
+
+    
     logger.debug(f"periods after filter_by_period_type {set(sorted(df['year_quarter'].tolist()))}")
 
     return df

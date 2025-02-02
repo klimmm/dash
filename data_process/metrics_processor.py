@@ -1,3 +1,6 @@
+from concurrent.futures import ThreadPoolExecutor
+import numpy as np
+from functools import lru_cache
 from typing import List, Optional, Set
 
 import pandas as pd
@@ -7,19 +10,24 @@ from constants.metrics import METRICS
 
 logger = get_logger(__name__)
 
-
+def timer(func):
+    import time
+    from functools import wraps
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f"{func.__name__} took {(end-start)*1000:.2f}ms to execute")
+        return result
+    return wrapper
+    
+@timer
 def get_required_metrics(
     selected_metrics: List[str],
     business_type_selection: Optional[List[str]] = None
 ) -> List[str]:
-    """
-    Determine all required metrics based on selected metrics and their dependencies.
-    Returns them with selected metrics first, followed by their dependencies grouped by parent metric.
-    Args:
-        selected_metrics: List of metrics to calculate
-    Returns:
-        List of all required metrics with selected metrics first, then grouped dependencies
-    """
+
     # Strip metric suffixes for processing
     suffix_list = ['_market_share_q_to_q_change', '_q_to_q_change', '_market_share']
     clean_metrics = [
@@ -69,125 +77,81 @@ def get_required_metrics(
 
 
 def get_calculation_order(metrics: Set[str]) -> List[str]:
-    """
-    Determine the correct order of calculation based on dependencies.
-
-    Args:
-        metrics: Set of metrics to be calculated
-    Returns:
-        List of metrics in correct calculation order
-    """
+    """Fast calculation order with minimal operations"""
     ordered = []
-    metrics_set = set(metrics)
-
-    while metrics_set:
-        # Find metrics with no remaining dependencies or base metrics
-        available = {m for m in metrics_set 
-                     if m not in METRICS or
-                     all(dep not in metrics_set for dep in METRICS[m][0])}
-
+    remaining = metrics.copy()
+    deps_cache = {m: set(METRICS[m][0]) if m in METRICS else set() for m in metrics}
+    
+    while remaining:
+        available = remaining - {m for m in remaining if deps_cache[m] & remaining}
         if not available:
-            logger.debug(f"Circular dependency detected in remaining metrics: {metrics_set}")
             break
-
-        ordered.extend(sorted(available))  # Sort for deterministic ordering
-        metrics_set -= available
-
+        ordered.extend(sorted(available))
+        remaining -= available
     return ordered
 
-
+@timer
 def calculate_metrics(
     df: pd.DataFrame,
     selected_metrics: List[str],
     required_metrics: List[str]
 ) -> pd.DataFrame:
-    """
-    @API_STABILITY: BACKWARDS_COMPATIBLE
-    Calculate insurance metrics based on selected metrics and premium/loss selection.
+    """Optimized metric calculation minimizing DataFrame operations"""
+    existing = df['metric'].unique()
+    selected_set = set(selected_metrics)
+    
+    
+    if all(m in existing for m in required_metrics):
+        result = df.loc[df['metric'].isin(selected_set)]
+        return result
 
-    Args:
-        df: Input DataFrame with metrics and values
-        selected_metrics: List of metrics to calculate
-    Returns:
-        DataFrame with calculated metrics added
-    """
-    logger.debug(f"Starting calculation for {len(selected_metrics)} selected metrics")
-
-    # Get all required metrics including dependencies
-    required_metrics = set(required_metrics)
-
-    existing_metrics = set(df['metric'].unique())
-    if required_metrics.issubset(existing_metrics):
-        logger.debug("All required metrics already present in DataFrame")
-        df = df[df['metric'].isin(selected_metrics)]
-
-        df['metric'] = pd.Categorical(
-            df['metric'], 
-            categories=selected_metrics, 
-            ordered=True
-        )
-        grouping_cols = [col for col in df.columns if col not in ['metric', 'value']]
-        df = df.sort_values(by=grouping_cols + ['metric'])
-
-        return df
-
-    # Get proper calculation order
-    calculation_order = get_calculation_order(required_metrics)
-    logger.debug(f"Calculation order determined: {calculation_order}")
-
-    # Process each group separately
+    calculation_order = get_calculation_order(set(required_metrics))
     grouping_cols = [col for col in df.columns if col not in ['metric', 'value']]
-    result_frames = []
-
+    
+    metric_calcs = {
+        m: METRICS[m][1] 
+        for m in calculation_order 
+        if m in METRICS and (
+            m in selected_set or 
+            any(m in METRICS[dep][0] for dep in selected_set if dep in METRICS)
+        )
+    }
+    
+    all_groups = []
+    
     for _, group in df.groupby(grouping_cols):
-        metrics_dict = dict(zip(group['metric'], group['value']))
-        base_dict = {col: group[col].iloc[0] for col in grouping_cols}
-        new_rows = []
-        logger.debug(f"metrics_dict: {metrics_dict}")
-        # Calculate metrics in determined order
+        metrics = dict(zip(group['metric'], group['value']))
+        base = {col: group[col].iloc[0] for col in grouping_cols}
+        
+        new_metrics = []
         for metric in calculation_order:
+            if metric not in metrics and metric in metric_calcs:
+                try:
+                    val = metric_calcs[metric](metrics)
+                    metrics[metric] = val
+                    if metric in selected_set:
+                        new_metrics.append({
+                            'metric': metric,
+                            'value': val,
+                            **base
+                        })
+                except Exception:
+                    continue
+                    
+        if new_metrics:
+            all_groups.extend(new_metrics)
 
-            if metric in metrics_dict:
-                logger.debug(f"Skipping existing metric: {metric}")
-                continue
+    if all_groups:
+        new_df = pd.DataFrame(all_groups)
+        df_filtered = df.loc[df['metric'].isin(selected_set)]
+        result = pd.concat([df_filtered, new_df], ignore_index=True)
+        result.drop_duplicates(
+            subset=grouping_cols + ['metric'], 
+            keep='last', 
+            inplace=True
+        )
+    else:
+        result = df.loc[df['metric'].isin(selected_set)]
 
-            if metric not in METRICS:
-                continue
-
-            deps, calculation, *_ = METRICS[metric]
-            try:
-                value = calculation(metrics_dict)
-                logger.debug(f"Calculated {metric} = {value}")
-                new_rows.append({
-                    **base_dict,
-                    'metric': metric,
-                    'value': value
-                })
-                metrics_dict[metric] = value  # Update for dependent calculations
-            except Exception as e:
-                logger.debug(f"Error calculating {metric}: {str(e)}")
-                continue
-
-        if new_rows:
-            result_frames.append(pd.DataFrame(new_rows))
-
-    # Combine results
-    if result_frames:
-        result_df = pd.concat([df] + result_frames, ignore_index=True)
-        result_df = result_df.drop_duplicates(subset=grouping_cols + ['metric'], keep='last')
-        result_df = result_df[result_df['metric'].isin(selected_metrics)]
-        return result_df
-
-    df = df[df['metric'].isin(selected_metrics)]
-
-    # Apply the same sorting logic to the original df
-    df['metric'] = pd.Categorical(
-        df['metric'], 
-        categories=selected_metrics, 
-        ordered=True
-    )
-    df = df.sort_values(by=grouping_cols + ['metric'])
-    logger.debug(f"df sorted: {df}")
-    logger.debug(f"selected_metrics: {selected_metrics}")
-
-    return df
+    
+    return result

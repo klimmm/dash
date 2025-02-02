@@ -3,13 +3,7 @@ from typing import Dict
 from dash import html
 import dash_bootstrap_components as dbc
 
-from application.components.dropdown import (
-    create_dynamic_insurer_container_for_layout,
-    create_dynamic_primary_metric_container_for_layout,
-    create_dynamic_insurance_line_container_for_layout,
-    create_end_quarter_dropdown,
-    create_secondary_metric_dropdown
-)
+from application.components.checklist import create_business_type_checklist
 from application.components.button import (
     create_reporting_form_buttons,
     create_top_insurers_buttons,
@@ -18,8 +12,74 @@ from application.components.button import (
     create_metric_toggles_buttons,
     create_table_split_buttons
 )
-from application.components.checklist import create_business_type_checklist
+from application.components.dropdown import (
+    create_base_dropdown,
+    create_dd_container
+)
+from config.default_values import (
+    DEFAULT_PRIMARY_METRICS,
+    DEFAULT_SECONDARY_METRICS,
+    DEFAULT_CHECKED_LINES,
+    DEFAULT_END_QUARTER,
+    DEFAULT_REPORTING_FORM,
+    DEFAULT_INSURER
+    )
+from constants.metrics import VALUE_METRICS_OPTIONS, METRICS_OPTIONS
 from constants.style_constants import StyleConstants
+from constants.translations import translate
+from data_process.mappings import map_insurer
+from data_process.options import get_insurance_line_options
+
+
+def create_metric_dropdown_container():
+    return create_dd_container(
+        dropdown_type='primary-metric',
+        value=DEFAULT_PRIMARY_METRICS[0],
+        options=METRICS_OPTIONS
+    )
+
+
+def create_insurer_dropdown_container():
+    return create_dd_container(
+        dropdown_type='selected-insurers',
+        value=DEFAULT_INSURER[0],
+        options=[
+            {'label': map_insurer(DEFAULT_INSURER[0]),
+             'value': DEFAULT_INSURER[0]}
+        ]
+    )
+
+
+def create_line_dropdown_container():
+    return create_dd_container(
+        dropdown_type='insurance-line',
+        value=DEFAULT_CHECKED_LINES[0],
+        options=get_insurance_line_options(DEFAULT_REPORTING_FORM, level=2),
+        show_detalize=True
+    )
+
+
+def create_secondary_metric_dropdown():
+    return create_base_dropdown(
+        id='secondary-y-metric',
+        value=DEFAULT_SECONDARY_METRICS,
+        options=VALUE_METRICS_OPTIONS,
+        placeholder="Доп. показатель..."
+    )
+
+
+def create_end_quarter_dropdown():
+    return create_base_dropdown(
+        id='end-quarter',
+        value=DEFAULT_END_QUARTER,
+        options=[
+            {'label': translate(DEFAULT_END_QUARTER),
+             'value': DEFAULT_END_QUARTER}
+        ],
+        placeholder="Select quarter"
+    )
+
+
 
 FILTERS = {
     'collapsed': [
@@ -38,11 +98,11 @@ FILTERS = {
          'component': create_period_type_buttons,
          'component_className': 'd-flex justify-content-center'},
         {'label': 'Страховщик:', 'label_width': 3,
-         'component': create_dynamic_insurer_container_for_layout},
+         'component': create_insurer_dropdown_container},
         {'label': 'Вид страхования:', 'label_width': 3,
-         'component': create_dynamic_insurance_line_container_for_layout},
+         'component': create_line_dropdown_container},
         {'label': 'Показатель:', 'label_width': 3,
-         'component': create_dynamic_primary_metric_container_for_layout},
+         'component': create_metric_dropdown_container},
         {'label': ' ', 'label_width': 12,
          'component': create_top_insurers_buttons,
          'component_className': 'd-flex justify-content-end'},

@@ -6,7 +6,7 @@ from dash import Input, Output, State, ALL
 from dash.exceptions import PreventUpdate
 
 
-from application.components.dropdown import create_insurance_line_dropdown
+from application.components.dropdown import create_dynamic_dropdown
 from config.callback_logging import log_callback
 from config.default_values import DEFAULT_CHECKED_LINES, DEFAULT_REPORTING_FORM
 from config.logging_config import get_logger
@@ -54,10 +54,11 @@ def setup_line_selection(app: dash.Dash, insurance_lines_tree_162, insurance_lin
                     for item in detailed:
                         if item not in result:
                             result.append(item)
+                    result.append(selected_line)
                     return result
                 return current_state
 
-                
+
             # Handle global detailize
             logger.debug("Processing global detailize")
             result = insurance_lines_tree.handle_parent_child_selections(
@@ -67,17 +68,18 @@ def setup_line_selection(app: dash.Dash, insurance_lines_tree_162, insurance_lin
             return result
 
         except Exception as e:
-            logger.error(f"Error in detailize processing: {str(e)}", exc_info=True)
+            logger.error(f"Error in detailize processing: {str(e)}",
+                         exc_info=True)
             raise
 
-    def _process_checkbox_selection(checkbox_values: List[bool], checkbox_ids: List[Dict], 
-                                  current_state: List[str], trigger_id: str,
-                                  insurance_lines_tree) -> List[str]:
+    def _process_checkbox_selection(checkbox_values: List[bool],
+                                    checkbox_ids: List[Dict],
+                                    current_state: List[str], trigger_id: str,
+                                    insurance_lines_tree) -> List[str]:
         """Process checkbox selection changes."""
         logger.debug("Processing checkbox selection")
         logger.debug(f"Checkbox values: {checkbox_values}")
         logger.debug(f"Current state: {current_state}")
-
         try:
             if not any(checkbox_values):
                 logger.debug("No checkboxes selected, using defaults")
@@ -91,21 +93,29 @@ def setup_line_selection(app: dash.Dash, insurance_lines_tree_162, insurance_lin
             logger.debug(f"New selection: {new_selected}")
 
             trigger_line = json.loads(trigger_id).get('index')
-            if trigger_line not in new_selected and trigger_line not in current_state:
-                logger.debug(f"Invalid trigger line state: {trigger_line}")
-
-                return current_state
+            if (trigger_line not in new_selected
+                    and trigger_line not in current_state):
+                logger.debug(
+                    f"Preventing update due to invalid trigger line state: {trigger_line}"
+                )
+                raise PreventUpdate
 
             result = insurance_lines_tree.handle_parent_child_selections(
                 new_selected, [trigger_line], detailize=False)
-
             logger.debug(f"Checkbox selection complete. Results: {result}")
             return result
 
+        except PreventUpdate:
+            # Log at debug level since this is expected behavior
+            logger.debug("Update prevented - normal operation")
+            raise
         except Exception as e:
-            logger.error(f"Error in checkbox selection: {str(e)}", exc_info=True)
+            logger.error(f"Error in checkbox selection: {str(e)}",
+                         exc_info=True)
             raise
 
+
+    
     def _process_dynamic_selection(insurance_line: List[str], current_state: List[str],
                                  insurance_lines_tree) -> List[str]:
         """Process dynamic insurance line selection."""
@@ -185,12 +195,14 @@ def setup_line_selection(app: dash.Dash, insurance_lines_tree_162, insurance_lin
                 available_options = [opt for opt in options 
                                    if opt['value'] not in other_selected]
 
-                result.append(create_insurance_line_dropdown(
+                result.append(create_dynamic_dropdown(
+                    dropdown_type='insurance-line',
                     index=i,
                     options=available_options,
                     value=current_value,
                     is_add_button=(i == len(valid_selections) - 1),
-                    is_remove_button=(len(valid_selections) > 1)
+                    is_remove_button=(len(valid_selections) > 1),
+                    is_detalize_button=True
                 ))
 
             return result, valid_selections
@@ -209,7 +221,8 @@ def setup_line_selection(app: dash.Dash, insurance_lines_tree_162, insurance_lin
             # Don't prevent removal of the last dropdown - just reset to default
             if len(existing_dropdowns) <= 1:
                 logger.debug("Removing last dropdown, resetting to default")
-                default_dropdown = create_insurance_line_dropdown(
+                default_dropdown = create_dynamic_dropdown(
+                    dropdown_type='insurance-line',
                     index=0,
                     options=options,
                     value=DEFAULT_CHECKED_LINES[0],
@@ -245,23 +258,27 @@ def setup_line_selection(app: dash.Dash, insurance_lines_tree_162, insurance_lin
                 last_idx = len(existing_dropdowns) - 1
                 logger.debug(f"Updating last dropdown at index {last_idx}")
 
-                existing_dropdowns[last_idx] = create_insurance_line_dropdown(
+                existing_dropdowns[last_idx] = create_dynamic_dropdown(
+                    dropdown_type='insurance-line',
                     index=last_idx,
                     options=options,
                     value=insurance_line[last_idx] if last_idx < len(insurance_line) else None,
                     is_add_button=False,
-                    is_remove_button=True
+                    is_remove_button=True,
+                    is_detalize_button=True
                 )
 
             filtered_options = [opt for opt in options 
                               if opt.get('value') not in insurance_line]
 
-            existing_dropdowns.append(create_insurance_line_dropdown(
+            existing_dropdowns.append(create_dynamic_dropdown(
+                dropdown_type='insurance-line',
                 index=len(existing_dropdowns),
                 options=filtered_options,
                 value=None,
                 is_add_button=True,
-                is_remove_button=True
+                is_remove_button=True,
+                is_detalize_button=True
             ))
 
             logger.info(f"Added new dropdown. Total count: {len(existing_dropdowns)}")
@@ -321,7 +338,7 @@ def setup_line_selection(app: dash.Dash, insurance_lines_tree_162, insurance_lin
             logger.debug(f"insurance_line : {insurance_line}")
 
 
-            
+            logger.debug(f"Trigger: {trigger}")
             logger.debug(f"Trigger prop_id: {trigger['prop_id']}")
             logger.debug(f"Trigger id : {trigger['prop_id'].rsplit('.', 1)[0]}")
             # Initialize state
@@ -357,15 +374,18 @@ def setup_line_selection(app: dash.Dash, insurance_lines_tree_162, insurance_lin
             # Handle no existing dropdowns
             if not existing_dropdowns:
                 logger.debug("Creating initial dropdown")
-                return [create_insurance_line_dropdown(
+                return [create_dynamic_dropdown(
+                    dropdown_type='insurance-line',
                     index=0,
                     options=insurance_line_options,
                     is_add_button=True,
-                    is_remove_button=False
+                    is_remove_button=False,
+                    is_detalize_button=True
                 )], insurance_line
 
             # Handle add/remove operations
             if '.n_clicks' in trigger['prop_id'] and 'intermediate-data-store' not in trigger['prop_id']:
+
                 if 'remove-insurance-line-btn' in trigger['prop_id']:
                     removed_index = int(json.loads(trigger_id.split('.')[0])['index'])
                     remove_result = _handle_remove_dropdown(
@@ -394,6 +414,10 @@ def setup_line_selection(app: dash.Dash, insurance_lines_tree_162, insurance_lin
 
             logger.info("Insurance lines update complete")
             return updated_dropdowns, valid_selections
+
+        except PreventUpdate:
+            logger.debug("Update prevented in line selection - normal operation")
+            raise
 
         except Exception as e:
             logger.error(f"Error in insurance lines update: {str(e)}", exc_info=True)

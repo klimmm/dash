@@ -1,4 +1,5 @@
 import json
+import re
 from typing import Dict, Any
 
 import dash
@@ -48,8 +49,37 @@ def setup_line_tree_view(app: dash.Dash, lines_tree_162, lines_tree_158):
                 else lines_tree_158
             )
 
+
+
+
+
+
             trigger = ctx.triggered[0]
-            trigger_id = trigger['prop_id'].split('.')[0]
+            logger.debug(f"trigger: {trigger}")
+            
+            prop_id = trigger['prop_id']
+            logger.debug(f"prop_id: {prop_id}")
+
+            match = re.match(r'^(.*?)\.n_clicks', prop_id)
+            if not match:
+                logger.debug(f"Could not find JSON part in prop_id: {prop_id}")
+                return None
+                
+            json_part = match.group(1)
+
+            
+            #json_part = prop_id.split('.')[0]
+            logger.debug(f"json_part: {json_part}")
+            trigger_data = json.loads(json_part)
+            logger.debug(f"trigger_data: {trigger_data}")
+            trigger_id = json_part
+            #trigger_id = trigger['prop_id'].split('.')[0]
+            logger.debug(f"trigger_id: {trigger_id}")
+            
+
+            
+
+
 
             if 'expand-all-button' in trigger['prop_id']:
                 # Handle expand/collapse all
