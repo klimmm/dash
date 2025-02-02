@@ -7,7 +7,7 @@ import dash_bootstrap_components as dbc
 from application import create_app_layout, lines_tree_162, lines_tree_158
 from callbacks.setup import setup_all_callbacks
 from config import setup_logging, setup_callback_logging, get_logger
-from data_process import load_insurance_dataframes, get_year_quarter_options
+from data_process import load_insurance_dataframes, PeriodProcessor
 
 logger = get_logger(__name__)
 setup_logging(console_level=logging.DEBUG, file_level=logging.DEBUG)
@@ -68,8 +68,11 @@ app.layout = create_app_layout()
 server = app.server
 
 df_162, df_158 = load_insurance_dataframes()
-end_quarter_options_162 = get_year_quarter_options(df_162)
-end_quarter_options_158 = get_year_quarter_options(df_158)
+period_processor_162 = PeriodProcessor(df_162)
+period_processor_158 = PeriodProcessor(df_158)
+
+end_quarter_options_162 = period_processor_162.get_year_quarter_options()
+end_quarter_options_158 = period_processor_158.get_year_quarter_options()
 setup_all_callbacks(app, lines_tree_162, lines_tree_158, df_162, df_158,
                     end_quarter_options_162, end_quarter_options_158)
 
@@ -79,9 +82,9 @@ def main():
         port = int(os.environ.get("PORT", 8051))
         print(f"Starting server on port {port}...")
         app.run_server(
-            host='0.0.0.0',
+            host='127.0.0.1',
             port=port,
-            debug=False
+            debug=True
         )
     except Exception as e:
         print(f"Error during startup: {e}")

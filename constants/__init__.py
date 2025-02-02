@@ -2,9 +2,7 @@
 
 from constants.metrics import (
     BUSINESS_TYPE_OPTIONS,
-    METRICS, 
-    METRICS_OPTIONS,
-    VALUE_METRICS_OPTIONS
+    METRICS
 )
 from constants.translations import translate
 from constants.style_constants import StyleConstants

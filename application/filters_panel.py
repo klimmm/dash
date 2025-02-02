@@ -17,25 +17,25 @@ from application.components.dropdown import (
     create_dd_container
 )
 from config.default_values import (
-    DEFAULT_PRIMARY_METRICS,
+    DEFAULT_METRICS,
     DEFAULT_SECONDARY_METRICS,
     DEFAULT_CHECKED_LINES,
     DEFAULT_END_QUARTER,
     DEFAULT_REPORTING_FORM,
     DEFAULT_INSURER
     )
-from constants.metrics import VALUE_METRICS_OPTIONS, METRICS_OPTIONS
 from constants.style_constants import StyleConstants
 from constants.translations import translate
 from data_process.mappings import map_insurer
 from data_process.options import get_insurance_line_options
+from data_process.metrics_processor import MetricsProcessor
 
 
 def create_metric_dropdown_container():
     return create_dd_container(
-        dropdown_type='primary-metric',
-        value=DEFAULT_PRIMARY_METRICS[0],
-        options=METRICS_OPTIONS
+        dropdown_type='metric',
+        value=MetricsProcessor.DEFAULT_METRICS[0],
+        options=MetricsProcessor.get_metrics_options()
     )
 
 
@@ -59,15 +59,6 @@ def create_line_dropdown_container():
     )
 
 
-def create_secondary_metric_dropdown():
-    return create_base_dropdown(
-        id='secondary-y-metric',
-        value=DEFAULT_SECONDARY_METRICS,
-        options=VALUE_METRICS_OPTIONS,
-        placeholder="Доп. показатель..."
-    )
-
-
 def create_end_quarter_dropdown():
     return create_base_dropdown(
         id='end-quarter',
@@ -87,9 +78,7 @@ FILTERS = {
          'component': create_end_quarter_dropdown},
         {'label': 'Бизнес:', 'label_width': 3,
          'component': create_business_type_checklist,
-         'component_className': 'd-flex justify-content-start'},
-        {'label': 'Доп. показатель:', 'label_width': 3,
-         'component': create_secondary_metric_dropdown}
+         'component_className': 'd-flex justify-content-start'}
     ],
     'expanded': [
         {'label': 'Отчетность:', 'label_width': 4,
@@ -166,14 +155,6 @@ def create_filters() -> html.Div:
         ),
     ], className=StyleConstants.FILTER_PANEL["ROW"])
 
-    row2 = dbc.Row([
-        dbc.Col(
-            filters['collapsed'][2], 
-            xs=12, sm=12, md=12, lg=12,
-            className=StyleConstants.FILTER_PANEL["COL"]
-        ),
-    ], className=StyleConstants.FILTER_PANEL["ROW"])
-
     row3 = dbc.Row([
         dbc.Col(
             filters['expanded'][0], 
@@ -239,7 +220,7 @@ def create_filters() -> html.Div:
     ], className=f'{StyleConstants.FILTER_PANEL["ROW"]} {StyleConstants.SPACING["MT_3"]}')
 
     collapsed_section = html.Div(
-        [row1, row2],
+        [row1],
         id='sidebar-col',
         className=StyleConstants.SIDEBAR_COLLAPSED
     )

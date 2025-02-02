@@ -12,7 +12,8 @@ from config.callback_logging import log_callback
 from config.logging_config import get_logger, memory_monitor
 from data_process.growth import calculate_growth
 from data_process.market_share import calculate_market_share
-from data_process.options import get_rankings
+from data_process.insurer_processor import InsurerDataProcessor
+
 # from data_process.io import save_df_to_csv
 
 logger = get_logger(__name__)
@@ -64,7 +65,6 @@ def setup_process_data(app: dash.Dash):
          Output('processed-data-store', 'data')],
         [Input('intermediate-data-store', 'data')],
         [State('selected-insurers-all-values', 'data'),
-         State('show-data-table', 'data'),
          State('filter-state-store', 'data')],
         prevent_initial_call=True
     )
@@ -73,10 +73,8 @@ def setup_process_data(app: dash.Dash):
     def process_data(
             intermediate_data: Dict,
             selected_insurers: str,
-            show_data_table: bool,
             current_filter_state: Dict
     ) -> Tuple:
-        """Second part of data processing: Insurer processing and metric calculations"""
         logger.info("Starting process_data callback")
         memory_monitor.log_memory("start_process_data", logger)
 
@@ -98,7 +96,7 @@ def setup_process_data(app: dash.Dash):
             # save_df_to_csv(df, "df_before_market_share.csv")
 
             # Extract parameters
-            all_metrics = intermediate_data.get('all_metrics', [])
+            selected_metrics = intermediate_data.get('selected_metrics', [])
             business_type_checklist = intermediate_data.get('business_type_checklist', [])
             lines = intermediate_data.get('lines', [])
             period_type = intermediate_data.get('period_type', '')
@@ -107,12 +105,13 @@ def setup_process_data(app: dash.Dash):
             logger.info("Processing data pipeline")
 
             # Retrieve insurer rankings
-            rankings = get_rankings(df, all_metrics, lines)
+            insurer_processor = InsurerDataProcessor(df)
+            rankings = insurer_processor.get_rankings(all_metrics=selected_metrics, lines=lines)
             current_ranks = rankings.get('current_ranks', {})
             prev_ranks = rankings.get('prev_ranks', {})
 
             # Process data transformations
-            df = calculate_market_share(df, selected_insurers, all_metrics, show_data_table)
+            df = calculate_market_share(df, selected_insurers, selected_metrics)
             # save_df_to_csv(df, "df_after_market_share.csv")
             df = calculate_growth(df, selected_insurers, num_periods_selected, period_type)
             # save_df_to_csv(df, "df_after_growth.csv")
@@ -122,12 +121,9 @@ def setup_process_data(app: dash.Dash):
             # Update filter state
             updated_filter_state = {
                 **(current_filter_state or {}),
-                'primary_y_metric': all_metrics[0] if all_metrics else None,
-                'secondary_y_metric': all_metrics[-1] if len(all_metrics) > 1 else None,
-                'selected_metrics': all_metrics,
+                'selected_metrics': selected_metrics,
                 'business_type_checklist': business_type_checklist,
                 'selected_lines': lines,
-                'show_data_table': bool(show_data_table),
                 'reporting_form': intermediate_data.get('reporting_form'),
                 'period_type': period_type,
             }

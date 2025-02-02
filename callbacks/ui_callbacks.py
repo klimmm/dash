@@ -8,7 +8,7 @@ import pandas as pd
 
 from config.callback_logging import log_callback
 from config.logging_config import get_logger
-from data_process.insurer_filters import filter_by_insurer
+from data_process.insurer_processor import InsurerDataProcessor
 from data_process.table.data import get_data_table
 # from data_process.io import save_df_to_csv
 
@@ -122,10 +122,11 @@ def setup_ui(app):
                 logger.debug("Empty DataFrame after conversion")
                 return [empty_table]
             df['year_quarter'] = pd.to_datetime(df['year_quarter'])
+            processor = InsurerDataProcessor(df)
 
-            df = filter_by_insurer(
-                df, ui_settings.filter_state['selected_metrics'], 
-                ui_settings.selected_insurers, ui_settings.top_n_list, ui_settings.split_mode
+            df = processor.filter_by_insurer(
+                selected_metrics=ui_settings.filter_state['selected_metrics'], 
+                selected_insurers=ui_settings.selected_insurers, top_n_list=ui_settings.top_n_list, split_mode=ui_settings.split_mode
             )
             # save_df_to_csv(df, "df_after_filter_insurers.csv")
 
