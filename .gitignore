@@ -206,3 +206,6 @@ combapp.py
 test_server.py
 memory_test.py
 untitled.md
+data_files/form162/data_scrapping/csv_files/
+data_files/form162/data_scrapping/xlsx_files/
+data_files/form162/data_processing/intermediate_data/
