@@ -3,17 +3,9 @@
     padding-right: 0px;
     padding-left: 5px;
     margin-right: auto;
-    min-width: 375px;
-    
+    min-width: 375px;  
 }
 
-
-.main-navbar {    
-}
-
-.card-body {
-    
-}
 /* Base container styles */
 .layout-wrapper {
     width: 100%;
@@ -22,14 +14,6 @@
     position: relative;
     padding: 0;
     margin: 0;
-}
-
-.main-filters-row {
-    border-top: 0.2px solid red;
-}
-
-.reporting-controls-row {
-    border-top: 0.2px solid red;
 }
 
 /* Sidebar styles */
@@ -45,20 +29,22 @@
     overflow: visible;
 }
 
-
 .d-flex.justify-content-start {
     overflow: hidden;
 }
+
 .row {
     margin-left: 0 !important;
     margin-right: 0 !important;
 }
 
-
 .row>* {
     padding: 0 !important;
 }
 
+.Select-value-label {
+    margin-left: 2px !important;
+}
 
 .fltr-row {
     max-width: 430px;
@@ -67,22 +53,6 @@
     max-height: 100%;
     display: flex;
     margin: 0 !important;
-    padding-bottom: 0.3rem !important;
-    padding-top: 0.2rem !important;
-    align-items: center;   
-    position: relative;
-    border-top: 0.1px solid #e9ecef;
-    border-bottom: 0.1px solid #e9ecef;   
-    border-collapse: collapse !important;
-}
-
-.fltr-row-large {
-    max-width: 430px;
-    min-width: 375px;
-    min-height: 2.5rem;
-    max-height: 100%;
-    display: flex;
-    margin-top: 0.4rem !important;
     padding-bottom: 0.3rem !important;
     padding-top: 0.2rem !important;
     align-items: center;   
@@ -103,27 +73,6 @@
     white-space: nowrap;
 }
 
-.main-filter-column {
-    padding: 0 !important;
-    border-collapse: collapse;
-    border: 0;
-}
-
-.top-sidebar-row {
-    margin-bottom: 1rem !important;
-    margin-top: 1rem !important;
-}
-
-.button-groups-row {
-    margin-top: 1rem !important;
-    margin-bottom: 0;
-    padding: 0;
-    width: 100%;
-    overflow: hidden;
-    max-width: 430px;
-    min-width: 375px;
-
-}
 
 .datatable-container {
     width: fit-content;
@@ -147,21 +96,6 @@
     border: 1px solid #ccc;
     display: flex;
     align-items: center;
-}
-
-.col-md-6 {
-}
-
-.col-md-12 {
-}
-
-.market-analysis-content {
-    margin-top: 1rem;
-}
-
-.market-analysis-title {
-    font-weight: bold;
-    font-size: 0.875rem;
 }
 
 .card-container {

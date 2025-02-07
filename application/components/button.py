@@ -1,11 +1,12 @@
 from typing import Dict, List, Optional, Union
 
-from dash import html
 import dash_bootstrap_components as dbc
+from dash import html
 
-from config.components_config import BUTTON_CONFIG
+from application.style.style_constants import StyleConstants
+from application.config.components_config import BUTTON_CONFIG
 from config.logging_config import get_logger
-from constants.style_constants import StyleConstants
+
 
 logger = get_logger(__name__)
 
@@ -13,41 +14,41 @@ logger = get_logger(__name__)
 def create_button(
     label: str,
     button_id: str,
-    className: str = StyleConstants.BTN["GROUP_CONTROL"],
-    style: Optional[Dict] = None
+    style: Optional[Dict] = None,
+    is_active: bool = False,
+    class_key: str = "DEFAULT"
 ) -> dbc.Button:
     """Create a single button with consistent styling"""
-    logger.debug(f"Creating button with id: {button_id}")
+    logger.debug(f"Creating button with id: {button_id}, active: {is_active}")
+
+    button_class = (
+        StyleConstants.BTN[f"{class_key}_ACTIVE"] if is_active
+        else StyleConstants.BTN[class_key]
+    )
+
     return dbc.Button(
         label,
         id=button_id,
-        className=className,
+        className=button_class,
         style=style or {}
     )
 
 
 def create_button_group(
     buttons: Union[List[Dict], Dict],
-    className: Optional[str] = StyleConstants.BTN["PERIOD"],
     component_id: Optional[str] = None,
+    default_state: Optional[Union[str, Dict, int]] = None,
+    class_key: str = "PERIOD"
 ) -> Union[dbc.ButtonGroup, html.Div]:
     """
-    Create a button group component with flexible configuration
-
-    Args:
-        buttons: List of button configs or dict with 'buttons' and 'className' keys
-        className: Default className for the button group
-        component_id: Optional component identifier for button IDs
     """
     logger.debug(f"Creating button group for component_id: {component_id}")
 
     # Handle both dictionary and list configurations
     if isinstance(buttons, dict):
         button_list = buttons.get('buttons', [])
-        custom_className = buttons.get('className', className)
     else:
         button_list = buttons
-        custom_className = className
 
     # Create button components
     button_components = []
@@ -60,18 +61,29 @@ def create_button_group(
 
         style = btn.get("style", {})
 
+        # Determine if button should be active
+        is_active = False
+        if default_state is not None:
+            if isinstance(default_state, dict):
+                # For multi-choice buttons (like metric-toggles)
+                is_active = default_state.get(btn['value'], False)
+            else:
+                # For single-choice buttons
+                is_active = str(default_state) == str(btn['value'])
+
         button = create_button(
             label=btn["label"],
             button_id=btn_id,
-            className=custom_className,
-            style=style
+            style=style,
+            is_active=is_active,
+            class_key=class_key
         )
         button_components.append(button)
 
     button_group = dbc.ButtonGroup(button_components)
 
     return html.Div([
-        dbc.Row([button_group], className=StyleConstants.UTILS["MB_0"])
+        dbc.Row([button_group], className=StyleConstants.BTN["BUTTON_GROUP_ROW"])
     ])
 
 
@@ -80,20 +92,17 @@ def create_button_group_from_config(
     config_key: str = None
 ) -> Union[dbc.ButtonGroup, html.Div]:
     """Create a button group using default configurations"""
-    logger.debug(f"Creating button group for {config_key or component_id}")
 
-    buttons = BUTTON_CONFIG.get(config_key or component_id, {}).get('buttons', [])
-
-    # Use different classNames based on component type
-    if component_id in ['top-insurers', 'periods-data-table', 'metric-toggles']:
-        className = StyleConstants.BTN["PERIOD"]
-    else:
-        className = StyleConstants.BTN["GROUP_CONTROL"]
+    config = BUTTON_CONFIG.get(config_key or component_id, {})
+    buttons = config.get('buttons', [])
+    default_state = config.get('default_state')
+    class_key = config.get('class_key', 'GROUP_CONTROL')
 
     return create_button_group(
         buttons=buttons,
-        className=className,
-        component_id=component_id
+        component_id=component_id,
+        default_state=default_state,
+        class_key=class_key
     )
 
 
@@ -118,7 +127,6 @@ def create_period_type_buttons() -> Union[dbc.ButtonGroup, html.Div]:
 
 
 def create_periods_data_table_buttons() -> Union[dbc.ButtonGroup, html.Div]:
-    """Create periods data table button group"""
     return create_button_group_from_config('periods-data-table')
 
 

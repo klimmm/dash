@@ -4,10 +4,10 @@ import os
 import dash
 import dash_bootstrap_components as dbc
 
-from application import create_app_layout, lines_tree_162, lines_tree_158
+from application import create_app_layout
 from callbacks.setup import setup_all_callbacks
 from config import setup_logging, setup_callback_logging, get_logger
-from data_process import load_insurance_dataframes, get_year_quarter_options
+from domain import load_insurance_dataframes, get_year_quarter_options, lines_tree_162, lines_tree_158
 
 logger = get_logger(__name__)
 setup_logging(console_level=logging.DEBUG, file_level=logging.DEBUG)

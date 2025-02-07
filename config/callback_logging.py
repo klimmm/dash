@@ -1,16 +1,40 @@
 from __future__ import annotations
+
 import logging
 import time
-import dash
 import traceback
-from colorama import Fore, Style, init
-from typing import Any, Callable, Dict, List, Union
 from functools import wraps
+from typing import Any, Callable, Dict
+
+import dash
+from colorama import Fore, Style, init
+from dash import html
+
+from config.logging_config import get_logger
+
+logger = get_logger(__name__)
+
 
 # Initialize colorama and setup constants
 init(autoreset=True)
 CALLBACK = 25
 logging.addLevelName(CALLBACK, 'CALLBACK')
+
+
+def error_handler(func):
+    """Decorator for handling errors in callbacks."""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except dash.exceptions.PreventUpdate:
+            # Let PreventUpdate pass through normally
+            raise
+        except Exception as e:
+            logger.error(f"Error in {func.__name__}: {str(e)}", exc_info=True)
+            return {}, "Expand All"  # Default expansion state and button text
+    return wrapper
+
 
 def setup_callback_logging(level: int = CALLBACK) -> None:
     """Configure enhanced callback-specific logging"""

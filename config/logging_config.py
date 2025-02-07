@@ -1,29 +1,49 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from enum import IntEnum
-from functools import wraps
 import logging
 import os
-from pathlib import Path
-import psutil
 import time
+from dataclasses import dataclass
+from functools import wraps
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
 from typing import Callable, Any, List
 
+import psutil
 from colorama import Fore, Back, Style, init
 
-from logging.handlers import RotatingFileHandler
-
 init(autoreset=True)
-
 
 def get_logger(name: str) -> logging.Logger:
     """Get a logger instance"""
     return logging.getLogger(name)
 
-
+def timer(func: Callable) -> Callable:
+    """Time function execution"""
+    @wraps(func)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        if not wrapper.enabled:
+            return func(*args, **kwargs)
+        start = time.time()
+        result = func(*args, **kwargs)
+        print(f"{func.__name__} took {(time.time()-start)*1000:.2f}ms")
+        return result
+    wrapper.enabled = True
+    return wrapper
+def timerx(func: Callable) -> Callable:
+    """Time function execution"""
+    @wraps(func)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        if not wrapper.enabled:
+            return func(*args, **kwargs)
+        start = time.time()
+        result = func(*args, **kwargs)
+        print(f"{func.__name__} took {(time.time()-start)*1000:.2f}ms")
+        return result
+    wrapper.enabled = True
+    return wrapper
 class ColoredFormatter(logging.Formatter):
-    """Colored formatter for log levels"""
+    """Colored log formatter"""
     COLORS = {
         'DEBUG': Fore.BLUE,
         'INFO': Fore.WHITE,
@@ -33,24 +53,29 @@ class ColoredFormatter(logging.Formatter):
     }
 
     def format(self, record: logging.LogRecord) -> str:
-        formatted_message = super().format(record)
-        return f"{self.COLORS.get(record.levelname, '')}{formatted_message}{Style.RESET_ALL}"
+        return f"{self.COLORS.get(record.levelname, '')}{super().format(record)}{Style.RESET_ALL}"
 
+@dataclass
+class MemoryStats:
+    """Memory statistics container"""
+    rss: float
+    vms: float
+    percent: float
+    system_used: float
 
 class LoggerFactory:
-    """Factory class for creating and configuring loggers"""
+    """Logger configuration factory"""
     @staticmethod
-    def create_rotating_handler(filepath: str, formatter: logging.Formatter, 
-                              level: int = logging.DEBUG) -> RotatingFileHandler:
-
+    def create_handler(filepath: str, formatter: logging.Formatter, 
+                      level: int = logging.DEBUG) -> RotatingFileHandler:
         handler = RotatingFileHandler(filepath, maxBytes=10*1024*1024, backupCount=5)
         handler.setLevel(level)
         handler.setFormatter(formatter)
         return handler
 
     @staticmethod
-    def configure_logger(name: str, handlers: List[logging.Handler], 
-                        level: int, propagate: bool = True) -> logging.Logger:
+    def configure(name: str, handlers: List[logging.Handler], 
+                 level: int, propagate: bool = True) -> logging.Logger:
         logger = logging.getLogger(name)
         logger.setLevel(level)
         for handler in handlers:
@@ -58,91 +83,52 @@ class LoggerFactory:
         logger.propagate = propagate
         return logger
 
-
-def setup_logging(console_level=logging.DEBUG, 
-                  file_level=logging.DEBUG,
-                  log_file='app.log', 
-                  fsevents_level=logging.INFO):
-    """Configure main application logging"""
+def setup_logging(console_level=logging.DEBUG, file_level=logging.DEBUG,
+                 log_file='app.log', fsevents_level=logging.INFO) -> None:
+    """Configure application logging"""
     log_dir = Path('logs')
     log_dir.mkdir(exist_ok=True)
 
-    # Create formatters
-    file_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    console_formatter = ColoredFormatter('%(name)s - %(levelname)s - %(message)s')
-
-    # Configure handlers
-    file_handler = LoggerFactory.create_rotating_handler(
-        str(log_dir / log_file), file_formatter, file_level
-    )
-
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(console_level)
-    console_handler.setFormatter(console_formatter)
-
-    # Clear existing handlers from root logger
-    root_logger = logging.getLogger()
-    for handler in root_logger.handlers[:]:
-        root_logger.removeHandler(handler)
+    handlers = [
+        LoggerFactory.create_handler(
+            str(log_dir / log_file),
+            logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'),
+            file_level
+        ),
+        logging.StreamHandler()
+    ]
+    handlers[1].setLevel(console_level)
+    handlers[1].setFormatter(ColoredFormatter('%(name)s - %(levelname)s - %(message)s'))
 
     # Configure root logger
-    root_logger.setLevel(min(console_level, file_level))
-    root_logger.addHandler(file_handler)
-    root_logger.addHandler(console_handler)
+    root = logging.getLogger()
+    root.handlers.clear()
+    root.setLevel(min(console_level, file_level))
+    for handler in handlers:
+        root.addHandler(handler)
 
-    # Configure module-specific loggers with their levels
-    logger_levels = {
+    # Module-specific logger levels
+    logger_config = {
         'application': logging.WARNING,
-        'application.components': {
-            'insurance_lines_tree': logging.WARNING,
-        },
-        'charting': {
-            'chart': logging.WARNING,
-            'trace_generator': logging.WARNING,
-            'color': logging.WARNING,
-            'layout_manager': logging.WARNING,
-            'helpers': logging.WARNING,
-            'get_y_ranges': logging.WARNING,
-        },
+        'application.components.insurance_lines_tree': logging.WARNING,
         'constants': logging.WARNING,
         'callbacks': logging.DEBUG,
-        'data_process.insurer_filters': logging.WARNING,
-        'data_process.options': logging.WARNING,
-        'data_process.table.data': logging.WARNING,
+        'domain': logging.WARNING,
         'callbacks.buttons_callbacks': logging.WARNING,
-        'data_process': logging.WARNING,
         'fsevents': fsevents_level,
     }
 
-    # Configure module loggers
-    for base_name, config in logger_levels.items():
-        if isinstance(config, dict):
-            for sub_name, level in config.items():
-                logger = logging.getLogger(f"{base_name}.{sub_name}")
-                logger.setLevel(level)
-        else:
-            logger = logging.getLogger(base_name)
-            logger.setLevel(config)
-
-
-@dataclass
-class MemoryStats:
-    """Data class for memory statistics"""
-    rss: float
-    vms: float
-    percent: float
-    system_used: float
-
+    for name, level in logger_config.items():
+        logging.getLogger(name).setLevel(level)
 
 class MemoryMonitor:
-    """Memory monitoring utility class"""
-
+    """Memory monitoring utility"""
     def __init__(self):
         self.process = psutil.Process(os.getpid())
         self.start_time = self.last_check = time.time()
         self.check_interval = 60
 
-    def get_memory_usage(self) -> MemoryStats:
+    def get_stats(self) -> MemoryStats:
         mem = self.process.memory_info()
         return MemoryStats(
             rss=mem.rss / (1024 * 1024),
@@ -151,33 +137,54 @@ class MemoryMonitor:
             system_used=psutil.virtual_memory().percent
         )
 
-    def log_memory(self, tag: str, logger: logging.Logger) -> None:
+    def log(self, tag: str, logger: logging.Logger) -> None:
         try:
-            stats = self.get_memory_usage()
+            stats = self.get_stats()
             logger.info(
                 f"Memory at {tag}: RSS={stats.rss:.1f}MB, "
                 f"Process=%{stats.percent:.1f}, System=%{stats.system_used:.1f}"
             )
             self.last_check = time.time()
-
         except Exception as e:
             logger.error(f"Error monitoring memory: {str(e)}")
 
 memory_monitor = MemoryMonitor()
 
 def monitor_memory(func: Callable) -> Callable:
-    """Monitor memory usage of decorated functions"""
+    """Memory usage monitoring decorator"""
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         start_time = time.time()
-        start_mem = memory_monitor.get_memory_usage()
+        start_mem = memory_monitor.get_stats()
+        peak_mem = start_mem
+        logger = logging.getLogger(__name__)
+
+        def update_peak():
+            nonlocal peak_mem
+            current = memory_monitor.get_stats()
+            if current.rss > peak_mem.rss:
+                peak_mem = current
+            return current
+
         try:
             return func(*args, **kwargs)
         finally:
-            end_mem = memory_monitor.get_memory_usage()
-            print(
-                f"Memory {func.__name__}: Current={end_mem.rss:.1f}MB, "
-                f"Change={end_mem.rss - start_mem.rss:+.1f}MB, "
-                f"Time={time.time()-start_time:.3f}s"
+            end_mem = update_peak()
+            duration = time.time() - start_time
+            
+            logger.warning(
+                f"\nMemory {func.__name__}:"
+                f"\n  Current: RSS={end_mem.rss:.1f}MB, VMS={end_mem.vms:.1f}MB"
+                f"\n  Peak:    RSS={peak_mem.rss:.1f}MB, VMS={peak_mem.vms:.1f}MB"
+                f"\n  Change:  RSS={end_mem.rss - start_mem.rss:+.1f}MB"
+                f"\n  Process: {end_mem.percent:.1f}%"
+                f"\n  System:  {end_mem.system_used:.1f}%"
+                f"\n  Time:    {duration:.3f}s"
             )
+
+            if end_mem.rss > start_mem.rss * 1.5:
+                logger.warning(
+                    f"High memory increase in {func.__name__}"
+                    f" (+{((end_mem.rss/start_mem.rss)-1)*100:.0f}%)"
+                )
     return wrapper

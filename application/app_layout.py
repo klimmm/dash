@@ -1,58 +1,44 @@
 from typing import List
 
-from dash import dcc, html
 import dash_bootstrap_components as dbc
+from dash import dcc, html
 
 from application.filters_panel import create_filters
-from application.components.lines_tree import create_lines_checklist_buttons, initial_state
-from constants.style_constants import StyleConstants
+from application.style.style_constants import StyleConstants
 from config.default_values import (
      DEFAULT_REPORTING_FORM,
+     DEFAULT_CHECKED_LINES,
      DEFAULT_NUMBER_OF_PERIODS,
      TOP_N_LIST,
      DEFAULT_PERIOD_TYPE,
      DEFAULT_SHOW_MARKET_SHARE,
      DEFAULT_SHOW_CHANGES,
-     DEFAULT_SPLIT_MODE,
-     DEFAULT_CHECKED_LINES,
-     DEFAULT_INSURER,
-     DEFAULT_METRICS
+     DEFAULT_SPLIT_MODE
     )
 from config.logging_config import get_logger
 
 logger = get_logger(__name__)
 
+
 def create_stores() -> List[html.Div]:
     """Create store components for app state management."""
     return [
-        dcc.Store(id="show-data-table", data=True),
-        dcc.Store(id="processed-data-store"),
-        dcc.Store(id='intermediate-data-store', storage_type='memory'),
-        dcc.Store(
-            id='insurance-line-all-values',
-            data=DEFAULT_CHECKED_LINES,
-            storage_type='memory'
-        ),
-        dcc.Store(
-            id='selected-insurers-all-values',
-            data=DEFAULT_INSURER,  # Wrap single value in list
-            storage_type='memory'
-        ),
-        dcc.Store(
-            id='metric-all-values',
-            data=DEFAULT_METRICS,
-            storage_type='memory'
-        ),
-        dcc.Store(id="filter-state-store"),
-        dcc.Store(id='insurance-lines-all-values', data=initial_state, storage_type='memory'),
-        dcc.Store(id='expansion-state', data={'states': {}, 'all_expanded': False}),
+        dcc.Store(id='selected-lines-store', data=DEFAULT_CHECKED_LINES),
+        dcc.Store(id='metrics-store'),
+        dcc.Store(id='selected-insurers-store'),
+        dcc.Store(id='nodes-expansion-state', data={'states': {}}),
         dcc.Store(id='period-type', data=DEFAULT_PERIOD_TYPE),
         dcc.Store(id='reporting-form', data=DEFAULT_REPORTING_FORM),
         dcc.Store(id='toggle-selected-market-share', data=DEFAULT_SHOW_MARKET_SHARE),
         dcc.Store(id='toggle-selected-qtoq', data=DEFAULT_SHOW_CHANGES),
         dcc.Store(id='top-n-rows', data=TOP_N_LIST),
         dcc.Store(id='number-of-periods-data-table', data=DEFAULT_NUMBER_OF_PERIODS),
-        dcc.Store(id='table-split-mode', data=DEFAULT_SPLIT_MODE)
+        dcc.Store(id='table-split-mode', data=DEFAULT_SPLIT_MODE),
+        dcc.Store(id='filter-state-store'),
+        dcc.Store(id='processed-data-store'),
+        dcc.Store(id='filtered-insurers-data-store'),
+        dcc.Store(id='rankings-data-store')
+
     ]
 
 
@@ -61,7 +47,6 @@ def create_navbar() -> dbc.Navbar:
     return dbc.Navbar(
         [
             dbc.Container(
-                # fluid=True,
                 children=[
                     dbc.NavbarToggler(id="navbar-toggler", n_clicks=0),
                     dbc.Button(
@@ -93,8 +78,10 @@ def create_debug_footer() -> html.Div:
             dbc.Collapse(
                 dbc.Card(
                     dbc.CardBody([
-                        html.H4("Debug Logs", className=StyleConstants.DEBUG["DEBUG_TITLE"]),
-                        html.Pre(id="debug-output", className=StyleConstants.DEBUG["DEBUG_OUTPUT"])
+                        html.H4("Debug Logs",
+                                className=StyleConstants.DEBUG["DEBUG_TITLE"]),
+                        html.Pre(id="debug-output",
+                                 className=StyleConstants.DEBUG["DEBUG_OUTPUT"])
                     ]),
                     className="debug-card"
                 ),
@@ -105,15 +92,29 @@ def create_debug_footer() -> html.Div:
     )
 
 
-def create_app_layout():
-    try:
+def create_lines_checklist_buttons() -> dbc.Row:
+    """Create hierarchy control buttons."""
+    return dbc.Row(
+        [
+            dbc.Col([
+                dbc.Button("Показать все", id="expand-all-button",
+                           style={"display": "none"},
+                           className="btn-custom btn-period")
+            ])
+        ],
+        className="mb-3"
+    )
 
-        logger.warning(f"initial_state {initial_state}")
+
+def create_app_layout():
+
+    try:
+        logger.warning("Starting to create app layout")
 
         return dbc.Container([
             *create_stores(),
             create_navbar(),
-            html.Div(id="tree-container", className=StyleConstants.CONTAINER["TREE"]),
+
             dbc.CardBody([
                 dbc.Row([
                     dbc.Col([
@@ -141,5 +142,7 @@ def create_app_layout():
             create_debug_footer()
         ], fluid=True)
     except Exception as e:
-        print(f"Error in create_app_layout: {str(e)}")
-        raise
+        logger.error(f"Error in create_app_layout: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return html.Div("Error loading layout", style={'color': 'red'})

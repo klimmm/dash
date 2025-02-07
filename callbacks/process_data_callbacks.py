@@ -1,122 +1,106 @@
-from dataclasses import dataclass
-from typing import Tuple, Dict, List, Any
-import time
+from typing import Dict, List, Tuple
 
 import dash
-from dash import Input, Output, State
-from dash.exceptions import PreventUpdate
-from functools import wraps
 import pandas as pd
+from dash.dependencies import Input, Output, State
 
-from config.callback_logging import log_callback
-from config.logging_config import get_logger, memory_monitor
-from data_process.growth import calculate_growth
-from data_process.market_share import calculate_market_share
-from data_process.options import get_rankings
-# from data_process.io import save_df_to_csv
+from application.components.checklist import create_btype_checklist
+from domain.metrics.checklist_config import get_checklist_config
+from config.callback_logging import log_callback, error_handler
+from config.logging_config import get_logger, timer, monitor_memory
+
+from domain.metrics.operations import (
+    get_required_metrics,
+    calculate_metrics,
+    calculate_growth,
+    add_top_n_rows,
+    calculate_market_share
+)
+
+from domain.period.operations import filter_by_period_type
+
 
 logger = get_logger(__name__)
 
 
-def timer(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        start = time.time()
-        result = func(*args, **kwargs)
-        end = time.time()
-        print(f"{func.__name__} took {(end-start)*1000:.2f}ms to execute")
-        return result
-    return wrapper
-
-
-@dataclass
-class ProcessedData:
-    df: List[Dict[str, Any]]
-    prev_ranks: Dict[str, Any]
-    current_ranks: Dict[str, Any]
-
-    def to_dict(self):
-        return {
-            'df': self.df,
-            'prev_ranks': self.prev_ranks,
-            'current_ranks': self.current_ranks
-        }
-
-
 @timer
-def create_processed_data(df: pd.DataFrame, 
-                         prev_ranks: Dict[str, Any], 
-                         current_ranks: Dict[str, Any]) -> Dict[str, Any]:
-    records = df.to_dict('records')
-
-    processed = ProcessedData(
-        df=records,
-        prev_ranks=prev_ranks,
-        current_ranks=current_ranks
-    )
-
-    return processed.to_dict()
+@monitor_memory
+def filter_lines_and_metrics(
+    df: pd.DataFrame,
+    selected_lines: List[str],
+    required_metrics: List[str]
+) -> pd.DataFrame:
+    return df[df['linemain'].isin(
+        selected_lines) & df['metric'].isin(required_metrics)]
 
 
-def setup_process_data(app: dash.Dash):
+def setup_process_data(
+    app: dash.Dash,
+    df_162: pd.DataFrame,
+    df_158: pd.DataFrame,
+    end_quarter_options_162: List[Dict],
+    end_quarter_options_158: List[Dict]
+) -> None:
+
     @app.callback(
-        [Output('filter-state-store', 'data'),
-         Output('processed-data-store', 'data')],
-        [Input('intermediate-data-store', 'data')],
-        [State('selected-insurers-all-values', 'data'),
-         State('filter-state-store', 'data')],
-        prevent_initial_call=True
+        [Output('end-quarter', 'options'),
+         Output('business-type-checklist-container', 'children'),
+         Output('processed-data-store', 'data'),
+         Output('filter-state-store', 'data')],
+        [Input('metrics-store', 'data'),
+         Input('business-type-checklist', 'value'),
+         Input('number-of-periods-data-table', 'data'),
+         Input('end-quarter', 'value'),
+         Input('selected-lines-store', 'data'),
+         Input('period-type', 'data'),
+         Input('reporting-form', 'data')],
+        [State('selected-insurers-store', 'data'),
+         State('filter-state-store', 'data')]
     )
+    @error_handler
     @log_callback
     @timer
     def process_data(
-            intermediate_data: Dict,
-            selected_insurers: str,
-            current_filter_state: Dict
+        selected_metrics: List[str],
+        curr_btype_selection: List[str],
+        num_periods: int,
+        end_quarter: str,
+        selected_lines: List[str],
+        period_type: str,
+        reporting_form: str,
+        selected_insurers: str,
+        current_filter_state: Dict
     ) -> Tuple:
-        """Second part of data processing: Insurer processing and metric calculations"""
-        memory_monitor.log_memory("start_process_data", logger)
 
-        ctx = dash.callback_context
-        if not ctx.triggered:
-            logger.debug("Callback context not triggered")
-            raise PreventUpdate
+        df = (df_162 if reporting_form == '0420162' else
+              df_158)
 
-        trigger_id = ctx.triggered[0]['prop_id']
-        logger.info(f"Callback triggered by: {trigger_id}")
+        end_quarter_options = (
+            end_quarter_options_162 if reporting_form == '0420162' else
+            end_quarter_options_158)
+        logger.warning(f" current checklist values {curr_btype_selection}")
+        checklist_mode, checklist_values = get_checklist_config(selected_metrics, reporting_form, curr_btype_selection)
+        logger.warning(f" new checklist values  {checklist_values}")
+        checklist_component = create_btype_checklist(checklist_mode, checklist_values)
 
-        try:
-            if not isinstance(intermediate_data, dict):
-                return dash.no_update, dash.no_update
+        required_metrics = get_required_metrics(selected_metrics)
 
-            df = pd.DataFrame.from_records(intermediate_data.get('df', []))
-            selected_metrics = intermediate_data.get('selected_metrics', [])
-            lines = intermediate_data.get('lines', [])
+        df = (filter_lines_and_metrics(df, selected_lines, required_metrics)
+              .pipe(filter_by_period_type, end_quarter, num_periods, period_type)
+              .pipe(add_top_n_rows)
+              .pipe(calculate_metrics, selected_metrics, required_metrics)
+              .pipe(calculate_market_share, selected_insurers, selected_metrics)
+              .pipe(calculate_growth, selected_insurers, num_periods, period_type)
+              )
 
-            rankings = get_rankings(df, selected_metrics, lines)
+        filter_state = {
+            **(current_filter_state if current_filter_state else {}),
+            'selected_metrics': selected_metrics,
+            'selected_lines': selected_lines
+        }
 
-            df = calculate_market_share(df, selected_insurers, selected_metrics)
+        processed_data = {
+            'df': df.to_dict('records')
+        }
 
-            df = calculate_growth(df, selected_insurers, intermediate_data.get('num_periods_selected', 2), intermediate_data.get('period_type', ''))
-
-            df['year_quarter'] = df['year_quarter'].dt.strftime('%Y-%m-%d')
-
-            updated_filter_state = {
-                **(current_filter_state or {}),
-                'selected_metrics': selected_metrics,
-                'business_type_checklist': intermediate_data.get('business_type_checklist', []),
-                'selected_lines': lines,
-                'reporting_form': intermediate_data.get('reporting_form'),
-                'period_type': intermediate_data.get('period_type', ''),
-            }
-
-            processed_data = create_processed_data(df, rankings.get('prev_ranks', {}), rankings.get('current_ranks', {}))
-
-            memory_monitor.log_memory("end_process_data", logger)
-
-            return updated_filter_state, processed_data
-
-        except Exception as e:
-            memory_monitor.log_memory("error_process_data", logger)
-            logger.error(f"Error in process data: {str(e)}", exc_info=True)
-            raise
+        return end_quarter_options, [checklist_component], processed_data, filter_state

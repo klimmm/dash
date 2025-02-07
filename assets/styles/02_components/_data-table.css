@@ -15,7 +15,6 @@
     clip: rect(0 0 0 0) !important;
     clip-path: inset(50%) !important;
     margin-bottom: 2rem;
-
 }
 
 .table-subtitle {
@@ -30,18 +29,16 @@
   border: 0
 }
 
-
-
 .table-section {
     margin-bottom: 2rem;
     margin-top: 2rem;
 }
 
-
 /* Add spacing between tables */
 .table-section:not(:last-child) {
     margin-bottom: 2rem;
 }
+
 .tables-wrapper {
     display: flex;
     flex-direction: column;
@@ -58,7 +55,6 @@
 .data-section:last-child {
     margin-bottom: 0;
 }
-
 
 /* Radio buttons */
 .table-controls .form-check-input {

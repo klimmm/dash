@@ -13,9 +13,9 @@ DATA_FILE_REINSURANCE: str = './data_files/reinsurance_market.csv'
 DATA_FILE_158: str = './data_files/3rd_158_net.csv'
 DATA_FILE_162: str = './data_files/3rd_162_net.csv'
 
-INSURERS_DICTIONARY: str = './constants/mappings/insurer_map.json'
-LINES_162_DICTIONARY: str = './constants/mappings/insurance_lines_162_rev.json'
-LINES_158_DICTIONARY: str = './constants/mappings/insurance_lines_158_rev.json'
+INSURERS_DICTIONARY: str = './domain/insurers/definitions/insurer_map.json'
+LINES_162_DICTIONARY: str = './domain/lines/definitions/insurance_lines_162_rev.json'
+LINES_158_DICTIONARY: str = './domain/lines/definitions/insurance_lines_158_rev.json'
 
 # Dash configuration to prevent reloads
 # Dash configuration

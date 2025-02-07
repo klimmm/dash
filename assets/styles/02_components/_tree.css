@@ -1,9 +1,14 @@
-.tree-container {
-  max-width: 430px;
-    
+.dropdown-placeholder {
+  font-size: 0.85rem;   
 }
 
+.tree-container {
+  max-width: 430px;    
+}
 
+.tree-container {
+  margin-left: 0.5rem; 
+}
 
 .tree-item {
   display: flex;
@@ -26,8 +31,7 @@
   line-height: 1;
   width: 5.9px;
   margin-top: 0;  /* Remove default margin if any */
-  vertical-align: top;  /* Align with neighboring text */
-    
+  vertical-align: top;  /* Align with neighboring text */   
 }
 
 .form-check-input {
@@ -46,9 +50,8 @@
 
 /* For parent of selected items */
 .parent-of-selected .form-check-input {
-  background: rgba(13, 110, 253, 0.1);  /* Light blue background */
+  background: rgba(13, 110, 253, 0.25);  /* Light blue background */
 }
-
 
 /* For the placeholder that replaces expand button */
 .expand-button-placeholder {
@@ -58,6 +61,74 @@
 }
 
 .insurance-line-label {
-  margin: 0;
-    
+  margin: 0; 
 }
+
+.selected-tag-remove {
+    font-size: 0.85rem;
+}
+
+.tree-dropdown-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.tree-dropdown-header:hover {
+    background-color: #f8f9fa;
+}
+
+.tree-dropdown-content {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.dropdown-arrow {
+    font-size: 0.85rem;
+    margin-right: 6px;
+    color: #666;
+    width: 10px;
+    height: 7.5px;
+}
+
+.dropdown-tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    flex: 1;
+    align-items: center;
+}
+
+.selected-tag {
+    display: flex;
+    align-items: center;
+    background: #e9ecef;
+    font-size: 0.85rem;
+}
+
+.selected-tag-label {
+    margin-right: 4px;
+}
+
+.selected-tag-remove {
+    cursor: pointer;
+    color: #666;
+    font-size: 0.85rem;
+    padding: 0 2px;
+}
+
+.selected-tag-remove:hover {
+    color: #dc3545;
+}
+
+.dropdown-placeholder {
+    color: #6c757d;
+}
+
+.tree-item {
+    display: flex;
+    align-items: center;
+    padding: 2px 0;
+}                    

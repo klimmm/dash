@@ -1,30 +1,4 @@
 /* _forms.css */
-
-/* Form Control */
-.form-control-custom {
-    font-size: var(--font-size-dd);
-    height: var(--input-height-xs);
-    padding: var(--space-2);
-    border: 0;
-    border-radius: var(--radius-md);
-    width: 100%;
-    transition: border-color var(--transition-duration-fast);
-}
-
-/* Input Variants */
-.input-short {
-    font-size: var(--font-size-dd);
-    width: 80px;
-    text-align: center;
-    padding: var(--space-1);
-    height: var(--input-height-xs);
-}
-
-/* Base Filter Styles */
-.filter-section {
-    margin-bottom: var(--space-4);
-}
-
 .filter-label {
     font-size: var(--font-size-fl);
     color: var(--color-text-default);
@@ -35,51 +9,6 @@
     align-items: center;
     margin: 0;
     padding: 0 !important;
-    
-}
-
-.filter-row {
-    display: flex;
-    width: 100%;
-    max-width: 430px;
-    border: 0;
-    margin: 0 !important;
-    align-items: center;
-    min-height: 2rem !important;
-    padding-right: 0;
-    border-top: 1px solid #e9ecef;
-    border-bottom: 1px solid #e9ecef;
-    border-collapse: collapse !important;
-    
-}
-
-.filter-content {
-    margin: 0 !important;
-    padding: 0 !important;
-    min-height: 1.8rem !important;
-    border: 0;
-    align-items: center;
-    width: 100%;
-    display: flex;
-}
-
-.filter-row.row {
-    --bs-gutter-x: 0;
-    
-}
-
-.filter-row--vertical {
-    flex-direction: column;
-    align-items: flex-start;
-    min-height: 1.8rem !important;
-}
-
-.filter-row--vertical .filter-label {
-    margin-bottom: 0;
-}
-
-.filter-row--vertical .filter-content {
-    width: 100%;
 }
 
 /* Period Filter Specific */
@@ -89,33 +18,6 @@
     min-height: 1.9rem !important;
     max-height: 1.9rem !important;
     margin-bottom: 0 !important; /* Ensure no bottom margin */
-}
-
-.period-buttons-group {
-    display: flex;
-    gap: var(--space-2);
-    margin-bottom: var(--space-2);
-}
-
-.period-type__description {
-    font-size: var(--font-size-dd);
-    color: var(--color-text-muted);
-    margin-top: var(--space-1);
-}
-
-
-
-/* Checklist Filter Specific */
-.filter-checklist {
-    display: flex;
-    align-items: center;
-    margin-top: 0 !important;  /* Space between items */
-    margin-bottom: 0 !important;  /* Space between items */
-    gap: var(--space-2);
-}
-
-.filter-checklist .form-check {
-    margin: 0;
 }
 
 .checklist {
@@ -162,7 +64,6 @@
     align-items: center;
 }
 
-
 /* Value and label styling */
 .dd-control .Select-value,
 .dd-control .Select-value-label,
@@ -172,23 +73,13 @@
     font-size: var(--font-size-dd);
     height: 100%;
     display: flex;
-    align-items: center !important;
-    
+    align-items: center !important;   
 }
 
 .dd-control .Select-value {
 
     background: #e9ecef;
-    
-
-
 }
-
-.dd-control .Select-value-label {
-
-
-}
-
 
 /* Value, placeholder and control heights */
 .dd-control .Select-value,
@@ -200,8 +91,6 @@
     height: 100% !important!;
 }
 
-
-
 .Select-input,
 .Select-placeholder {
     height: 100%;
@@ -211,6 +100,7 @@
     display: flex;
     align-items: center !important;
 }
+
 /* Placeholder styling */
 .dd-control .Select-placeholder,
 .Select-placeholder {
@@ -219,12 +109,6 @@
     align-items: center;
     padding: 0;
 }
-
-
-
-
-
-
 
 /* Input handling - Make invisible but functional */
 .dd-control .Select-input,
@@ -240,7 +124,6 @@ input[autocomplete="off"][role="combobox"] {
     white-space: nowrap !important;
 }
 
-
 /* Option styling */
 .dd-control .Select-option,
 .Select-option {
@@ -249,21 +132,10 @@ input[autocomplete="off"][role="combobox"] {
     line-height: 1.7em;
 }
 
-
-
-
-/* Arrow styling */
-.Select-arrow-zone,
-.Select-arrow-zone .Select-arrow {
-
-}
-
 .Select-arrow {
     border-top-width: 0px;
     border-bottom-width: 0px;
 }
-
-
 
 /* Value icon */
 .Select-value-icon {
@@ -285,7 +157,6 @@ input[aria-activedescendant="react-select-4--value"] {
     display: none !important;
 }
 
-
 .Select-placeholder {
     margin-left: 1rem !important;
 }
@@ -302,8 +173,7 @@ input[aria-activedescendant="react-select-4--value"] {
     cursor: pointer;
     position: relative;
     z-index: 1;
-    margin-left: 1rem !important;
-    
+    margin-left: 1rem !important; 
 }
 
 /* Menu styling */
@@ -319,7 +189,6 @@ input[aria-activedescendant="react-select-4--value"] {
     margin-right: 1rem !important;
 }
 
-
 .VirtualizedSelectSelectedOption,
 .VirtualizedSelectFocusedOption,
 .VirtualizedSelectOption {
@@ -331,74 +200,9 @@ input[aria-activedescendant="react-select-4--value"] {
     padding-left: 0rem !important;
     margin-left: 1rem !important;
     margin-bottom: 0 !important;
-    
-    
 }
 
 /* Adjust the container's height for virtualized scrolling */
 .ReactVirtualized__Grid__innerScrollContainer {
-    max-height: none !important;
-    
-}
-
-
-
-
-.flex-grow-1 {
-
-}
-
-
-/* Multi-value wrapper */
-.Select-multi-value-wrapper {
-}
-
-/* Multi-selector groups */
-.dd-control
-    .Select-multi-value,
-.dd-control
-    .Select-value-label,
-.dd-control
-    .Select-option,
-.dd-control
-    .Select-caret,
-.dd-control
-    .Select-clear,
-.dd-control
-    .Select-arrows,
-.dd-control
-    .Select-value {
-}
-
-/* Additional select states and zones */
-.dd-control
-    .Select-no-results,
-.dd-control
-    .Select-noresults,
-.dd-control
-    .Select-aria-only,
-.dd-control
-    .Select-group,
-.dd-control
-    .Select-group-header,
-.dd-control
-    .Select-create-option,
-.dd-control
-    .Select-create-option-placeholder,
-.dd-control
-    .Select-multi-value-wrapper,
-.dd-control
-    .Select-value-icon,
-.dd-control
-    .Select-clear-zone,
-.dd-control
-    .Select-arrow-zone,
-.dd-control
-    .Select-focus-state,
-.dd-control
-    .Select-loading-zone {
-}
-
-/* Search input */
-.dd-control .Select-search-input {
+    max-height: none !important; 
 }

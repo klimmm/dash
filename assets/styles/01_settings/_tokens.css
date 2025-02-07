@@ -1,8 +1,6 @@
 :root {
     font-size: 11px;  /* This makes 1rem = 14px */
 
-
-    
     /* Layout & Sizing */
     --breakpoint-md: 768px;
     --bs-gutter-x: var(--bs-gutter-x);

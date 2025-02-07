@@ -34,15 +34,9 @@
     border-color: #e0e0e0;
 }
 
-.btn-period {
-
-}
 .btn-group-control {
-
     padding: 0.3rem !important;
 }
-
-
 
 /* Active state - increased specificity to ensure it takes precedence */
 .btn-group-control.btn-primary.active,
@@ -66,7 +60,6 @@
     color: #333333;
     border-color: #d3d3d3;
 }
-
 
 /* Sidebar toggle buttons base styles */
 .btn-sidebar-toggle-show,
@@ -111,61 +104,4 @@
     color: #333333;
     border-color: #d3d3d3;
     max-width: 30%;
-}
-
-
-/* Common button base styles */
-
-.btn-metric-add,
-.btn-metric-remove {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 !importatnt;
-    padding-block-end: 0.1rem !important;
-    padding-block-start: 0.1rem !important;
-    padding-inline-end: 0.1rem !important;
-    padding-inline-start: 0.1rem !important;
-    max-width: 1.5rem;
-    min-width: 1.5rem;
-    max-height: 1.5rem;
-    min-height: 1.5rem;
-    margin-left: 0.25rem !important;
-    margin-right: 0.25rem !important;
-    background-color: transparent;
-    border: none;
-    transition: all 0.15s ease-in-out;
-}
-
-.fas,
-.fas.fa-plus {
-    font-size: 1rem;
-}
-
-
-.btn-metric-add:focus,
-.btn-metric-remove:focus {
-    outline: none;
-}
-
-/* Add Button */
-.btn-metric-add {
-    color: #007bff;  /* Bootstrap blue */
-    font-size: 1.8rem;
-    font-weight: 400;
-}
-
-.btn-metric-add:hover {
-    background-color: rgba(0, 123, 255, 0.1);  /* Light blue background */
-}
-
-/* Remove Button */
-.btn-metric-remove {
-    color: #dc3545;  /* Bootstrap red */
-    font-size: 1rem;
-    font-weight: 400;
-}
-
-.btn-metric-remove:hover {
-    background-color: rgba(220, 53, 69, 0.1);  /* Light red background */
 }
