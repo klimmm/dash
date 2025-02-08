@@ -1,44 +1,25 @@
 # application.__init__
 
 from application.app_layout import create_app_layout
-from application.components.lines_tree import DropdownTree
-
+from application.style_constants import StyleConstants
 from application.components.button import (
-    create_reporting_form_buttons,
-    create_top_insurers_buttons,
-    create_period_type_buttons,
-    create_periods_data_table_buttons,
-    create_metric_toggles_buttons
+     create_button,
+     create_button_group,
+     format_button_id_value
 )
 from application.components.checklist import create_btype_checklist
-
-from application.components.dropdown import (
-    create_insurer_dropdown,
-    create_metric_dropdown,
-    create_end_quarter_dropdown
-)
-
-from application.style.style_constants import StyleConstants
+from application.components.dropdown import create_dropdown
+from application.components.lines_tree import DropdownTree
+from application.config.button_config import BUTTON_CONFIG
 
 __all__ = [
-    'translate',
-    'StyleConstants',
-    'METRICS'
-]
-
-__all__ = [
+    'BUTTON_CONFIG',
     'create_app_layout',
-    'lines_tree_162',
-    'lines_tree_158',
-    'create_reporting_form_buttons',
-    'create_top_insurers_buttons',
-    'create_period_type_buttons',
-    'create_periods_data_table_buttons',
-    'create_metric_toggles_buttons',
     'create_btype_checklist',
-    'create_insurer_dropdown',
-    'create_metric_dropdown',
-    'create_end_quarter_dropdown',
+    'create_button',
+    'create_button_group',
+    'create_dropdown',
     'DropdownTree',
+    'format_button_id_value',
     'StyleConstants'
 ]

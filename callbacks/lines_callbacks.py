@@ -22,7 +22,7 @@ def setup_line_selection(app: dash.Dash, lines_tree_162, lines_tree_158):
         Output('selected-lines-store', 'data'),
         [Input({'type': 'tree-dropdown-remove-tag', 'index': ALL}, 'n_clicks'),
          Input({'type': 'node-checkbox', 'index': ALL}, 'value'),
-         Input('reporting-form', 'data')],
+         Input('reporting-form-selected', 'data')],
         [State({'type': 'node-checkbox', 'index': ALL}, 'id'),
          State('selected-lines-store', 'data')],
         prevent_initial_call=True
@@ -80,7 +80,7 @@ def setup_line_selection(app: dash.Dash, lines_tree_162, lines_tree_158):
          Input({'type': 'tree-dropdown-header', 'index': 'header'}, 'n_clicks')],
         [State({'type': 'node-expand', 'index': ALL}, 'id'),
          State('nodes-expansion-state', 'data'),
-         State('reporting-form', 'data'),
+         State('reporting-form-selected', 'data'),
          State({'type': 'tree-dropdown-collapse', 'index': 'main'}, 'is_open')],
         prevent_initial_call=True
     )

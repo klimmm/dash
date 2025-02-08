@@ -1,248 +1,140 @@
-from typing import List, Optional, Union, Dict
+from typing import Dict, List, Union
 
 import dash
-from dash import Input, Output, State
+from dash import Input, Output, State, html
 from dash.exceptions import PreventUpdate
 
-from application.config.components_config import BUTTON_CONFIG
-from application.style.style_constants import StyleConstants
-from config.callback_logging import log_callback
-from config.logging_config import get_logger
+from application.config.button_config import BUTTON_CONFIG
+from application.components.button import (
+    create_button_group, format_button_id_value)
+from application.style_constants import StyleConstants
+from config.callback_logging import log_callback, error_handler
+from config.logging_config import get_logger, timer
 from constants.translations import translate
 
 logger = get_logger(__name__)
 
 
-def get_triggered_index(ctx: dash.callback_context, 
-                        buttons: List[Dict[str, str]], 
-                        component_id: str) -> Optional[int]:
-    """Helper function to get the index of triggered button with validation"""
-    if not ctx.triggered:
-        return None
-    triggered = ctx.triggered[0]["prop_id"].split(".")[0]
-    expected_prefix = f"btn-{component_id}-"
+def get_button_classes(total: int, active_indices: Union[int,
+                       List[int]], class_key: str) -> List[str]:
+    """Generate button classes array"""
+    base_class = StyleConstants.BTN[class_key]
+    active_class = StyleConstants.BTN[f"{class_key}_ACTIVE"]
 
-    # Extract the value part from the triggered ID
-    if not triggered.startswith(expected_prefix):
-        return None
-    triggered_value = triggered[len(expected_prefix):]
+    if isinstance(active_indices, int):
+        active_indices = [active_indices]
 
-    # Find matching button index
-    for i, btn in enumerate(buttons):
-        if btn['value'] == triggered_value:
-            return i
-    return None
+    return [
+        active_class if i in active_indices else base_class
+        for i in range(total)
+    ]
 
 
-def create_button_classes(total_buttons: int, active_indices: Optional[Union[int, List[int]]] = None, 
-                         class_key: str = "GROUP_CONTROL") -> List[str]:
-    """Helper function to generate button classes array"""
-    classes = [StyleConstants.BTN[class_key]] * total_buttons
+def setup_buttons(app: dash.Dash) -> Dict[str, html.Div]:
+    """Set up all button callbacks with unified state management"""
+    button_groups = {key: create_button_group(key) for key in BUTTON_CONFIG}
 
-    if active_indices is not None:
-        # Handle single integer
-        if isinstance(active_indices, int):
-            if 0 <= active_indices < total_buttons:
-                classes[active_indices] = StyleConstants.BTN[f"{class_key}_ACTIVE"]
-        # Handle list of integers
+    def create_button_callback(group_id: str):
+        """Create callback for any button group"""
+        if group_id == 'top-insurers':
+            return
+
+        config = BUTTON_CONFIG[group_id]
+        multi_select = config.get('multi_select', False)
+        total_buttons = len(config['buttons'])
+
+        # Define outputs based on button type
+        outputs = [
+            Output(f"btn-{group_id}-{format_button_id_value(btn['value'])}",
+                   "className")
+            for btn in config['buttons']
+        ]
+
+        if multi_select:
+            outputs.extend(
+                Output(f"{group_id}-{format_button_id_value(btn['value'])}",
+                       "data")
+                for btn in config['buttons']
+            )
         else:
-            for index in active_indices:
-                if 0 <= index < total_buttons:
-                    classes[index] = StyleConstants.BTN[f"{class_key}_ACTIVE"]
-    return classes
+            outputs.append(Output(f"{group_id}-selected", "data"))
 
+        if group_id == 'period-type':
+            outputs.append(Output(f"{group_id}-text", "children"))
 
-def setup_buttons(app: dash.Dash) -> None:
-    """
-    @API_STABILITY: BACKWARDS_COMPATIBLE.
-    Sets up all button callbacks with improved error handling and logging.
-    """
-    @app.callback(
-        [Output(f"btn-metric-toggles-{btn['value']}", "className")
-         for btn in BUTTON_CONFIG['metric-toggles']['buttons']] +
-        [Output('toggle-selected-market-share', 'data'),
-         Output('toggle-selected-qtoq', 'data')],
-        [Input(f"btn-metric-toggles-{btn['value']}", "n_clicks")
-         for btn in BUTTON_CONFIG['metric-toggles']['buttons']],
-        [State('toggle-selected-market-share', 'data'),
-         State('toggle-selected-qtoq', 'data')],
-        prevent_initial_call=True
-    )
-    @log_callback
-    def update_ms_change_view_buttons(*args):
-        """
-        @API_STABILITY: BACKWARDS_COMPATIBLE.
-        Updates metric toggle states with improved state management and logging.
-        """
-        config = BUTTON_CONFIG['metric-toggles']
-        states = {
-            'market-share': args[-2] if args[-2] is not None else [],
-            'qtoq': args[-1] if args[-1] is not None else []
-        }
+        # Define inputs and states
+        inputs = [
+            Input(f"btn-{group_id}-{format_button_id_value(btn['value'])}", "n_clicks")
+            for btn in config['buttons']
+        ]
 
-        ctx = dash.callback_context
-        if not ctx.triggered:
-            raise PreventUpdate
+        if multi_select:
+            states = [
+                State(f"{group_id}-{format_button_id_value(btn['value'])}", "data")
+                for btn in config['buttons']
+            ]
+        else:
+            states = [State(f"{group_id}-selected", "data")]
 
-        button_index = get_triggered_index(ctx, config['buttons'], 'metric-toggles')
+        @app.callback(outputs, inputs, states, prevent_initial_call=True)
+        @timer
+        @log_callback
+        @error_handler
+        def update_button_state(*args):
+            ctx = dash.callback_context
+            if not ctx.triggered:
+                raise PreventUpdate
 
-        if button_index is not None:
-            value = config['values'][button_index]
-            previous_state = states[value]
-
-            # Toggle the state
-            states[value] = [] if states[value] == ['show'] else ['show']
-
-            active_indices = [i for i, v in enumerate(config['values']) 
-                              if (v == value and states[value]) or 
-                              (v != value and states[v] == ['show'])]
-
-            button_classes = create_button_classes(
-                config['total_buttons'],
-                active_indices if active_indices else None,
-                config['class_key']
+            triggered = ctx.triggered[0]["prop_id"].split(".")[0]
+            button_index = next(
+                (i for i, btn in enumerate(config['buttons'])
+                 if f"btn-{group_id}-{format_button_id_value(btn['value'])}" ==
+                 triggered),
+                None
             )
 
-            return (*button_classes, states['market-share'], states['qtoq'])
+            if button_index is None:
+                return [dash.no_update] * len(outputs)
 
-        logger.debug("Button index not found in triggered context")
-        return [dash.no_update] * 4
+            if multi_select:
+                # Handle multi-select buttons (like view-metrics)
+                current_states = [
+                    args[-(len(config['buttons']) - i)] or []
+                    for i in range(len(config['buttons']))
+                ]
 
-    @app.callback(
-        [Output(f"btn-period-type-{btn['value']}", "className") 
-         for btn in BUTTON_CONFIG['period-type']['buttons']] +
-        [Output('period-type', 'data'),
-         Output('period-type-text', 'children')],
-        [Input(f"btn-period-type-{btn['value']}", "n_clicks") 
-         for btn in BUTTON_CONFIG['period-type']['buttons']],
-        [State('period-type', 'data')],
-        prevent_initial_call=True
-    )
-    @log_callback
-    def update_period_type_buttons(*args):
-        """
-        @API_STABILITY: BACKWARDS_COMPATIBLE.
-        Updates period type selection.
-        """
-        ctx = dash.callback_context
+                # Update the state of clicked button
+                new_states = current_states.copy()
+                new_states[button_index] = (
+                    [] if new_states[button_index] == ['show'] else ['show']
+                )
 
-        config = BUTTON_CONFIG['period-type']
-        button_index = get_triggered_index(ctx, config['buttons'], 'period-type')
+                # Get indices of all active buttons
+                active_indices = [
+                    i for i, state in enumerate(new_states)
+                    if state == ['show']
+                ]
 
-        if not ctx.triggered:
-            raise PreventUpdate
+                button_classes = get_button_classes(
+                    total_buttons, active_indices, config['class_key']
+                )
 
-        if button_index is not None:
-            new_state = config['values'][button_index]
-            button_classes = create_button_classes(
-                config['total_buttons'],
-                button_index, 
-                config['class_key']
-            )
-            return (*button_classes, new_state, translate(new_state))
+                return [*button_classes, *new_states]
+            else:
+                # Handle single-select buttons
+                new_value = config['buttons'][button_index]['value']
+                button_classes = get_button_classes(
+                    total_buttons, button_index, config['class_key']
+                )
 
-        return [dash.no_update] * (config['total_buttons'] + 2)
+                result = [*button_classes, new_value]
+                if group_id == 'period-type':
+                    result.append(translate(new_value))
 
-    @app.callback(
-        [Output(f"btn-reporting-form-{btn['value']}", "className") 
-         for btn in BUTTON_CONFIG['reporting-form']['buttons']] +
-        [Output('reporting-form', 'data')],
-        [Input(f"btn-reporting-form-{btn['value']}", "n_clicks") 
-         for btn in BUTTON_CONFIG['reporting-form']['buttons']],
-        [State('reporting-form', 'data')],
-        prevent_initial_call=True
-    )
-    @log_callback
-    def update_reporting_form_buttons(*args):
-        """
-        @API_STABILITY: BACKWARDS_COMPATIBLE.
-        Updates reporting form selection.
-        """
+                return result
 
-        ctx = dash.callback_context
+    # Set up callbacks for all button groups except top-insurers
+    for group_id in BUTTON_CONFIG:
+        create_button_callback(group_id)
 
-        config = BUTTON_CONFIG['reporting-form']
-        button_index = get_triggered_index(ctx, config['buttons'], 'reporting-form')
-
-        if not ctx.triggered:
-            raise PreventUpdate
-
-        if button_index is not None:
-            new_state = config['values'][button_index]
-            button_classes = create_button_classes(
-                config['total_buttons'],
-                button_index, 
-                config['class_key']
-            )
-            return (*button_classes, new_state)
-
-        return [dash.no_update] * (config['total_buttons'] + 1)
-
-    @app.callback(
-        [Output(f"btn-table-split-mode-{btn['value']}", "className") 
-         for btn in BUTTON_CONFIG['table-split-mode']['buttons']] +
-        [Output('table-split-mode', 'data')],
-        [Input(f"btn-table-split-mode-{btn['value']}", "n_clicks") 
-         for btn in BUTTON_CONFIG['table-split-mode']['buttons']],
-        [State('table-split-mode', 'data')],
-        prevent_initial_call=True
-    )
-
-    @log_callback
-    def update_table_split_buttons(*args):
-        """
-        @API_STABILITY: BACKWARDS_COMPATIBLE.
-        Updates reporting form selection.
-        """
-
-        ctx = dash.callback_context
-
-        config = BUTTON_CONFIG['table-split-mode']
-        button_index = get_triggered_index(ctx, config['buttons'], 'table-split-mode')
-
-        if not ctx.triggered:
-            raise PreventUpdate
-
-        if button_index is not None:
-            new_state = config['values'][button_index]
-            button_classes = create_button_classes(
-                config['total_buttons'],
-                button_index, 
-                config['class_key']
-            )
-            return (*button_classes, new_state)
-
-        return [dash.no_update] * (config['total_buttons'] + 1)
-
-    @app.callback(
-        [Output(f"btn-periods-data-table-{btn['value']}", "className") 
-         for btn in BUTTON_CONFIG['periods-data-table']['buttons']] +
-        [Output('number-of-periods-data-table', 'data')],
-        [Input(f"btn-periods-data-table-{btn['value']}", "n_clicks") 
-         for btn in BUTTON_CONFIG['periods-data-table']['buttons']],
-        State('number-of-periods-data-table', 'data'),
-        prevent_initial_call=True
-    )
-    @log_callback
-    def update_number_periods_buttons(*args):
-        """
-        @API_STABILITY: BACKWARDS_COMPATIBLE.
-        Updates period selection.
-        """
-        ctx = dash.callback_context
-        config = BUTTON_CONFIG['periods-data-table']
-        button_index = get_triggered_index(ctx, config['buttons'], 'periods-data-table')
-
-        if not ctx.triggered:
-            raise PreventUpdate
-
-        if button_index is not None:
-            new_state = config['values'][button_index]
-            button_classes = create_button_classes(
-                config['total_buttons'],
-                button_index,
-                config['class_key']
-            )
-            return (*button_classes, new_state)
-
-        return [dash.no_update] * (config['total_buttons'] + 1)
+    return button_groups

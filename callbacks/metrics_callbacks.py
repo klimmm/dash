@@ -18,7 +18,7 @@ def setup_metric_selection(app: Dash) -> None:
          Output('metrics', 'options'),
          Output('metrics-store', 'data')],
         [Input('metrics', 'value'),
-         Input('reporting-form', 'data')],
+         Input('reporting-form-selected', 'data')],
         [State('metrics-store', 'data')]
     )
     @log_callback

@@ -49,11 +49,11 @@ def setup_process_data(
          Output('filter-state-store', 'data')],
         [Input('metrics-store', 'data'),
          Input('business-type-checklist', 'value'),
-         Input('number-of-periods-data-table', 'data'),
+         Input('periods-data-table-selected', 'data'),
          Input('end-quarter', 'value'),
          Input('selected-lines-store', 'data'),
-         Input('period-type', 'data'),
-         Input('reporting-form', 'data')],
+         Input('period-type-selected', 'data'),
+         Input('reporting-form-selected', 'data')],
         [State('selected-insurers-store', 'data'),
          State('filter-state-store', 'data')]
     )

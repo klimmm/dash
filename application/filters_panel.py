@@ -1,86 +1,122 @@
-from dash import html
 import dash_bootstrap_components as dbc
-from application.style.style_constants import StyleConstants
+from dash import html
+
+from application.style_constants import StyleConstants
 from application.components.checklist import create_btype_checklist
-from application.components.button import (
-    create_reporting_form_buttons,
-    create_top_insurers_buttons,
-    create_period_type_buttons,
-    create_periods_data_table_buttons,
-    create_metric_toggles_buttons,
-    create_table_split_buttons
+from application.components.button import create_button_group
+from application.components.dropdown import create_dropdown
+from application.components.lines_tree import DropdownTree
+from config.default_values import (
+    DEFAULT_CHECKED_LINES, DEFAULT_END_QUARTER, DEFAULT_INSURER,
+    DEFAULT_METRICS, DEFAULT_REPORTING_FORM
 )
-from application.components.dropdown import (
-    create_insurer_dropdown,
-    create_metric_dropdown,
-    create_end_quarter_dropdown
-)
-from application.components.lines_tree import create_dropdown_tree
+from constants.translations import translate
+from domain.lines.tree import lines_tree_158, lines_tree_162
 
 
-def create_filter(label: str, label_width: int, component_func, component_className: str = None):
-    """Create a filter row with a label and a component."""
+def _create_button_components():
+    """Create all button group components."""
+    return {
+        'period_type': create_button_group('period-type'),
+        'reporting_form': create_button_group('reporting-form'),
+        'table_split_mode': create_button_group('table-split-mode'),
+        'top_insurers': create_button_group('top-insurers'),
+        'periods_data_table': create_button_group('periods-data-table'),
+        'view_metrics': create_button_group('view-metrics')
+    }
+
+
+def _create_dropdown_components():
+    """Create all dropdown components."""
+    tree = (lines_tree_162 if DEFAULT_REPORTING_FORM == '0420162' else
+            lines_tree_158)
+
+    return {
+        'line_tree': DropdownTree(
+            tree=tree,
+            expansion_state={'states': {}},
+            selected=DEFAULT_CHECKED_LINES,
+            placeholder="Выберите вид страхования",
+            is_open=False
+        ),
+        'insurer': create_dropdown(
+            id='selected-insurers',
+            multi=True,
+            value=DEFAULT_INSURER,
+            searchable=False,
+            options=[],
+            placeholder="Выберите страховщика"
+        ),
+        'metric': create_dropdown(
+            id='metrics',
+            multi=True,
+            value=DEFAULT_METRICS,
+            options=[],
+            placeholder="Выберите показатель"
+        ),
+        'end_quarter': create_dropdown(
+            id='end-quarter',
+            value=DEFAULT_END_QUARTER,
+            options=[{'label': translate(DEFAULT_END_QUARTER),
+                     'value': DEFAULT_END_QUARTER}],
+            placeholder="Select quarter"
+        )
+    }
+
+
+def _create_filter_row(label, label_width,
+                       component, component_className=None):
+    """Create a filter row with label and component."""
     return dbc.Row([
         dbc.Col(
             html.Label(label, className=StyleConstants.FILTER["LABEL"]),
-            xs=label_width,
-            sm=label_width,
-            md=label_width
+            xs=label_width, sm=label_width, md=label_width
         ),
         dbc.Col(
-            component_func(),
-            xs=12 - label_width,
-            sm=12 - label_width,
+            component,
+            xs=12 - label_width, sm=12 - label_width,
             className=component_className or StyleConstants.FLEX["CENTER"]
         )
     ])
 
 
-def get_col_style(cols_count: int) -> str:
-    """
-    Determine the appropriate column style based on the number of columns in the row.
-    """
-    if cols_count == 1:
-        return StyleConstants.FILTER_PANEL["COL"]
-    elif cols_count == 2:
-        return StyleConstants.FILTER_PANEL["TWO_COL"]
-    else:
-        return StyleConstants.FILTER_PANEL["THIRD_COL"]
-
-
 def create_row(columns, extra_classes=''):
-    """
-    Create a row with automatically determined column styles.
-
-    Args:
-        columns: List of tuples (content, width, extra_style, style)
-        extra_classes: Additional classes to add to the row
-    """
-    cols_count = len(columns)
-    col_style = get_col_style(cols_count)
+    """Create a row with auto-determined column styles."""
+    col_style = {
+        1: StyleConstants.FILTER_PANEL["COL"],
+        2: StyleConstants.FILTER_PANEL["TWO_COL"]
+    }.get(len(columns), StyleConstants.FILTER_PANEL["THIRD_COL"])
 
     styled_columns = [
         dbc.Col(
-            content,
-            xs=width, sm=width, md=width, lg=width,
+            content, xs=width, sm=width, md=width, lg=width,
             className=f"{col_style} {extra_style}".strip(),
             style=style
         )
         for content, width, extra_style, style in columns
     ]
 
-    row_className = f"{StyleConstants.FILTER_PANEL['ROW']} {extra_classes}".strip()
-    return dbc.Row(styled_columns, className=row_className)
+    return dbc.Row(
+        styled_columns,
+        className=f"{StyleConstants.FILTER_PANEL['ROW']} {extra_classes}"
+        .strip()
+    )
 
 
-def create_filters() -> html.Div:
-    """Create the complete filter interface with responsive rows."""
+def create_filters():
+    """Create the complete filter interface."""
+    buttons = _create_button_components()
+    dropdowns = _create_dropdown_components()
+
     # Create collapsed section
-    collapsed_section = html.Div(
+    collapsed = html.Div(
         create_row([
-            (create_filter("Отчетный квартал:", 6, create_end_quarter_dropdown),
+            (_create_filter_row("Отчетный квартал:", 6,
+                                dropdowns['end_quarter']),
              6, "", None),
-            (create_filter("Бизнес:", 3, create_btype_checklist, StyleConstants.FILTER["DROPDOWN"]),
+            (_create_filter_row("Бизнес:", 3,
+                                create_btype_checklist(),
+                                StyleConstants.FILTER["DROPDOWN"]),
              6, StyleConstants.SPACING["PS_3"], None)
         ]),
         id='sidebar-col',
@@ -88,53 +124,57 @@ def create_filters() -> html.Div:
     )
 
     # Create expanded section
-    expanded_section = [
-        # Period indicator
+    expanded = [
         html.Div(
             id="period-type-text",
             className=StyleConstants.UTILS["PERIOD_TYPE"],
             style={"display": "none"}
         ),
-        # Row 2
         create_row([
-            (create_filter("Вид данных:", 2, create_table_split_buttons, StyleConstants.FILTER["BUTTONS_START"]),
+            (_create_filter_row("Вид данных:", 2,
+                                buttons['table_split_mode'],
+                                StyleConstants.FILTER["BUTTONS_START"]),
              12, "", None)
         ], StyleConstants.SPACING["MT_3"]),
         create_row([
-            (create_filter("Форма отчености:", 4, create_reporting_form_buttons),
-             12, "", None),
+            (_create_filter_row("Форма отчености:", 4,
+                                buttons['reporting_form']),
+             12, "", None)
         ]),
-        # Row 3
         create_row([
-            (create_filter("Период:", 1, create_period_type_buttons, StyleConstants.FILTER["BUTTONS_CENTER"]),
+            (_create_filter_row("Период:", 1, 
+                                buttons['period_type'],
+                                StyleConstants.FILTER["BUTTONS_CENTER"]),
              7, "", None),
-            (create_filter(" ", 0, create_periods_data_table_buttons, StyleConstants.FILTER["BUTTONS_CENTER"]),
+            (_create_filter_row(" ", 0,
+                                buttons['periods_data_table'],
+                                StyleConstants.FILTER["BUTTONS_CENTER"]),
              5, "", None)
         ]),
-
-        # Row 4
         create_row([
-            (create_filter("Вид страхования:", 3, create_dropdown_tree, "col-9"),
+            (_create_filter_row("Вид страхования:", 3,
+                                dropdowns['line_tree'],
+                                "col-9"),
              12, "", None)
         ]),
-
-        # Row 5
         create_row([
-            (create_filter("Показатель:", 3, create_metric_dropdown),
+            (_create_filter_row("Показатель:", 3,
+                                dropdowns['metric']),
              12, "", None),
-            (create_filter(" ", 3, create_metric_toggles_buttons, StyleConstants.FILTER["BUTTONS_START"]),
+            (_create_filter_row(" ", 3,
+                                buttons['view_metrics'],
+                                StyleConstants.FILTER["BUTTONS_START"]),
              12, "", None)
         ]),
-
-        # Row 6
         create_row([
-            (create_filter("Страховщик:", 3, create_top_insurers_buttons, StyleConstants.FILTER["BUTTONS_START"]),
+            (_create_filter_row("Страховщик:", 3,
+                                buttons['top_insurers'],
+                                StyleConstants.FILTER["BUTTONS_START"]),
              12, "", None),
-            (create_filter(" ", 3, create_insurer_dropdown),
+            (_create_filter_row(" ", 3,
+                                dropdowns['insurer']),
              12, "", None)
         ])
-
-
     ]
 
-    return html.Div(dbc.CardBody([collapsed_section] + expanded_section))
+    return html.Div(dbc.CardBody([collapsed] + expanded))

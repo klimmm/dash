@@ -3,10 +3,9 @@ from typing import Dict, List
 import dash_bootstrap_components as dbc
 from dash import html
 
-from application.style.style_constants import StyleConstants
-from domain.metrics.checklist_config import BUSINESS_TYPE_OPTIONS
+from application.style_constants import StyleConstants
 from config.default_values import DEFAULT_BUSINESS_TYPE
-
+from domain.metrics.checklist_config import BUSINESS_TYPE_OPTIONS
 
 
 def create_checklist(

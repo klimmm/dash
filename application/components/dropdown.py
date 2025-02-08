@@ -2,12 +2,10 @@ from typing import Dict, List, Any
 
 from dash import dcc
 
-from application.style.style_constants import StyleConstants
-from config.default_values import DEFAULT_METRICS, DEFAULT_END_QUARTER, DEFAULT_INSURER
-from constants.translations import translate
+from application.style_constants import StyleConstants
 
 
-def create_base_dropdown(
+def create_dropdown(
     id: str,
     value: Any = None,
     options: List[Dict] = [],
@@ -28,37 +26,4 @@ def create_base_dropdown(
         searchable=searchable,
         className=className,
         optionHeight=optionHeight
-    )
-
-
-def create_insurer_dropdown():
-    return create_base_dropdown(
-        id='selected-insurers',
-        multi=True,
-        value=DEFAULT_INSURER,
-        searchable=False,
-        options=[],
-        placeholder="Выберите страховщика"
-    )
-
-
-def create_metric_dropdown():
-    return create_base_dropdown(
-        id='metrics',
-        multi=True,
-        value=DEFAULT_METRICS,
-        options=[],
-        placeholder="Выберите показатель"
-    )
-
-
-def create_end_quarter_dropdown():
-    return create_base_dropdown(
-        id='end-quarter',
-        value=DEFAULT_END_QUARTER,
-        options=[
-            {'label': translate(DEFAULT_END_QUARTER),
-             'value': DEFAULT_END_QUARTER}
-        ],
-        placeholder="Select quarter"
     )

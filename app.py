@@ -11,7 +11,7 @@ from domain import load_insurance_dataframes, get_year_quarter_options, lines_tr
 
 logger = get_logger(__name__)
 setup_logging(console_level=logging.DEBUG, file_level=logging.DEBUG)
-setup_callback_logging()
+setup_callback_logging(logging.DEBUG)
 
 dbc._js_dist = [
     {
