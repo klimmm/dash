@@ -1,2 +1,2 @@
 # dash
-Entrypoint - app.py
+Entrypoint - main.py
