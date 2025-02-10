@@ -1,22 +1,33 @@
-from .layout.buttons_callbacks import setup_buttons
-from .layout.data_table_callbacks import setup_data_table
-from .layout.layout_callbacks import setup_sidebar, setup_debug_panel
+from typing import List, Set
 
-from .lines_callbacks import setup_line_selection
-from .metrics_callbacks import setup_metric_selection
-from .process_data_callbacks import setup_process_data
-from .insurers_callbacks import setup_insurer_selection
-from .ui_callbacks import setup_ui
+import dash  # type: ignore
+import pandas as pd
+from callbacks import (
+    setup_buttons,
+    # setup_data_table,
+    setup_debug_panel,
+    setup_insurer_selection,
+    setup_line_selection,
+    setup_metric_selection,
+    setup_process_data,
+    setup_sidebar,
+    setup_ui
+)
+from core.lines.tree import Tree
+from core.period.options import YearQuarter, YearQuarterOption
 
 
 def setup_all_callbacks(
-    app,
-    lines_tree_162,
-    lines_tree_158,
-    df_162, df_158,
-    end_quarter_options_162,
-    end_quarter_options_158
-):
+    app: dash.Dash,
+    lines_tree_158: Tree,
+    lines_tree_162: Tree,
+    df_158: pd.DataFrame,
+    df_162: pd.DataFrame,
+    end_quarter_options_158: List[YearQuarterOption],
+    end_quarter_options_162: List[YearQuarterOption],
+    available_quarters_158: Set[YearQuarter],
+    available_quarters_162: Set[YearQuarter]
+) -> None:
     """
     Centralized function to set up all callbacks in the application.
     """
@@ -26,7 +37,12 @@ def setup_all_callbacks(
     # setup_data_table(app)
 
     setup_metric_selection(app)
-    setup_line_selection(app, lines_tree_162, lines_tree_158)
-    setup_process_data(app, df_162, df_158, end_quarter_options_162, end_quarter_options_158)
+    setup_line_selection(app, lines_tree_158, lines_tree_162)
+    setup_process_data(
+        app, 
+        df_158, df_162,
+        end_quarter_options_158, end_quarter_options_162,
+        available_quarters_158, available_quarters_162
+    )
     setup_insurer_selection(app)
     setup_ui(app)

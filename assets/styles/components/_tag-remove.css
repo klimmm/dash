@@ -1,0 +1,72 @@
+.Select-value,
+.Select-value-label,
+.Select-multi-value-wrapper,
+.Select-input {
+  padding: 0 !important;
+}
+
+/* Value and Placeholder */
+.Select-value {
+    margin: 1px 0 1px 1px !important;
+    background-color: #dcdcdc !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
+.Select-value-label {
+    background-color: #dcdcdc;
+}
+.selected-tag-label {
+    padding: 1px 0px;
+    background-color: #dcdcdc;
+}
+
+.selected-tag {
+    display: inline-flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    background-color: #dcdcdc;
+    margin: 0 !important;
+    border-radius: 2px;
+}
+
+/* Base styles for X icons */
+.Select-value-icon,
+.selected-tag-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 11px;
+  height: 100%;
+  padding: 0 !important;
+  cursor: pointer;
+  margin: 0 !important;
+  position: relative;
+  font-size: 0;  /* Hide original text content */
+  /* Reset and set new background */
+  background: rgba(0, 0, 0, 0.08) !important;
+  /* Explicit border settings */
+  border: none;  /* Reset any existing borders first */
+  border-right: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Hide any default content */
+.Select-value-icon > *,
+.selected-tag-remove > * {
+  display: none;
+}
+
+/* Centered X for both icons */
+.Select-value-icon:after,
+.selected-tag-remove:after {
+  content: "×";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background: rgba(0, 0, 0, 0.08) !important;
+  transform: translate(-50%, -50%);
+  font-size: 1rem;  /* Ensure parent has a base font size */
+  line-height: 1;
+  display: block;
+  color: rgba(0, 0, 0, 0.45);
+}

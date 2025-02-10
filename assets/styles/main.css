@@ -1,14 +1,13 @@
 /* main.css */
 
-/* Settings */
-@import url('./01_settings/_tokens.css');
-@import url('./01_settings/_utilities.css');
-@import url('./01_settings/_mixins.css');
-@import url('./01_settings/_reset.css');
+@import url('./settings/_tokens.css');
+@import url('./settings/_utilities.css');
+@import url('./settings/_mixins.css');
+@import url('./settings/_reset.css');
+@import url('./components/_layout.css');
+@import url('./components/_data-table.css');
+@import url('./components/_buttons.css');
+@import url('./components/_dropdown.css');
+@import url('./components/_tag-remove.css');
+@import url('./components/_arrow.css');
 
-/* Components - order matters for specificity */
-@import url('./02_components/_tree.css');
-@import url('./02_components/_layout.css');
-@import url('./02_components/_data-table.css');
-@import url('./02_components/_forms.css');
-@import url('./02_components/_buttons.css');

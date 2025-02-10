@@ -1,22 +1,27 @@
 import json
-from typing import List, Optional, Dict, Any, Tuple
+from typing import Any, Dict, cast, List, Optional, Tuple, Union
 
-import dash
-from dash import Input, Output, State, ALL
-from dash.exceptions import PreventUpdate
+import dash  # type: ignore
+from dash import Input, Output, State, ALL  # type: ignore
+from dash.exceptions import PreventUpdate  # type: ignore
 
-from application.components.lines_tree import DropdownTree
-from config.callback_logging import log_callback, error_handler
+from app.components.lines_tree import ExpansionState, DropdownTree
+from config.callback_logging_config import error_handler, log_callback
 from config.default_values import DEFAULT_REPORTING_FORM
 from config.logging_config import get_logger, timer
+from core.lines.tree import Tree
 
 logger = get_logger(__name__)
 
 
-def setup_line_selection(app: dash.Dash, lines_tree_162, lines_tree_158):
-
-    def get_tree(reporting_form: str):
-        return lines_tree_162 if reporting_form == '0420162' else lines_tree_158
+def setup_line_selection(
+    app: dash.Dash,
+    lines_tree_158: Tree,
+    lines_tree_162: Tree
+) -> None:
+    def _get_tree(reporting_form: str) -> Tree:
+        return (lines_tree_162 if reporting_form == '0420162' else
+                lines_tree_158)
 
     @app.callback(
         Output('selected-lines-store', 'data'),
@@ -33,17 +38,21 @@ def setup_line_selection(app: dash.Dash, lines_tree_162, lines_tree_158):
     def update_line_selection(
         remove_clicks: List[int],
         checkbox_values: List[bool],
-        reporting_form: str,
-        checkbox_ids: List[Dict],
+        reporting_form: Union[str, Dict[str, Any]],
+        checkbox_ids: List[Dict[str, str]],
         current_state: List[str]
     ) -> List[str]:
-
         ctx = dash.callback_context
         if not ctx.triggered:
             raise PreventUpdate
 
-        tree = get_tree(reporting_form or DEFAULT_REPORTING_FORM)
+        # Convert reporting_form to string if it's a dict
+        form_value = (reporting_form if isinstance(reporting_form, str)
+                      else str(
+                          reporting_form.get('value', DEFAULT_REPORTING_FORM
+                                             )))
 
+        tree = _get_tree(form_value)
         trigger = ctx.triggered[0]['prop_id']
 
         if 'reporting-form' in trigger:
@@ -54,34 +63,45 @@ def setup_line_selection(app: dash.Dash, lines_tree_162, lines_tree_158):
         trigger_line = json.loads(trigger.rsplit('.', 1)[0]).get('index')
 
         if 'remove-tag' in trigger:
-
             if any(click for click in remove_clicks if click):
-                final_selected = [line for line in current_state if line != trigger_line]
+                final_selected = [
+                    line for line in current_state if line != trigger_line
+                ]
             else:
                 final_selected = current_state
         else:
             new_selected = [id_dict['index'] for value, id_dict in zip(
-                checkbox_values, checkbox_ids) if value]
+                checkbox_values, checkbox_ids
+            ) if value]
 
             final_selected = tree.handle_parent_child_selections(
-                new_selected, [trigger_line])
+                new_selected, [trigger_line]
+            )
 
-        logger.warning(f"final_selected {final_selected}")
+        logger.debug(f"final_selected {final_selected}")
+        if final_selected == current_state:
+            raise PreventUpdate
 
         return final_selected
 
     @app.callback(
         [Output('nodes-expansion-state', 'data'),
          Output('tree-dropdown', 'children'),
-         Output({'type': 'tree-dropdown-collapse', 'index': 'main'}, 'is_open')],
+         Output(
+             {'type': 'tree-dropdown-collapse', 'index': 'main'}, 'is_open'
+         )],
         [Input({'type': 'node-expand', 'index': ALL}, 'n_clicks'),
          Input('selected-lines-store', 'data'),
          Input({'type': 'tree-dropdown-remove-tag', 'index': ALL}, 'n_clicks'),
-         Input({'type': 'tree-dropdown-header', 'index': 'header'}, 'n_clicks')],
+         Input(
+             {'type': 'tree-dropdown-header', 'index': 'header'}, 'n_clicks'
+         )],
         [State({'type': 'node-expand', 'index': ALL}, 'id'),
          State('nodes-expansion-state', 'data'),
          State('reporting-form-selected', 'data'),
-         State({'type': 'tree-dropdown-collapse', 'index': 'main'}, 'is_open')],
+         State(
+             {'type': 'tree-dropdown-collapse', 'index': 'main'}, 'is_open'
+         )],
         prevent_initial_call=True
     )
     @error_handler
@@ -94,16 +114,28 @@ def setup_line_selection(app: dash.Dash, lines_tree_162, lines_tree_158):
         header_clicks: int,
         expand_ids: List[Dict[str, str]],
         expansion_state: Dict[str, Any],
-        reporting_form: Optional[Dict[str, Any]],
+        reporting_form: Union[str, Dict[str, Any]],
         is_dropdown_open: bool
-    ) -> Tuple[Dict[str, Any], Any, bool]:
-
+    ) -> Tuple[ExpansionState, Any, bool]:
         ctx = dash.callback_context
         if not ctx.triggered:
             raise PreventUpdate
 
+        # Convert reporting_form to string if it's a dict
+        form_value = (reporting_form if isinstance(reporting_form, str)
+                      else str(
+                          reporting_form.get('value', DEFAULT_REPORTING_FORM
+                                             )))
+
         trigger = ctx.triggered[0]['prop_id']
-        tree = get_tree(reporting_form or DEFAULT_REPORTING_FORM)
+        tree = _get_tree(form_value)
+
+        # Initialize typed expansion state
+        typed_expansion_state: ExpansionState = {'states': {}}
+        if expansion_state and 'states' in expansion_state:
+            typed_expansion_state['states'] = cast(
+                Dict[str, bool], expansion_state['states']
+            )
 
         if 'remove-tag' in trigger:
             pass
@@ -113,32 +145,30 @@ def setup_line_selection(app: dash.Dash, lines_tree_162, lines_tree_158):
             is_dropdown_open = is_dropdown_open
 
         if 'node-expand' in trigger:
-            expansion_state.setdefault('states', {}).update({
-                expand_ids[i]['index']: not expansion_state['states'].get(
-                    expand_ids[i]['index'], False)
-                for i, clicks in enumerate(expand_clicks) if clicks
-            })
+            states = typed_expansion_state['states']
+            for i, clicks in enumerate(expand_clicks):
+                if clicks:
+                    index = expand_ids[i]['index']
+                    states[index] = not states.get(index, False)
+
             # Update ancestors only for non-existing states
-            expansion_state['states'].update({
-                ancestor: True
-                for item in selected
-                for ancestor in tree.get_ancestors(item)
-                if ancestor not in expansion_state['states']
-            })
+            for item in selected:
+                for ancestor in tree.get_ancestors(item):
+                    if ancestor not in states:
+                        states[ancestor] = True
         else:
             # For other triggers, always update ancestor states
-            expansion_state.setdefault('states', {}).update({
-                ancestor: True
-                for item in selected
-                for ancestor in tree.get_ancestors(item)
-            })
+            states = typed_expansion_state['states']
+            for item in selected:
+                for ancestor in tree.get_ancestors(item):
+                    states[ancestor] = True
 
         # Create tree component
         tree_component = DropdownTree(
             tree=tree,
-            expansion_state=expansion_state,
+            expansion_state=typed_expansion_state,
             selected=selected,
             is_open=is_dropdown_open
         )
 
-        return expansion_state, tree_component, is_dropdown_open
+        return typed_expansion_state, tree_component, is_dropdown_open

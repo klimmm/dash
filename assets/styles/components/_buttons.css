@@ -1,0 +1,135 @@
+/* Base button styles */
+.btn-custom {
+    height: var(--button-height-sm);
+    padding: 0;
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-tight);
+    border-radius: var(--radius-md);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    color: #e8e8e8;
+}
+
+/* Period button styles */
+.btn-period {
+    height: var(--button-height-xxs);
+    padding: 0 var(--space-2);
+    font-size: var(--font-size-xs);
+    min-width: var(--button-height-xs);
+    border-radius: var(--radius-md);
+    background-color: #f5f5f5;
+    color: #333333;
+    border: 1px solid #e0e0e0;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Group control button styles - with increased height */
+.btn-group-control {
+    height: calc(var(--button-height-xxs) + 4px); /* Increased height */
+    padding: 0 var(--space-2);
+    font-size: var(--font-size-xs);
+    min-width: var(--button-height-xs);
+    border-radius: var(--radius-md);
+    background-color: #f5f5f5;
+    color: #333333;
+    border: 1px solid #e0e0e0;
+    transition: all 0.2s ease-in-out;
+    margin-right: 4px; /* Add space between buttons */
+}
+
+/* Primary button states */
+.btn-period.btn-primary,
+.btn-group-control.btn-primary {
+    background-color: #f5f5f5;
+    color: #333333;
+    border-color: #e0e0e0;
+}
+
+/* Active states with different colors for each type */
+.btn-period.btn-primary.active,
+.btn-period.btn-primary.active:hover,
+.btn-period.btn-primary.active:focus {
+    background-color: #4a4a4a;
+    color: #ffffff;
+    border-color: #4a4a4a;
+}
+
+.btn-group-control.btn-primary.active,
+.btn-group-control.btn-primary.active:hover,
+.btn-group-control.btn-primary.active:focus {
+    background-color: #666666; /* Lighter grey for group control */
+    color: #ffffff;
+    border-color: #666666;
+}
+
+/* Hover and focus states */
+.btn-period.btn-primary:not(.active):hover,
+.btn-period.btn-primary:not(.active):focus {
+    background-color: #e8e8e8;
+    color: #333333;
+    border-color: #d3d3d3;
+}
+
+.btn-group-control.btn-primary:not(.active):hover,
+.btn-group-control.btn-primary:not(.active):focus {
+    background-color: #f0f0f0;
+    color: #333333;
+    border-color: #d3d3d3;
+}
+
+/* Remove margin from last button in group */
+.btn-group-control:last-child {
+    margin-right: 0;
+}
+
+
+
+
+/* Sidebar toggle buttons base styles */
+.btn-custom.btn-sidebar-toggle-show.btn.btn-primary,
+.btn-custom.btn-sidebar-toggle-hide.btn.btn-primary {
+    width: 50%;
+    margin: 0 !important;
+    color: #333333;
+    border: 1px solid #e0e0e0;
+    transition: all 0.2s ease-in-out;
+    margin-bottom: 1rem;
+}
+
+/* Default state for show button */
+.btn-custom.btn-sidebar-toggle-show.btn.btn-primary {
+    background-color: #f5f5f5;
+}
+
+/* Default state for hide button */
+.btn-custom.btn-sidebar-toggle-hide.btn.btn-primary {
+    background-color: #f5f5f5;
+}
+
+/* Active states */
+.btn-custom.btn-sidebar-toggle-show.btn.btn-primary.active,
+.btn-custom.btn-sidebar-toggle-show.btn.btn-primary.active:hover,
+.btn-custom.btn-sidebar-toggle-show.btn.btn-primary.active:focus,
+.btn-custom.btn-sidebar-toggle-hide.btn.btn-primary.active,
+.btn-custom.btn-sidebar-toggle-hide.btn.btn-primary.active:hover,
+.btn-custom.btn-sidebar-toggle-hide.btn.btn-primary.active:focus {
+    background-color: #4a4a4a;
+    color: #ffffff;
+    border-color: #4a4a4a;
+    max-width:  30%;
+    min-width:  30%;
+}
+
+/* Hover and focus states for non-active buttons */
+.btn-custom.btn-sidebar-toggle-show.btn.btn-primary:not(.active):hover,
+.btn-custom.btn-sidebar-toggle-show.btn.btn-primary:not(.active):focus,
+.btn-custom.btn-sidebar-toggle-hide.btn.btn-primary:not(.active):hover,
+.btn-custom.btn-sidebar-toggle-hide.btn.btn-primary:not(.active):focus {
+    background-color: #e8e8e8;
+    color: #333333;
+    border-color: #d3d3d3;
+    max-width:  30%;
+    min-width:  30%;
+}

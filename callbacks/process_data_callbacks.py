@@ -1,45 +1,56 @@
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Set
 
-import dash
+import dash  # type: ignore
 import pandas as pd
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output, State  # type: ignore
+from dash.exceptions import PreventUpdate  # type: ignore
 
-from application.components.checklist import create_btype_checklist
-from domain.metrics.checklist_config import get_checklist_config
-from config.callback_logging import log_callback, error_handler
-from config.logging_config import get_logger, timer, monitor_memory
-
-from domain.metrics.operations import (
-    get_required_metrics,
-    calculate_metrics,
-    calculate_growth,
-    add_top_n_rows,
-    calculate_market_share
+from app.components.checklist import create_btype_checklist
+from core.metrics.checklist_config import get_checklist_config
+from config.callback_logging_config import log_callback, error_handler
+from config.logging_config import get_logger, timerx, monitor_memory
+from core.metrics.operations import (
+     get_required_metrics,
+     calculate_metrics,
+     calculate_growth,
+     add_top_n_rows,
+     calculate_market_share
 )
-
-from domain.period.operations import filter_by_period_type
-
+from core.period.operations import filter_by_period_type, get_start_quarter
+from core.period.options import YearQuarter, YearQuarterOption
 
 logger = get_logger(__name__)
 
+# Type aliases for clarity
+ProcessedDataDict = Dict[str, List[Dict[str, Any]]]
+FilterStateDict = Dict[str, Any]
 
-@timer
+
+@timerx
 @monitor_memory
-def filter_lines_and_metrics(
+def filter_by_lines_metrics_and_date_range(
     df: pd.DataFrame,
     selected_lines: List[str],
-    required_metrics: List[str]
+    required_metrics: List[str],
+    start_quarter: str,
+    end_quarter: str
 ) -> pd.DataFrame:
-    return df[df['linemain'].isin(
-        selected_lines) & df['metric'].isin(required_metrics)]
+    return df[
+        (df['linemain'].isin(selected_lines)) &
+        (df['metric'].isin(required_metrics)) &
+        (df['year_quarter'] >= start_quarter) &
+        (df['year_quarter'] <= end_quarter)
+    ]
 
 
 def setup_process_data(
     app: dash.Dash,
-    df_162: pd.DataFrame,
     df_158: pd.DataFrame,
-    end_quarter_options_162: List[Dict],
-    end_quarter_options_158: List[Dict]
+    df_162: pd.DataFrame,
+    end_quarter_options_158: List[YearQuarterOption],
+    end_quarter_options_162: List[YearQuarterOption],
+    available_quarters_158: Set[YearQuarter],
+    available_quarters_162: Set[YearQuarter]
 ) -> None:
 
     @app.callback(
@@ -55,11 +66,12 @@ def setup_process_data(
          Input('period-type-selected', 'data'),
          Input('reporting-form-selected', 'data')],
         [State('selected-insurers-store', 'data'),
-         State('filter-state-store', 'data')]
+         State('filter-state-store', 'data'),
+         State('metrics-store', 'data')]
     )
     @error_handler
     @log_callback
-    @timer
+    @timerx
     def process_data(
         selected_metrics: List[str],
         curr_btype_selection: List[str],
@@ -69,38 +81,67 @@ def setup_process_data(
         period_type: str,
         reporting_form: str,
         selected_insurers: str,
-        current_filter_state: Dict
-    ) -> Tuple:
+        current_filter_state: FilterStateDict,
+        metrics_state: List[str]
+    ) -> Tuple[
+     List[YearQuarterOption], List[Any], ProcessedDataDict, FilterStateDict
+     ]:
 
-        df = (df_162 if reporting_form == '0420162' else
-              df_158)
+        ctx = dash.callback_context
+        if not ctx.triggered:
+            raise PreventUpdate
 
+        checklist_mode, checklist_values = get_checklist_config(
+            selected_metrics, reporting_form, curr_btype_selection
+        )
+        checklist_component = create_btype_checklist(
+            checklist_mode, checklist_values
+        )
+
+        df = (
+            df_162 if reporting_form == '0420162' else df_158
+        )
         end_quarter_options = (
             end_quarter_options_162 if reporting_form == '0420162' else
-            end_quarter_options_158)
-        logger.warning(f" current checklist values {curr_btype_selection}")
-        checklist_mode, checklist_values = get_checklist_config(selected_metrics, reporting_form, curr_btype_selection)
-        logger.warning(f" new checklist values  {checklist_values}")
-        checklist_component = create_btype_checklist(checklist_mode, checklist_values)
-
+            end_quarter_options_158
+        )
+        available_quarters = (
+            available_quarters_162 if reporting_form == '0420162' else
+            available_quarters_158
+        )
+        start_quarter = get_start_quarter(
+            YearQuarter(end_quarter), period_type, num_periods, available_quarters
+        )
         required_metrics = get_required_metrics(selected_metrics)
 
-        df = (filter_lines_and_metrics(df, selected_lines, required_metrics)
-              .pipe(filter_by_period_type, end_quarter, num_periods, period_type)
-              .pipe(add_top_n_rows)
-              .pipe(calculate_metrics, selected_metrics, required_metrics)
-              .pipe(calculate_market_share, selected_insurers, selected_metrics)
-              .pipe(calculate_growth, selected_insurers, num_periods, period_type)
-              )
+        df = (filter_by_lines_metrics_and_date_range(
+            df, selected_lines, required_metrics, start_quarter, end_quarter
+        )
+            .pipe(filter_by_period_type, end_quarter, num_periods, period_type)
+            .pipe(add_top_n_rows)
+            .pipe(calculate_metrics, selected_metrics, required_metrics)
+            .pipe(calculate_market_share, selected_insurers, selected_metrics)
+            .pipe(calculate_growth, selected_insurers, num_periods, period_type)
+        )
 
-        filter_state = {
+        filter_state: FilterStateDict = {
             **(current_filter_state if current_filter_state else {}),
             'selected_metrics': selected_metrics,
             'selected_lines': selected_lines
         }
 
-        processed_data = {
-            'df': df.to_dict('records')
+        records: List[Dict[str, Any]] = [
+            {str(k): v for k, v in record.items()}
+            for record in df.to_dict('records')
+        ]
+
+        processed_data: ProcessedDataDict = {
+            'df': records
         }
 
-        return end_quarter_options, [checklist_component], processed_data, filter_state
+        return (
+            end_quarter_options,
+            [checklist_component],
+            processed_data,
+            filter_state
+        )

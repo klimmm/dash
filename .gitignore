@@ -209,3 +209,6 @@ untitled.md
 data_files/form162/data_scrapping/csv_files/
 data_files/form162/data_scrapping/xlsx_files/
 data_files/form162/data_processing/intermediate_data/
+data/etl/form162/scraping/xlsx_files/
+data/etl/form162/scraping/csv_files/
+data/etl/form162/processing/intermediate_data/

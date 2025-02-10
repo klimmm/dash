@@ -1,12 +1,11 @@
 from typing import Dict, List, Tuple
 
-import dash
-from dash import Dash, Input, Output, State
-from dash.exceptions import PreventUpdate
+import dash  # type: ignore
+from dash import Dash, Input, Output, State  # type: ignore
 
-from config.callback_logging import log_callback, error_handler
+from config.callback_logging_config import error_handler, log_callback
 from config.logging_config import get_logger, timer
-from domain.metrics.options import get_metric_options
+from core.metrics.options import get_metric_options
 
 logger = get_logger(__name__)
 
@@ -19,7 +18,7 @@ def setup_metric_selection(app: Dash) -> None:
          Output('metrics-store', 'data')],
         [Input('metrics', 'value'),
          Input('reporting-form-selected', 'data')],
-        [State('metrics-store', 'data')]
+        [State('metrics-store', 'data')],
     )
     @log_callback
     @timer
@@ -29,19 +28,21 @@ def setup_metric_selection(app: Dash) -> None:
         reporting_form: str,
         stored: List[str]
     ) -> Tuple[List[str], List[Dict], List[str]]:
-
-        ctx = dash.callback_context
-        if not ctx.triggered:
-            raise PreventUpdate
+        logger.debug(f"selected {selected}")
+        logger.debug(f"stored {stored}")
+        logger.debug(f"reporting_form {reporting_form}")
 
         metric_options, valid_metrics = get_metric_options(
             reporting_form, selected or [])
-
         updated_values = [v for v in (selected or [])
                           if v is not None and
                           v in valid_metrics] or valid_metrics
+        logger.debug(f"valid_metrics {valid_metrics}")
+        logger.debug(f"updated_values {updated_values}")
 
         if selected == stored:
+            logger.debug("EQUAL - returning no_update")
             return dash.no_update, metric_options, dash.no_update
 
+        logger.debug("NOT EQUAL - returning full update")
         return updated_values, metric_options, updated_values
