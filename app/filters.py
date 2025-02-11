@@ -85,10 +85,6 @@ def create_filter_panel(lines_tree_158: Tree, lines_tree_162: Tree
                           ("Бизнес:", create_btype_checklist(), 3, 7, None)
                            ], row_style={"display": "none"}),
 
-        create_filter_row([("", html.Div(id="period-type-text"), 0, 12, None)],
-                          row_style={"display": "none"}
-                          ),
-
         create_filter_row([("Отчетность:", buttons['reporting_form'], 3, 5,
                             "px-3"),
                            ("В разрезе:", buttons['table_split_mode'], 3, 7,

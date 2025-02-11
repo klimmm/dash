@@ -1,55 +1,26 @@
-from dataclasses import dataclass
 from typing import Tuple
 import dash  # type: ignore
 from dash import Input, Output, State  # type: ignore
 from app.style_constants import StyleConstants
-from config.logging import log_callback, get_logger
+from config.logging import log_callback, get_logger, DashDebugHandler
 
 logger = get_logger(__name__)
 
 
-@dataclass
-class SidebarState:
-    """Manages sidebar-related classes and states."""
-    sidebar_col_class: str
-    inner_btn_text: str
-    inner_btn_class: str
-
-    @classmethod
-    def expanded(cls) -> 'SidebarState':
-        """Create expanded sidebar state."""
-        return cls(
-            sidebar_col_class=StyleConstants.SIDEBAR,
-            inner_btn_text="Скрыть фильтры",
-            inner_btn_class=StyleConstants.BTN["SIDEBAR_HIDE"]
-        )
-
-    @classmethod
-    def collapsed(cls) -> 'SidebarState':
-        """Create collapsed sidebar state."""
-        return cls(
-            sidebar_col_class=StyleConstants.SIDEBAR_COLLAPSED,
-            inner_btn_text="Показать фильтры",
-            inner_btn_class=StyleConstants.BTN["SIDEBAR_SHOW"]
-        )
-
-    def to_tuple(self) -> Tuple[str, str, str]:
-        """Convert state to callback output tuple."""
-        return (
-            self.sidebar_col_class,
-            self.inner_btn_text,
-            self.inner_btn_class
-        )
-
 def setup_sidebar(app: dash.Dash) -> None:
     """Setup callbacks for sidebar toggle functionality."""
+
+    SIDEBAR_EXPANDED_CLASS = StyleConstants.SIDEBAR
+    SIDEBAR_COLLAPSED_CLASS = StyleConstants.SIDEBAR_COLLAPSED
+    BUTTON_SHOW_CLASS = StyleConstants.BTN["SIDEBAR_HIDE"]
+    BUTTON_HIDE_CLASS = StyleConstants.BTN["SIDEBAR_SHOW"]
+
     @app.callback(
         [Output('sidebar', 'className'),
          Output('sidebar-button', 'children'),
          Output('sidebar-button', 'className')],
         [Input('sidebar-button', 'n_clicks')],
         [State('sidebar', 'className')]
-        # Remove prevent_initial_call=True
     )
     @log_callback
     def toggle_sidebar_button(
@@ -61,36 +32,64 @@ def setup_sidebar(app: dash.Dash) -> None:
         """
         ctx = dash.callback_context
         try:
-            # If no button was clicked (initial load) or no clicks yet, return expanded state
             if not ctx.triggered or not sidebar_clicks:
-                return SidebarState.expanded().to_tuple()
+                return (
+                    SIDEBAR_EXPANDED_CLASS,
+                    "Скрыть фильтры",
+                    BUTTON_HIDE_CLASS
+                )
 
-            # Determine current state
             is_expanded = current_class and "collapsed" not in current_class
-            # Return opposite state
-            new_state = SidebarState.collapsed() if is_expanded else SidebarState.expanded()
+
+            if is_expanded:
+                new_state = (
+                    SIDEBAR_COLLAPSED_CLASS,
+                    "Показать фильтры",
+                    BUTTON_SHOW_CLASS
+                )
+            else:
+                new_state = (
+                    SIDEBAR_EXPANDED_CLASS,
+                    "Скрыть фильтры",
+                    BUTTON_HIDE_CLASS
+                )
 
             logger.debug(f"sidebar_clicks {sidebar_clicks}, cur_class {current_class}")
-            logger.debug(f"trigger {ctx.triggered[0]}, new state {new_state.to_tuple()}")
+            logger.debug(f"trigger {ctx.triggered[0]}, new state {new_state}")
+            return new_state
 
-            return new_state.to_tuple()
         except Exception:
             logger.exception("Error in toggle_sidebar")
             raise
 
-def setup_debug_panel(app: dash.Dash) -> None:
+
+def setup_debug_panel(app: dash.Dash, debug_handler: DashDebugHandler) -> None:
     """Setup callbacks for debug panel functionality."""
+
     @app.callback(
         Output("debug-collapse", "is_open"),
         Input("debug-toggle", "n_clicks"),
         State("debug-collapse", "is_open"),
         prevent_initial_call=True
     )
-    @log_callback
     def toggle_debug_button(n_clicks: int, is_open: bool) -> bool:
-        try:
-            result = not is_open if n_clicks else is_open
-            return result
-        except Exception:
-            logger.exception("Error in toggle_debug")
-            raise
+        return not is_open if n_clicks else is_open
+
+    @app.callback(
+        Output("debug-logs", "children"),
+        [Input("log-update-interval", "n_intervals"),
+         Input("clear-logs-button", "n_clicks")],
+        prevent_initial_call=True
+    )
+    def update_logs(n_intervals, clear_clicks):
+        ctx = dash.callback_context
+        if not ctx.triggered:
+            return ""
+
+        trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
+
+        if trigger_id == "clear-logs-button":
+            debug_handler.log_entries.clear()
+            return ""
+            
+        return "\n".join(list(debug_handler.log_entries))

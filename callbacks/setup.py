@@ -26,13 +26,14 @@ def setup_all_callbacks(
     end_quarter_options_158: List[YearQuarterOption],
     end_quarter_options_162: List[YearQuarterOption],
     available_quarters_158: Set[YearQuarter],
-    available_quarters_162: Set[YearQuarter]
+    available_quarters_162: Set[YearQuarter],
+    debug_handler
 ) -> None:
     """
     Centralized function to set up all callbacks in the application.
     """
     setup_sidebar(app)
-    setup_debug_panel(app)
+    setup_debug_panel(app, debug_handler)
     setup_buttons(app)
     # setup_data_table(app)
 

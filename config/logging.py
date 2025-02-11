@@ -5,6 +5,8 @@ import os
 import time
 import traceback
 from contextlib import contextmanager
+from collections import deque
+
 from dataclasses import dataclass
 from datetime import datetime
 from functools import wraps
@@ -26,6 +28,28 @@ MONITORING_ENABLED = True
 _timer_states: Dict[str, bool] = {}
 
 
+class DashDebugHandler(logging.Handler):
+    """Simple handler that stores log entries for the debug panel"""
+
+    def __init__(self, max_entries: int = 1000):
+        super().__init__()
+        self.log_entries = deque(maxlen=max_entries)
+        # Set lowest possible level to capture everything
+        self.setLevel(logging.DEBUG)
+        self.formatter = logging.Formatter(
+            '%(asctime)s - %(levelname)s - %(message)s')
+
+    def emit(self, record: logging.LogRecord) -> None:
+        try:
+            # Ensure the record is formatted
+            msg = self.formatter.format(record)
+            print(f"Debug Panel received log: {msg}")  # Debugging line
+            self.log_entries.append(msg)
+        except Exception as e:
+            print(f"Error in debug handler: {e}")  # Debugging line
+            self.handleError(record)
+
+
 class ColoredFormatter(logging.Formatter):
     COLORS = {
         'DEBUG': Fore.BLUE,
@@ -43,22 +67,24 @@ class ColoredFormatter(logging.Formatter):
 def setup_logging(console_level: int = logging.DEBUG,
                   file_level: int = logging.DEBUG,
                   log_file: str = 'app.log',
-                  fsevents_level: int = logging.INFO) -> None:
+                  fsevents_level: int = logging.INFO) -> DashDebugHandler:
     log_dir = Path('logs')
     log_dir.mkdir(exist_ok=True)
 
-    # Create handlers with explicit typing
-    file_handler: logging.Handler = RotatingFileHandler(
+    # Create handlers
+    file_handler = RotatingFileHandler(
         str(log_dir / log_file),
         maxBytes=10*1024*1024,
         backupCount=5
     )
-    console_handler: logging.Handler = logging.StreamHandler()
+    console_handler = logging.StreamHandler()
+    debug_handler = DashDebugHandler()  # Add simple debug handler
 
     # Configure handlers
     file_handler.setFormatter(logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
     file_handler.setLevel(file_level)
+
     console_handler.setFormatter(ColoredFormatter(
         '%(name)s - %(levelname)s - %(message)s'))
     console_handler.setLevel(console_level)
@@ -66,17 +92,20 @@ def setup_logging(console_level: int = logging.DEBUG,
     # Configure root logger
     root = logging.getLogger()
     root.handlers.clear()
-    root.setLevel(min(console_level, file_level))
+    root.setLevel(logging.DEBUG)  # Set to DEBUG to ensure all logs are captured
     root.addHandler(file_handler)
     root.addHandler(console_handler)
+    root.addHandler(debug_handler)  # Add debug handler before setting module levels
 
     # Configure module loggers
     for name, level in {
         'app': logging.WARNING, 'constants': logging.WARNING,
-        'callbacks': logging.WARNING, 'core': logging.WARNING,
+        'callbacks': logging.DEBUG, 'core': logging.DEBUG,
         'fsevents': fsevents_level
     }.items():
         logging.getLogger(name).setLevel(level)
+
+    return debug_handler
 
 
 def get_logger(name: str) -> logging.Logger:

@@ -127,7 +127,10 @@ def setup_process_data(
         filter_state: FilterStateDict = {
             **(current_filter_state if current_filter_state else {}),
             'selected_metrics': selected_metrics,
-            'selected_lines': selected_lines
+            'selected_lines': selected_lines,
+            'reporting_form': reporting_form,
+            'start_quarter': start_quarter,
+            'end_quarter': end_quarter
         }
 
         records: List[Dict[str, Any]] = [

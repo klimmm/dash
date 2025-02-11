@@ -7,7 +7,10 @@ from core.period.options import YearQuarter
 
 logger = get_logger(__name__)
 
-
+def _normalize_period_type(period_type: str) -> str:
+    """Format button value for ID generation, handling both str and numbers"""
+    return str(period_type).replace('-', '_')
+    
 def get_start_quarter(
     end_quarter: YearQuarter,
     period_type: str,
@@ -34,9 +37,7 @@ def get_start_quarter(
         year, quarter = divmod(idx, 4)
         return YearQuarter(f"{year}Q{quarter + 1}")
 
-    def _normalize_period_type(period_type: str) -> str:
-        """Format button value for ID generation, handling both str and numbers"""
-        return str(period_type).replace('-', '_')
+
 
     if end_quarter not in available_quarters:
         logger.debug(f"End quarter {end_quarter} not in available quarters")
@@ -106,7 +107,7 @@ def filter_by_period_type(
         'year_quarter', 'value', 'quarter'}]
 
     end_quarter_num = int(end_quarter[-1])
-
+    period_type = _normalize_period_type(period_type)
     if period_type == 'yoy_q':
         df = df.assign(quarter=df['year_quarter'].dt.quarter)
         df = df[df['year_quarter'].dt.quarter == end_quarter_num]

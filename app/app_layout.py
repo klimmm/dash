@@ -11,6 +11,7 @@ from config.default_values import DEFAULT_BUTTON_VALUES, DEFAULT_CHECKED_LINES
 from config.logging import get_logger
 from core.lines.tree import Tree
 
+
 logger = get_logger(__name__)
 
 
@@ -44,9 +45,6 @@ def _create_stores() -> List[html.Div]:
         dcc.Store(id='filter-state-store', storage_type='memory'),
         dcc.Store(id='filtered-insurers-data-store', storage_type='memory'),
         dcc.Store(id='metrics-store', data=[], storage_type='memory'),
-
-
-        
         dcc.Store(id='nodes-expansion-state',
                   data={'states': {}}, storage_type='memory'),
         dcc.Store(id='periods-data-table-selected',
@@ -75,35 +73,47 @@ def _create_stores() -> List[html.Div]:
     ]
 
 
-def _create_debug_footer() -> html.Div:
-    """Create debug footer component."""
-    return html.Div(
-        id="debug-footer",
-        className="debug-footer",
-        children=[
-            dbc.Button(
-                "Toggle Debug Logs",
-                id="debug-toggle",
-                className=StyleConstants
-                .BTN["DEBUG"]
-            ),
-            dbc.Collapse(
-                dbc.Card(
-                    dbc.CardBody([
-                        html.H4("Debug Logs",
-                                className=StyleConstants
-                                .DEBUG["DEBUG_TITLE"]),
-                        html.Pre(id="debug-output",
-                                 className=StyleConstants
-                                 .DEBUG["DEBUG_OUTPUT"])
-                    ]),
-                    className="debug-card"
+def create_debug_panel():
+    """Create a simple debug panel layout."""
+    return html.Div([
+        dbc.Button(
+            "Show Logs",
+            id="debug-toggle",
+            className=StyleConstants.BTN["DEFAULT"],
+        ),
+        dbc.Collapse(
+            dbc.Card([
+                dbc.Button(
+                    "Clear",
+                    id="clear-logs-button",
+                    className=StyleConstants.BTN["DEFAULT"],
                 ),
-                id="debug-collapse",
-                is_open=False
-            )
-        ], style={"display": "none"},
-    )
+                dbc.CardBody([
+                    html.Pre(
+                        id="debug-logs",
+                        style={
+                            "height": "200px",
+                            "overflow-y": "scroll",
+                            "white-space": "pre-wrap",
+                            "font-family": "monospace",
+                            "background-color": "#f8f9fa",
+                            "padding": "10px",
+                            "border-radius": "4px"
+                        }
+                    )
+                ])
+            ]),
+            id="debug-collapse",
+            is_open=False,
+        ),
+        dcc.Interval(
+            id='log-update-interval',
+            interval=1000,  # Update every second
+            n_intervals=0
+        )
+    ])
+
+
 def create_lines_checklist_buttons() -> dbc.Row:
     """Create hierarchy control buttons."""
     return create_button(label="Показать все", button_id="expand-all-button", className="btn-custom btn-period", hidden=True)
@@ -118,11 +128,15 @@ def create_app_layout(lines_tree_158: Tree, lines_tree_162: Tree
         return dbc.Container([
             *_create_stores(),
             _create_navbar(),
+            create_debug_panel(),
 
             dbc.CardBody([
                 create_lines_checklist_buttons(),
                 create_filter_panel(lines_tree_158, lines_tree_162),
                 create_buttons_control_row(),
+                html.Div(style={"marginBottom": "0.5rem"}),
+                html.Div(id="table-title"),
+                html.Div(style={"marginBottom": "1rem"}),
                 html.Div([
                     dcc.Loading(
                         id="loading-data-tables",
@@ -135,7 +149,8 @@ def create_app_layout(lines_tree_158: Tree, lines_tree_162: Tree
                 ])
             ], className=StyleConstants
                          .LAYOUT),
-            _create_debug_footer()
+            html.Div(style={"marginBottom": "1rem"}),
+
         ], fluid=True)
     except Exception as e:
         logger.error(f"Error in create_app_layout: {str(e)}")

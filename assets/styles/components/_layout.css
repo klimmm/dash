@@ -67,6 +67,8 @@
     align-items: center;   
     position: relative;  
     border-collapse: collapse !important;
+    font-size: 0.875rem;
+
 }
 
 /* Filter Styles */

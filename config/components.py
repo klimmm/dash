@@ -28,13 +28,6 @@ def get_line_tree_for_form(lines_tree_158: Tree, lines_tree_162: Tree) -> Tree:
     return (lines_tree_162 if DEFAULT_REPORTING_FORM == '0420162' else
             lines_tree_158)
 
-# -------- Transforms --------
-
-
-def period_type_transform(value: Union[str, int]) -> str:
-    """Transform period type value to translated string"""
-    return (translate(str(value)) if isinstance(value, int) else
-            translate(value))
 
 # -------- Configurations --------
 
@@ -68,7 +61,6 @@ BUTTON_GROUP_CONFIG: Dict[str, ButtonGroupConfig] = {
             {'label': 'MAT', 'value': 'mat', 'hidden': True}
         ],
         'class_key': 'PERIOD_TYPE',
-        'output_transforms': [period_type_transform],
         'default': [cast(Union[str, int],
                          DEFAULT_BUTTON_VALUES['period_type'])]
     },

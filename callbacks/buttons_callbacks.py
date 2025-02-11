@@ -50,9 +50,6 @@ def update_button_state(config: ButtonGroupConfig, button_index: int,
 
     result = [*button_classes, new_values if multi_select else new_values[0]]
 
-    if transforms := config.get('output_transforms'):
-        result.extend(transform(new_values[0]) for transform in transforms)
-
     return result
 
 
@@ -74,9 +71,6 @@ class ButtonCallbackManager:
         outputs = [Output(f"btn-{group_id}-{btn['value']}", "className")
                    for btn in config['buttons']]
         outputs.append(Output(store_id, "data"))
-
-        if group_id == 'period-type':
-            outputs.append(Output(f"{group_id}-text", "children"))
 
         inputs = [Input(f"btn-{group_id}-{btn['value']}", "n_clicks")
                   for btn in config['buttons']]
@@ -216,7 +210,7 @@ class ButtonCallbackManager:
                 continue
 
             outputs, inputs, states = self._get_io_components(group_id, config)
-
+            
             @self.app.callback(outputs, inputs, states,
                                prevent_initial_call=True)
             @log_callback
@@ -254,6 +248,7 @@ class ButtonCallbackManager:
                 # Ensure result length matches outputs
                 if len(result) < len(_outputs):
                     result.extend([None] * (len(_outputs) - len(result)))
+                logger.debug(f"result {result}")
 
                 return result
 

@@ -14,6 +14,8 @@ from config import (
      setup_logging,
      CallbackTracker
 )
+
+from config.logging import DashDebugHandler
 from core import (
      get_available_quarters,
      get_year_quarter_options,
@@ -35,6 +37,8 @@ dbc._js_dist = [
 ]
 
 print("Starting application initialization...")
+
+
 
 app = dash.Dash(
     __name__,
@@ -86,6 +90,13 @@ end_quarter_options_162 = get_year_quarter_options(df_162)
 available_quarters_158 = get_available_quarters(df_158)
 available_quarters_162 = get_available_quarters(df_162)
 
+debug_handler = setup_logging()
+
+logger = logging.getLogger()
+logger.debug("Test debug message")
+logger.info("Test info message")
+logger.warning("Test warning message")
+
 app.layout = create_app_layout(lines_tree_158, lines_tree_162)
 
 server = app.server
@@ -95,7 +106,8 @@ setup_all_callbacks(
     lines_tree_158, lines_tree_162,
     df_158, df_162,
     end_quarter_options_158, end_quarter_options_162,
-    available_quarters_158, available_quarters_162
+    available_quarters_158, available_quarters_162,
+    debug_handler
 )
 
 
@@ -106,8 +118,7 @@ def main() -> None:
         app.run_server(
             host='0.0.0.0',
             port=port,
-            debug=False,
-            dev_tools_hot_reload=False
+            debug=True
         )
     except Exception as e:
         print(f"Error during startup: {e}")
