@@ -1,17 +1,15 @@
-from typing import Dict, List, Optional, Set, TypedDict
+from typing import cast, Dict, List, Optional, Set
 
-import dash_bootstrap_components as dbc  # type: ignore
-from dash import html  # type: ignore
+import dash_bootstrap_components as dbc
+from dash import html
 
 from app.style_constants import StyleConstants
-from config.logging_config import get_logger
+from config.components import TREE_DROPDOWN_CONFIG
+from config.logging import get_logger
+from config.types import TreeDropdownConfig
 from core.lines.tree import Tree
 
 logger = get_logger(__name__)
-
-
-class ExpansionState(TypedDict, total=False):
-    states: Dict[str, bool]
 
 
 class TreeRenderer:
@@ -51,7 +49,7 @@ class TreeRenderer:
                 className=" ".join(checkbox_classes)
             ),
             html.Span(label, className=StyleConstants.TREE[
-                      "INSURANCE_LINE_LABEL"])
+                      "TREE_ITEM_LABEL"])
         ], className=StyleConstants.TREE["D_FLEX_ALIGN_ITEMS_CENTER"]))
 
         classes = [
@@ -69,7 +67,7 @@ class TreeRenderer:
         )
 
     @classmethod
-    def create_tree(cls, tree: Tree, expansion_state: ExpansionState,
+    def create_tree(cls, tree: Tree, states: Dict[str, bool],
                     selected: Set[str]) -> html.Div:
         """Create the complete tree UI structure."""
         def create_subtree(code: str, level: int = 0
@@ -78,7 +76,7 @@ class TreeRenderer:
                 return None
 
             children = tree.get_children(code)
-            is_expanded = expansion_state.get('states', {}).get(code, False)
+            is_expanded = states.get(code, False)
 
             tree_item = cls.create_tree_item(
                 code=code,
@@ -105,7 +103,7 @@ class TreeRenderer:
                                 child_items, className=StyleConstants.
                                 TREE["TREE_CHILDREN"]
                             ),
-                            id={'type': 'insurance-line-collapse',
+                            id={'type': 'node-collapse',
                                 'index': code},
                             is_open=True
                         )
@@ -120,7 +118,8 @@ class TreeRenderer:
 class DropdownTree(html.Div):
     """Dropdown component that displays a tree structure."""
 
-    def __init__(self, tree: Tree, expansion_state: ExpansionState,
+    def __init__(self, tree_id: str,
+                 tree: Tree, states: Dict[str, bool],
                  selected: List[str],
                  placeholder: str = "Выберите вид страхования",
                  is_open: bool = False):
@@ -165,7 +164,7 @@ class DropdownTree(html.Div):
                 html.Div(
                     html.Div(
                         TreeRenderer.create_tree(
-                            tree, expansion_state, set(selected)),
+                            tree, states, set(selected)),
                         id='tree-container'
                     ),
                     className=StyleConstants.TREE["TREE_DROPDOWN_CONTENT"]
@@ -179,15 +178,27 @@ class DropdownTree(html.Div):
         )
 
 
-def create_lines_checklist_buttons() -> dbc.Row:
-    """Create hierarchy control buttons."""
-    return dbc.Row(
-        [
-            dbc.Col([
-                dbc.Button("Показать все", id="expand-all-button",
-                           style={"display": "none"},
-                           className="btn-custom btn-period")
-            ])
-        ],
-        className="mb-3"
+def create_tree_dropdown(tree_id: str, *trees: Tree) -> DropdownTree:
+    """
+    Create a tree dropdown component.
+
+    Args:
+        tree_id: Identifier for the tree configuration
+        trees: Variable number of Tree objects needed for the specific tree_id
+    """
+    if tree_id not in TREE_DROPDOWN_CONFIG:
+        raise ValueError(f"No configuration found for tree_id: {tree_id}")
+
+    # Cast the configuration to our typed structure
+    config = cast(TreeDropdownConfig, TREE_DROPDOWN_CONFIG[tree_id])
+    tree_func = config['tree']
+    tree_config = config['config']
+
+    return DropdownTree(
+        tree_id=tree_id,
+        tree=tree_func(*trees),
+        states=tree_config['states'],
+        selected=tree_config['selected'],
+        placeholder=tree_config['placeholder'],
+        is_open=tree_config['is_open']
     )

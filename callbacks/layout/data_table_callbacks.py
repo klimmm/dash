@@ -3,8 +3,7 @@ from typing import List, Dict, Any, Union
 import dash  # type: ignore
 from dash import Output, Input, html, ALL  # type: ignore
 
-from config.callback_logging_config import log_callback, error_handler
-from config.logging_config import get_logger, timer
+from config.logging import log_callback, error_handler, get_logger, timer
 
 logger = get_logger(__name__)
 

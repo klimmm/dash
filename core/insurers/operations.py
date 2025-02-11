@@ -3,7 +3,7 @@ from typing import cast, Dict, List, Optional
 
 import pandas as pd
 
-from config.logging_config import timer, get_logger
+from config.logging import timer, get_logger
 from core.insurers.mapper import map_insurer
 
 logger = get_logger(__name__)

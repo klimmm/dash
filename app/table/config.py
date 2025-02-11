@@ -4,7 +4,7 @@ import pandas as pd
 from dash.dash_table.Format import Format, Scheme, Group  # type: ignore
 
 from app.table.style import get_table_styles_config
-from config.logging_config import get_logger, timer
+from config.logging import get_logger, timer
 from constants.translations import translate
 from core.insurers.mapper import map_insurer
 from core.lines.mapper import map_line
@@ -29,7 +29,7 @@ class FormatsConfig(TypedDict):
 
 
 FORMATS: FormatsConfig = {
-    'ytd': {'1': '3 мес.', '2': '1 пол.', '3': '9 мес.', '4': '12 мес.'},
+    'ytd': {'1': '3М', '2': '6М', '3': '9М', '4': '12М'},
     'units': {
         'value': 'млрд. руб.',
         'average_value': 'тыс. руб.',

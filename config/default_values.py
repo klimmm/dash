@@ -22,12 +22,12 @@ DEFAULT_SPLIT_MODE='line'
 DEFAULT_REPORTING_FORM = '0420162'
 TOP_N_LIST = 20
 DEFAULT_PERIOD_TYPE = 'ytd'
+DEFAULT_VIEW_METRICS = ['change']
 
 DEFAULT_BUTTON_VALUES = {
     'periods': DEFAULT_NUMBER_OF_PERIODS,
     'business_type': DEFAULT_BUSINESS_TYPE,
-    'market_share': DEFAULT_SHOW_MARKET_SHARE,
-    'qtoq': DEFAULT_SHOW_CHANGES,
+    'view_metrics': DEFAULT_VIEW_METRICS,
     'split_mode': DEFAULT_SPLIT_MODE,
     'reporting_form': DEFAULT_REPORTING_FORM,
     'top_n': TOP_N_LIST,

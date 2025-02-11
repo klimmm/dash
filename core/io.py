@@ -5,7 +5,7 @@ from typing import Dict, Tuple
 import pandas as pd
 
 from config.app_config import DATA_FILE_158, DATA_FILE_162
-from config.logging_config import get_logger, timer
+from config.logging import get_logger, timer
 
 logger = get_logger(__name__)
 

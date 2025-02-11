@@ -4,8 +4,7 @@ import pandas as pd
 from dash import Dash, Input, Output, State  # type: ignore
 
 from app.table.data import create_data_section, get_data_table
-from config.callback_logging_config import error_handler, log_callback
-from config.logging_config import get_logger, timer
+from config.logging import error_handler, log_callback, get_logger, timer
 
 logger = get_logger(__name__)
 
@@ -17,8 +16,7 @@ def setup_ui(app: Dash) -> None:
          Input('rankings-data-store', 'data'),
          Input('top-n-rows', 'data'),
          Input('selected-insurers-store', 'data'),
-         Input('view-metrics-market-share', 'data'),
-         Input('view-metrics-qtoq', 'data')],
+         Input('view-metrics', 'data')],
         [State('table-split-mode-selected', 'data'),
          State('filter-state-store', 'data'),
          State('period-type-selected', 'data'),
@@ -33,8 +31,7 @@ def setup_ui(app: Dash) -> None:
         rankings: Dict,
         top_n_list: List[int],
         selected_insurers: str,
-        market_share_state: List[str],
-        qtoq_state: List[str],
+        view_metrics_state: List[str],
         split_mode: str,
         filter_state: Dict,
         period_type: str,
@@ -50,10 +47,10 @@ def setup_ui(app: Dash) -> None:
         if top_n_list == 0 and selected_insurers is None:
             return [create_data_section()]
 
-        # Convert button states to boolean flags
-        show_market_share = market_share_state == ['show']
-        show_change = qtoq_state == ['show']
-
+        show_market_share = 'market-share' in view_metrics_state
+        show_change = 'change' in view_metrics_state
+        logger.debug(f"view metrics {view_metrics_state}")
+        logger.debug(f"top_n_list {top_n_list}")
         df = pd.DataFrame.from_records(processed_data).assign(
             year_quarter=lambda x: pd.to_datetime(x['year_quarter']))
         prev_ranks = rankings.get('prev_ranks')

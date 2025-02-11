@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from config.app_config import LINES_162_DICTIONARY
-from config.logging_config import get_logger, timer
+from config.logging import get_logger, timer
 from core.insurers.mapper import map_insurer
 from core.lines.mapper import map_line
 from core.metrics.definitions import METRICS

@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional, Tuple
 
-from config.logging_config import get_logger, timer
+from config.logging import get_logger, timer
 from config.default_values import DEFAULT_METRICS, DEFAULT_METRICS_158
 from core.metrics.definitions import METRICS, VALID_METRICS
 

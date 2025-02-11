@@ -5,10 +5,9 @@ import dash  # type: ignore
 from dash import Input, Output, State, ALL  # type: ignore
 from dash.exceptions import PreventUpdate  # type: ignore
 
-from app.components.lines_tree import ExpansionState, DropdownTree
-from config.callback_logging_config import error_handler, log_callback
+from app.components.tree import DropdownTree
+from config.logging import error_handler, log_callback, get_logger, timer
 from config.default_values import DEFAULT_REPORTING_FORM
-from config.logging_config import get_logger, timer
 from core.lines.tree import Tree
 
 logger = get_logger(__name__)
@@ -116,7 +115,7 @@ def setup_line_selection(
         expansion_state: Dict[str, Any],
         reporting_form: Union[str, Dict[str, Any]],
         is_dropdown_open: bool
-    ) -> Tuple[ExpansionState, Any, bool]:
+    ) -> Tuple[Dict[str, Dict[str, bool]], Any, bool]:
         ctx = dash.callback_context
         if not ctx.triggered:
             raise PreventUpdate
@@ -130,12 +129,10 @@ def setup_line_selection(
         trigger = ctx.triggered[0]['prop_id']
         tree = _get_tree(form_value)
 
-        # Initialize typed expansion state
-        typed_expansion_state: ExpansionState = {'states': {}}
+        # Initialize states dictionary
+        states: Dict[str, bool] = {}
         if expansion_state and 'states' in expansion_state:
-            typed_expansion_state['states'] = cast(
-                Dict[str, bool], expansion_state['states']
-            )
+            states = cast(Dict[str, bool], expansion_state['states'])
 
         if 'remove-tag' in trigger:
             pass
@@ -145,7 +142,6 @@ def setup_line_selection(
             is_dropdown_open = is_dropdown_open
 
         if 'node-expand' in trigger:
-            states = typed_expansion_state['states']
             for i, clicks in enumerate(expand_clicks):
                 if clicks:
                     index = expand_ids[i]['index']
@@ -158,17 +154,17 @@ def setup_line_selection(
                         states[ancestor] = True
         else:
             # For other triggers, always update ancestor states
-            states = typed_expansion_state['states']
             for item in selected:
                 for ancestor in tree.get_ancestors(item):
                     states[ancestor] = True
 
         # Create tree component
         tree_component = DropdownTree(
+            tree_id='lines-tree',
             tree=tree,
-            expansion_state=typed_expansion_state,
+            states=states,
             selected=selected,
             is_open=is_dropdown_open
         )
 
-        return typed_expansion_state, tree_component, is_dropdown_open
+        return {'states': states}, tree_component, is_dropdown_open

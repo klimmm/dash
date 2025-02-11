@@ -2,7 +2,7 @@ from typing import cast, List, NewType, Set, TypedDict
 
 import pandas as pd
 
-from config.logging_config import timer, get_logger
+from config.logging import timer, get_logger
 
 logger = get_logger(__name__)
 

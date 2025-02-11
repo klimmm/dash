@@ -3,13 +3,13 @@ from typing import Dict, List, Set
 import numpy as np
 import pandas as pd
 
-from config.logging_config import get_logger, timerx, monitor_memory
+from config.logging import get_logger, timer, monitor_memory
 from core.metrics.definitions import METRICS
 
 logger = get_logger(__name__)
 
 
-@timerx
+@timer
 def get_required_metrics(
     selected_metrics: List[str]
 ) -> List[str]:
@@ -51,7 +51,7 @@ def get_required_metrics(
     return ordered_metrics
 
 
-@timerx
+@timer
 def get_calculation_order(metrics: Set[str]) -> List[str]:
     # Cache dependencies and reverse dependencies
     deps: Dict[str, Set[str]] = {
@@ -80,7 +80,7 @@ def get_calculation_order(metrics: Set[str]) -> List[str]:
     return ordered
 
 
-@timerx
+@timer
 @monitor_memory
 def calculate_metrics(
     df: pd.DataFrame,
@@ -152,7 +152,7 @@ def calculate_metrics(
     return result
 
 
-@timerx
+@timer
 @monitor_memory
 def add_top_n_rows(df: pd.DataFrame, top_n_list: List[int] = [5, 10, 20]
                    ) -> pd.DataFrame:
@@ -191,7 +191,7 @@ def add_top_n_rows(df: pd.DataFrame, top_n_list: List[int] = [5, 10, 20]
     return pd.concat(dfs, ignore_index=True)
 
 
-@timerx
+@timer
 def calculate_market_share(
     df: pd.DataFrame,
     selected_insurers: List[str],
@@ -248,7 +248,7 @@ def calculate_market_share(
             if market_shares else df)
 
 
-@timerx
+@timer
 @monitor_memory
 def calculate_growth(
     df: pd.DataFrame,

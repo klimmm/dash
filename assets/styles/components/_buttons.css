@@ -1,6 +1,6 @@
 /* Base button styles */
 .btn-custom {
-    height: var(--button-height-sm);
+    height: 0.875rem;
     padding: 0;
     font-size: var(--font-size-xs);
     line-height: var(--line-height-tight);
@@ -16,8 +16,7 @@
 .btn-period {
     height: var(--button-height-xxs);
     padding: 0 var(--space-2);
-    font-size: var(--font-size-xs);
-    min-width: var(--button-height-xs);
+    min-width: var(--button-height-xxs);
     border-radius: var(--radius-md);
     background-color: #f5f5f5;
     color: #333333;
@@ -27,7 +26,7 @@
 
 /* Group control button styles - with increased height */
 .btn-group-control {
-    height: calc(var(--button-height-xxs) + 4px); /* Increased height */
+    height: var(--button-height-xs);
     padding: 0 var(--space-2);
     font-size: var(--font-size-xs);
     min-width: var(--button-height-xs);
@@ -85,51 +84,41 @@
 }
 
 
-
-
-/* Sidebar toggle buttons base styles */
-.btn-custom.btn-sidebar-toggle-show.btn.btn-primary,
-.btn-custom.btn-sidebar-toggle-hide.btn.btn-primary {
-    width: 50%;
-    margin: 0 !important;
+/* Shared styles for both toggle buttons */
+.btn-sidebar-toggle-show,
+.btn-sidebar-toggle-hide {
+    width: 30%;
     color: #333333;
     border: 1px solid #e0e0e0;
-    transition: all 0.2s ease-in-out;
-    margin-bottom: 1rem;
+    background-color: #e8e8e8;
 }
 
-/* Default state for show button */
-.btn-custom.btn-sidebar-toggle-show.btn.btn-primary {
-    background-color: #f5f5f5;
+/* Specific styles for hide button */
+.btn-sidebar-toggle-hide {
+    background-color: #e8e8e8;  /* Muted blue */
+    color: #333333;
+    border-color: #e0e0e0;
 }
 
-/* Default state for hide button */
-.btn-custom.btn-sidebar-toggle-hide.btn.btn-primary {
-    background-color: #f5f5f5;
-}
-
-/* Active states */
-.btn-custom.btn-sidebar-toggle-show.btn.btn-primary.active,
-.btn-custom.btn-sidebar-toggle-show.btn.btn-primary.active:hover,
-.btn-custom.btn-sidebar-toggle-show.btn.btn-primary.active:focus,
-.btn-custom.btn-sidebar-toggle-hide.btn.btn-primary.active,
-.btn-custom.btn-sidebar-toggle-hide.btn.btn-primary.active:hover,
-.btn-custom.btn-sidebar-toggle-hide.btn.btn-primary.active:focus {
-    background-color: #4a4a4a;
-    color: #ffffff;
-    border-color: #4a4a4a;
-    max-width:  30%;
-    min-width:  30%;
-}
-
-/* Hover and focus states for non-active buttons */
-.btn-custom.btn-sidebar-toggle-show.btn.btn-primary:not(.active):hover,
-.btn-custom.btn-sidebar-toggle-show.btn.btn-primary:not(.active):focus,
-.btn-custom.btn-sidebar-toggle-hide.btn.btn-primary:not(.active):hover,
-.btn-custom.btn-sidebar-toggle-hide.btn.btn-primary:not(.active):focus {
+/* Active states for both buttons */
+.btn-sidebar-toggle-show.active,
+.btn-sidebar-toggle-hide.active {
     background-color: #e8e8e8;
     color: #333333;
-    border-color: #d3d3d3;
-    max-width:  30%;
-    min-width:  30%;
+    border-color: #e0e0e0;
 }
+
+/* Hover states for both buttons */
+.btn-sidebar-toggle-show:not(.active):hover,
+.btn-sidebar-toggle-hide:not(.active):hover {
+    background-color: #e8e8e8;
+    color: #333333;
+    border-color: #e0e0e0;
+}
+
+/* Specific hover for hide button */
+.btn-sidebar-toggle-hide:not(.active):hover {
+    background-color: #e8e8e8;  /* Darker muted blue */
+    color: #333333;
+}
+

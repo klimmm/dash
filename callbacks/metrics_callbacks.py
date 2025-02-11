@@ -3,8 +3,7 @@ from typing import Dict, List, Tuple
 import dash  # type: ignore
 from dash import Dash, Input, Output, State  # type: ignore
 
-from config.callback_logging_config import error_handler, log_callback
-from config.logging_config import get_logger, timer
+from config.logging import error_handler, log_callback, get_logger, timer
 from core.metrics.options import get_metric_options
 
 logger = get_logger(__name__)

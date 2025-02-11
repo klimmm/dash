@@ -3,10 +3,10 @@ from typing import Tuple
 import dash  # type: ignore
 from dash import Input, Output, State  # type: ignore
 from app.style_constants import StyleConstants
-from config.callback_logging_config import log_callback
-from config.logging_config import get_logger
+from config.logging import log_callback, get_logger
 
 logger = get_logger(__name__)
+
 
 @dataclass
 class SidebarState:
@@ -44,11 +44,11 @@ class SidebarState:
 def setup_sidebar(app: dash.Dash) -> None:
     """Setup callbacks for sidebar toggle functionality."""
     @app.callback(
-        [Output("sidebar-col", "className"),
-         Output("toggle-sidebar-button-sidebar", "children"),
-         Output("toggle-sidebar-button-sidebar", "className")],
-        [Input("toggle-sidebar-button-sidebar", "n_clicks")],
-        [State("sidebar-col", "className")]
+        [Output('sidebar', 'className'),
+         Output('sidebar-button', 'children'),
+         Output('sidebar-button', 'className')],
+        [Input('sidebar-button', 'n_clicks')],
+        [State('sidebar', 'className')]
         # Remove prevent_initial_call=True
     )
     @log_callback
@@ -64,15 +64,15 @@ def setup_sidebar(app: dash.Dash) -> None:
             # If no button was clicked (initial load) or no clicks yet, return expanded state
             if not ctx.triggered or not sidebar_clicks:
                 return SidebarState.expanded().to_tuple()
-                
+
             # Determine current state
             is_expanded = current_class and "collapsed" not in current_class
             # Return opposite state
             new_state = SidebarState.collapsed() if is_expanded else SidebarState.expanded()
-            
+
             logger.debug(f"sidebar_clicks {sidebar_clicks}, cur_class {current_class}")
             logger.debug(f"trigger {ctx.triggered[0]}, new state {new_state.to_tuple()}")
-            
+
             return new_state.to_tuple()
         except Exception:
             logger.exception("Error in toggle_sidebar")

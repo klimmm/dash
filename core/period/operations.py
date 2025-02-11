@@ -2,7 +2,7 @@ from typing import Optional, Set
 
 import pandas as pd
 
-from config.logging_config import get_logger, monitor_memory, timer
+from config.logging import get_logger, monitor_memory, timer
 from core.period.options import YearQuarter
 
 logger = get_logger(__name__)
@@ -34,10 +34,15 @@ def get_start_quarter(
         year, quarter = divmod(idx, 4)
         return YearQuarter(f"{year}Q{quarter + 1}")
 
+    def _normalize_period_type(period_type: str) -> str:
+        """Format button value for ID generation, handling both str and numbers"""
+        return str(period_type).replace('-', '_')
+
     if end_quarter not in available_quarters:
         logger.debug(f"End quarter {end_quarter} not in available quarters")
         return None
 
+    period_type = _normalize_period_type(period_type)
     end_idx = _to_index(end_quarter)
     end_q = int(end_quarter[-1])
     logger.debug(f"end_quarter {end_quarter}")

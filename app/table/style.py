@@ -3,7 +3,7 @@ from typing import Any, ClassVar, Dict, List, TypedDict
 
 import pandas as pd
 
-from config.logging_config import get_logger
+from config.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -43,9 +43,9 @@ class TableStyle:
     DEFAULT_COLS: ClassVar[Dict[str, ColumnConfig]] = {
         'RANK': {'type': 'N', 'width': '3.9rem', 'align': 'center'},
         'INSURER': {'type': 'insurer', 'width': '17rem', 'align': 'left'},
-        'LINE': {'type': 'linemain', 'width': '17rem', 'align': 'left'},
-        'CHANGE': {'type': '_change', 'width': '6rem', 'align': 'center'},
-        'DEFAULT': {'type': 'default', 'width': '6rem', 'align': 'right'}
+        'LINE': {'type': 'linemain', 'width': '19rem', 'align': 'left'},
+        'CHANGE': {'type': '_change', 'width': '5.5rem', 'align': 'center'},
+        'DEFAULT': {'type': 'default', 'width': '4.5rem', 'align': 'right'}
     }
 
     DEFAULT_ROW_TYPES: ClassVar[Dict[str, str]] = {

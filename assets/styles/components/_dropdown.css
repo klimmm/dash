@@ -254,18 +254,6 @@
     background: rgba(13, 110, 253, 0.25);
 }
 
-/* Filter Styles */
-.filter-label {
-    font-size: var(--font-size-fl);
-    color: var(--color-text-default);
-    font-weight: 500 !important;
-    display: flex;
-    border: 0;
-    height: 100%;
-    align-items: center;
-    margin: 0;
-    padding: 0 !important;
-}
 
 .period-type__text {
     font-size: var(--font-size-dd);

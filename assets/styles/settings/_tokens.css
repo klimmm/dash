@@ -1,12 +1,9 @@
 :root {
-    font-size: 11px;  /* This makes 1rem = 14px */
+    font-size: 9px;  /* This makes 1rem = 14px */
 
     /* Layout & Sizing */
     --breakpoint-md: 768px;
     --bs-gutter-x: var(--bs-gutter-x);
-    --navbar-height: 56px;
-    --sidebar-height: 700px;
-    --sidebar-width: 0;
     --titles-height: 60px;
     
     /* Colors: Surface */
@@ -34,9 +31,9 @@
     --font-size-md: 1.125rem;
     --font-size-sm: 0.875rem;
     --font-size-dd: 0.85rem;
-    --font-size-fl: 0.85rem;
-    --font-size-xs: 0.800rem;
-    --font-size-xxs: 0.6rem;
+    --font-size-fl: 0.84rem;
+    --font-size-xs: 0.750rem;
+    --font-size-xxs: 0.750rem;
 
     --font-weight-semibold: 600;
     --line-height-tight: 1.25;

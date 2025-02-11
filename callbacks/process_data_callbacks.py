@@ -7,8 +7,7 @@ from dash.exceptions import PreventUpdate  # type: ignore
 
 from app.components.checklist import create_btype_checklist
 from core.metrics.checklist_config import get_checklist_config
-from config.callback_logging_config import log_callback, error_handler
-from config.logging_config import get_logger, timerx, monitor_memory
+from config.logging import log_callback, error_handler, get_logger, timer, monitor_memory
 from core.metrics.operations import (
      get_required_metrics,
      calculate_metrics,
@@ -26,7 +25,7 @@ ProcessedDataDict = Dict[str, List[Dict[str, Any]]]
 FilterStateDict = Dict[str, Any]
 
 
-@timerx
+@timer
 @monitor_memory
 def filter_by_lines_metrics_and_date_range(
     df: pd.DataFrame,
@@ -71,7 +70,7 @@ def setup_process_data(
     )
     @error_handler
     @log_callback
-    @timerx
+    @timer
     def process_data(
         selected_metrics: List[str],
         curr_btype_selection: List[str],
@@ -90,14 +89,12 @@ def setup_process_data(
         ctx = dash.callback_context
         if not ctx.triggered:
             raise PreventUpdate
-
         checklist_mode, checklist_values = get_checklist_config(
             selected_metrics, reporting_form, curr_btype_selection
         )
         checklist_component = create_btype_checklist(
             checklist_mode, checklist_values
         )
-
         df = (
             df_162 if reporting_form == '0420162' else df_158
         )
@@ -112,6 +109,9 @@ def setup_process_data(
         start_quarter = get_start_quarter(
             YearQuarter(end_quarter), period_type, num_periods, available_quarters
         )
+        logger.debug(f" num_periods {num_periods}")
+        logger.debug(f" start_quarter {start_quarter}")
+
         required_metrics = get_required_metrics(selected_metrics)
 
         df = (filter_by_lines_metrics_and_date_range(

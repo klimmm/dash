@@ -5,11 +5,7 @@ import pandas as pd
 from dash import Dash, Input, Output, State  # type: ignore
 from dash.exceptions import PreventUpdate  # type: ignore
 
-from app.components.button import ButtonGroupConfig, format_button_id_value
-from app.ui_configs.button_config import BUTTON_CONFIG
-from callbacks.buttons_callbacks import get_button_classes
-from config.callback_logging_config import log_callback, error_handler
-from config.logging_config import get_logger, timer
+from config.logging import log_callback, error_handler, get_logger, timer
 from core.insurers.operations import (
      get_insurer_options,
      get_rankings,
@@ -33,6 +29,7 @@ def get_insurers_data(
      ]:
     """Main function to process insurance data and return components."""
     # Get ranking metric and filter data
+
     ranking_metric = next(
         (m for m in metrics if m in df['metric'].unique()), None)
     filtered_df = df[
@@ -79,107 +76,6 @@ def get_insurers_data(
 
 
 def setup_insurer_selection(app: Dash) -> None:
-    @app.callback(
-        [Output(f"btn-top-insurers-{format_button_id_value(btn['value'])}",
-                "className")
-         for btn in cast(
-             ButtonGroupConfig, BUTTON_CONFIG['top-insurers'])['buttons']] +
-        [Output('top-n-rows', 'data'),
-         Output('selected-insurers', 'disabled')],  # Changed to 'disabled'
-        [Input(f"btn-top-insurers-{format_button_id_value(btn['value'])}",
-               "n_clicks")
-         for btn in cast(
-             ButtonGroupConfig, BUTTON_CONFIG['top-insurers'])['buttons']],
-        Input('processed-data-store', 'data'),
-        State('top-n-rows', 'data'),
-    )
-    @log_callback
-    @timer
-    @error_handler
-    def update_number_insurers_buttons(*args: Any) -> tuple:
-        """Update top insurers selection and handle custom dropdown visibily"""
-        ctx = dash.callback_context
-        config = cast(ButtonGroupConfig, BUTTON_CONFIG['top-insurers'])
-        buttons = config['buttons']
-        total_buttons = len(buttons)
-
-        # Extract processed data from args (it's the last item before top-n-row
-        processed_data = args[-2]  # -2 because -1 is top-n-rows data
-        logger.debug(f" processed_data {processed_data}")
-
-        # Check if processed data is empty or invalid
-        triggered = ctx.triggered[0]["prop_id"].split(".")[0]
-
-        # Add check for processed-data-store trigger
-        if triggered == 'processed-data-store':
-            if not processed_data or 'df' not in processed_data:
-                # Set last button as active
-                current_idx = total_buttons - 1
-                button_classes = get_button_classes(
-                    total_buttons,
-                    current_idx,
-                    config['class_key']
-                )
-                return (*button_classes, 0, True)  # Return 0 and enable dropdo
-            else:
-                raise PreventUpdate
-
-        config = cast(ButtonGroupConfig, BUTTON_CONFIG['top-insurers'])
-        buttons = config['buttons']
-        total_buttons = len(buttons)
-
-        # Convert to DataFrame and check if empty
-        df = pd.DataFrame.from_records(processed_data['df'])
-        if df.empty:
-            # Set last button as active
-            current_idx = total_buttons - 1
-            button_classes = get_button_classes(
-                total_buttons,
-                current_idx,
-                config['class_key']
-            )
-            return (*button_classes, 0, False)  # Return 0 and enable dropdown
-
-        # Rest of your existing logic
-        current_value = args[-1] if args[-1] is not None else config.get(
-            'default')
-        if not ctx.triggered:
-            raise PreventUpdate
-        if ctx.triggered:
-            triggered = ctx.triggered[0]["prop_id"].split(".")[0]
-            if triggered:
-                button_index = next(
-                    (i for i, btn in enumerate(buttons) if
-                     f"btn-top-insurers-{format_button_id_value(btn['value'])}"
-                     == triggered),
-                    None
-                )
-                if button_index is not None:
-                    current_value = buttons[button_index]['value']
-
-        current_idx: Optional[int] = next(
-            (i for i, btn in enumerate(buttons)
-             if str(btn['value']) == str(current_value)),
-            None
-        )
-
-        button_classes = get_button_classes(
-            total_buttons,
-            current_idx if current_idx is not None else -1,
-            config['class_key']
-        )
-
-        try:
-            val_int = int(
-                str(current_value)) if current_value is not None else 0
-            is_valid_top_n = val_int in [5, 10, 20]
-        except (ValueError, TypeError):
-            val_int = 0
-            is_valid_top_n = False
-
-        output_value = val_int if is_valid_top_n else 0
-        return (*button_classes, output_value, is_valid_top_n)
-
     @app.callback(
         [Output('selected-insurers', 'value'),
          Output('selected-insurers', 'options'),

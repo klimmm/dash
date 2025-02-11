@@ -6,10 +6,13 @@ class StyleConstants:
     # Top-level navigation and layout
     NAV = "main-nav"
     LAYOUT = "layout-wrapper"
-    SIDEBAR = "sidebar-col"
-    SIDEBAR_COLLAPSED = "sidebar-col collapsed"
+    SIDEBAR = "sidebar"
+    SIDEBAR_COLLAPSED = "sidebar collapsed"
     CHECKLIST = "checklist"
     DROPDOWN = "dd-control"
+    FILTER_ROW = "filter-row"
+    FILTER_LABEL = "filter-label"
+    TABLES_CONTAINER = 'datatable-container'
     # Container styles
     CONTAINER = {
         "CHART": "chart-container",
@@ -33,8 +36,8 @@ class StyleConstants:
         "TABLE_SPLIT_ACTIVE": "btn-custom btn-group-control active",
 
 
-        "MARKET_SHARE": "btn-custom btn-period",
-        "MARKET_SHARE_ACTIVE": "btn-custom btn-period active",
+        "VIEW_METRICS": "btn-custom btn-period",
+        "VIEW_METRICS_ACTIVE": "btn-custom btn-period active",
         "NUM_PERIODS": "btn-custom btn-period",
         "NUM_PERIODS_ACTIVE": "btn-custom btn-period active",
         "PERIOD_TYPE": "btn-custom btn-period",
@@ -69,7 +72,8 @@ class StyleConstants:
 
     # Flex utilities
     FLEX = {
-        "CENTER": "d-flex align-items-center"
+        "CENTER": "d-flex align-items-center",
+        "WRAP": "flex-wrap"
     }
 
     # General utilities
@@ -101,7 +105,7 @@ class StyleConstants:
         "NODE_CHECKBOX": "node-checkbox",
         "PARENT_OF_SELECTED": "parent-of-selected",
         "SELECTED": "selected",
-        "INSURANCE_LINE_LABEL": "insurance-line-label",
+        "TREE_ITEM_LABEL": "insurance-line-label",
         "TREE_ITEM": "tree-item",
         "LEVEL_PREFIX": "level-",
         "HAS_SELECTED": "has-selected",

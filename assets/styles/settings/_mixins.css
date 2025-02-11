@@ -22,16 +22,32 @@
 =============================================*/
 
 /* Mobile and small screens (up to 768px) */
-.fltr-row
-.fltr-row-large
-.sidebar-col.row {
+.filter-row,
+.sidebar {
     max-width: 430px;
 }
+
+
+/* Tablet */
+@media screen and (min-width: 390px) {
+    :root {
+        font-size: 9.5px;
+    }
+}
+
+
+/* Tablet */
+@media screen and (min-width: 410px) {
+    :root {
+        font-size: 10px;
+    }
+}
+
 
 /* Tablet */
 @media screen and (min-width: 530px) {
     :root {
-        font-size: 11px;
+        font-size: 10.5px;
     }
 }
 
@@ -40,23 +56,26 @@
     :root {
         font-size: 11px;
     }  
+    .filter-row,
+    .sidebar {
+        max-width: 450px !important;
+    }   
 }
 
 /* Tablet */
 @media screen and (min-width: 768px) {
     :root {
-        font-size: 12px;
+        font-size: 11px;
     }
 }
 
 /* Tablet */
 @media screen and (min-width: 860px) {
     :root {
-        font-size: 13px;
+        font-size: 12px;
     }
-    .fltr-row,
-    .fltr-row-large,
-    .sidebar-col.row {
+    .filter-row,
+    .sidebar {
         max-width: 480px !important;
     }   
 }
@@ -64,64 +83,23 @@
 /* Desktop */
 @media screen and (min-width: 1024px) {
     :root {
-        font-size: 13px;
+        font-size: 12px;
     }
-    .fltr-row,
-    .fltr-row-large,
-    .sidebar-col.row {
-        max-width: 480px !important;
-    } 
+    .filter-row,
+    .sidebar {
+        max-width: 550px;
+    }
 }
 
 /* Large Desktop */
 @media screen and (min-width: 1440px) {
     :root {
-        font-size: 13px;
+        font-size: 12.5px;
     }
 }
-/* Container max-widths */
-@media (--sm-and-up) {
-  .container {
-    max-width: var(--container-max-width-sm);
-  }
-}
-
-@media (--md-and-up) {
-  .container {
-    max-width: var(--container-max-width-md);
-  }
-}
-
-@media (--lg-and-up) {
-  .container {
-    max-width: var(--container-max-width-lg);
-  }
-}
-
-@media (--xl-and-up) {
-  .container {
-    max-width: var(--container-max-width-xl);
-  }
-}
-
-/*=============================================
-=            Grid Mixins                     =
-=============================================*/
-
-@media (--lg-and-up) {
-  .content-grid {
-    grid-template-columns: repeat(12, 1fr);
-  }
-  
-  .content-grid--sidebar {
-    grid-template-columns: var(--sidebar-width) 1fr;
-  }
-}
-
-
 
 @media (max-width: var(--breakpoint-md)) {
-    .sidebar-col {
+    .sidebar {
         position: fixed;
         top: var(--navbar-height);
         left: 0;
@@ -134,7 +112,7 @@
 }
 
 @media print {
-    #sidebar-col {
+    #sidebar {
         height: auto;
     }
 }

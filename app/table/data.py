@@ -4,7 +4,7 @@ import pandas as pd
 from dash import dash_table, html  # type: ignore
 
 from app.table.config import create_datatable
-from config.logging_config import get_logger, timer
+from config.logging import get_logger, timer
 from constants.translations import translate
 from core.lines.mapper import map_line
 from core.table.transformer import TableTransformer

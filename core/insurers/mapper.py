@@ -3,7 +3,7 @@ import re
 from typing import Dict
 
 from config.app_config import INSURERS_DICTIONARY
-from config.logging_config import get_logger
+from config.logging import get_logger
 
 logger = get_logger(__name__)
 
