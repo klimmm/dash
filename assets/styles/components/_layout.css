@@ -83,3 +83,13 @@
     margin: 0 !important;
     padding: 0 !important;
 }
+
+.filters-summary {
+    font-size: 0.875rem;
+    white-space: pre-line;
+}
+
+.filters-summary-second-row {
+    font-size: 0.875rem;
+    white-space: pre-line;
+}

@@ -99,8 +99,9 @@ def setup_logging(console_level: int = logging.DEBUG,
 
     # Configure module loggers
     for name, level in {
-        'app': logging.WARNING, 'constants': logging.WARNING,
+        'app': logging.DEBUG, 'constants': logging.DEBUG,
         'callbacks': logging.DEBUG, 'core': logging.DEBUG,
+        'config': logging.DEBUG,
         'fsevents': fsevents_level
     }.items():
         logging.getLogger(name).setLevel(level)

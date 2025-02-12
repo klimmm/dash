@@ -4,14 +4,14 @@ import dash  # type: ignore
 import pandas as pd
 from callbacks import (
     setup_buttons,
-    # setup_data_table,
     setup_debug_panel,
+    setup_filters_summary,
     setup_insurer_selection,
     setup_line_selection,
     setup_metric_selection,
     setup_process_data,
     setup_sidebar,
-    setup_ui
+    setup_table
 )
 from core.lines.tree import Tree
 from core.period.options import YearQuarter, YearQuarterOption
@@ -46,4 +46,5 @@ def setup_all_callbacks(
         available_quarters_158, available_quarters_162
     )
     setup_insurer_selection(app)
-    setup_ui(app)
+    setup_table(app)
+    setup_filters_summary(app)

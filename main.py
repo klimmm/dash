@@ -5,7 +5,7 @@ import dash  # type: ignore
 import dash_bootstrap_components as dbc  # type: ignore
 
 from app import create_app_layout
-from callbacks.setup import setup_all_callbacks
+from callbacks._setup import setup_all_callbacks
 from config import (
      default_lines_dict,
      get_logger,
@@ -15,7 +15,6 @@ from config import (
      CallbackTracker
 )
 
-from config.logging import DashDebugHandler
 from core import (
      get_available_quarters,
      get_year_quarter_options,
@@ -25,7 +24,7 @@ from core import (
 )
 
 logger = get_logger(__name__)
-setup_logging(console_level=logging.DEBUG, file_level=logging.DEBUG)
+setup_logging(console_level=logging.INFO, file_level=logging.INFO)
 callback_tracker = CallbackTracker()
 
 dbc._js_dist = [

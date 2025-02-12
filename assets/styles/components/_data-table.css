@@ -11,22 +11,6 @@
 .data-section:last-child {
     margin-bottom: 0;
 }
-.table-title {
-    font-size: 0.875rem;
-    white-space: pre-line;
-}
-
-
-.table-title-first-row {
-    font-size: 0.875rem;
-    white-space: pre-line;
-}
-
-.table-title-second-row {
-    font-size: 0.875rem;
-    white-space: pre-line;
-}
-
 
 .sidebar.collapsed {
     width: 100%;

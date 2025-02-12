@@ -135,7 +135,7 @@ def create_app_layout(lines_tree_158: Tree, lines_tree_162: Tree
                 create_filter_panel(lines_tree_158, lines_tree_162),
                 create_buttons_control_row(),
                 html.Div(style={"marginBottom": "0.5rem"}),
-                html.Div(id="table-title"),
+                html.Div(id='filters-summary'),
                 html.Div(style={"marginBottom": "1rem"}),
                 html.Div([
                     dcc.Loading(

@@ -130,7 +130,9 @@ def setup_process_data(
             'selected_lines': selected_lines,
             'reporting_form': reporting_form,
             'start_quarter': start_quarter,
-            'end_quarter': end_quarter
+            'end_quarter': end_quarter,
+            'period_type': period_type
+            
         }
 
         records: List[Dict[str, Any]] = [
