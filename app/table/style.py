@@ -41,9 +41,10 @@ class DataStyle(TypedDict):
 class TableStyle:
     # Define class-level constants
     DEFAULT_COLS: ClassVar[Dict[str, ColumnConfig]] = {
-        'RANK': {'type': 'N', 'width': '3.9rem', 'align': 'center'},
+        'RANK': {'type': 'rank', 'width': '3.9rem', 'align': 'center'},
         'INSURER': {'type': 'insurer', 'width': '17rem', 'align': 'left'},
-        'LINE': {'type': 'linemain', 'width': '19rem', 'align': 'left'},
+        'METRIC': {'type': 'base_metric', 'width': '19rem', 'align': 'left'},
+        'LINE': {'type': 'line', 'width': '19rem', 'align': 'left'},
         'CHANGE': {'type': '_change', 'width': '5.5rem', 'align': 'center'},
         'DEFAULT': {'type': 'default', 'width': '4.5rem', 'align': 'right'}
     }
@@ -90,11 +91,25 @@ class TableStyle:
 
     @classmethod
     def _get_col_config(cls, col: str) -> ColumnConfig:
-        """Get column configuration based on column name."""
-        for config in cls.DEFAULT_COLS.values():
-            if config['type'] == col or ('_change' in col
-                                         and config['type'] == '_change'):
+        """Get column configuration based on column name.
+
+        Args:
+            col: Column name to get configuration for
+
+        Returns:
+            ColumnConfig for the matching column type
+        """
+        for col_type, config in cls.DEFAULT_COLS.items():
+            # Convert col_type to lowercase for case-insensitive matching
+            col_type_lower = col_type.lower()
+            col_lower = col.lower()
+
+            # Check if the column type appears in the column name
+            if (col_type_lower in col_lower or 
+                (config['type'].lower() in col_lower) or
+                ('_change' in col_lower and config['type'] == '_change')):
                 return config
+
         return cls.DEFAULT_COLS['DEFAULT']
 
     def _gen_cell_style(self, col: str) -> Dict[str, Any]:
@@ -113,7 +128,7 @@ class TableStyle:
         style: Dict[str, Any] = {'if': {'column_id': col, 'header_index': idx}}
         config = self._get_col_config(col)
 
-        if config['type'] in ('insurer', 'linemain', 'N'):
+        if config['type'] in ('insurer', 'line', 'base_metric'):
             style.update({
                 'textAlign': 'center' if (idx == 1 and config['type'] == 'N')
                 else 'left',
@@ -129,8 +144,10 @@ class TableStyle:
             })
         else:
             style.update({
-                'backgroundColor': '#FFFFFF' if idx == 0 else '#F0FDF4'
-                if 'market_share' in col else '#EFF6FF',
+                'backgroundColor': '#FFFFFF' if idx == 0 
+                    else '#F0FDF4' if 'market_share' in col 
+                    else '#FEF9EE' if 'rank' in col.lower()  # New color for rank columns
+                    else '#EFF6FF',
                 'paddingBottom': '6px' if idx == 0 else '0px',
                 'borderTop': '0.05rem solid #D3D3D3' if idx == 1 else '0px',
                 'fontWeight': 'bold' if idx == 0 else 'normal'
@@ -138,82 +155,84 @@ class TableStyle:
         return style
 
     def _gen_conditional_styles(self, df: pd.DataFrame) -> List[Dict[str, Any]]:
-        """Generate all conditional styles.
-
-        Args:
-            df: Input DataFrame to generate styles for
-
-        Returns:
-            List of style dictionaries for conditional formatting
-        """
-        styles: List[Dict[str, Any]] = []
-
-        # Softer, more professional color gradients
-        POSITIVE_GRADIENT = (
-            "linear-gradient(90deg, "
-            "transparent 0%, "
-            "transparent calc(50% - 2ch), "
-            "rgba(75, 181, 67, 0.15) calc(50% + 1.5ch), "  # Muted green with lower opacity
-            "rgba(75, 181, 67, 0.15) calc(50% + 2.5ch), "
-            "transparent calc(50% + 3ch), "
-            "transparent 100%)"
-        )
-        
-        NEGATIVE_GRADIENT = (
-            "linear-gradient(90deg, "
-            "transparent 0%, "
-            "transparent calc(50% - 1ch), "
-            "rgba(219, 68, 55, 0.15) calc(50% + 1.5ch), "  # Muted red with lower opacity
-            "rgba(219, 68, 55, 0.15) calc(50% + 2.5ch), "
-            "transparent calc(50% + 3ch), "
-            "transparent 100%)"
-        )
-
-        # Add positive value style
-        styles.append({
-            'if': {
-                'column_id': 'N',
-                'filter_query': '{N} contains "(+"'
-            },
-            'backgroundImage': POSITIVE_GRADIENT
-        })
-
-        # Add negative value style
-
-        for i in range(1, 10):
-            styles.append({
-                'if': {
-                    'column_id': 'N',
-                    'filter_query': f'{{N}} contains "(-{i}"'
-                },
-                'backgroundImage': NEGATIVE_GRADIENT
-            })
-
-        change_cols = [col for col in df.columns if '_change' in col]
-        for col in change_cols:
-            styles.extend([
-                {'if': {'column_id': col, 'filter_query': f'{{{col}}} > 0'},
-                 'color': '#059669', 'backgroundColor': '#f8f9fa'},
-                {'if': {'column_id': col, 'filter_query': f'{{{col}}} < 0'},
-                 'color': '#dc2626', 'backgroundColor': '#f8f9fa'}
-            ])
-
-        for idx, row in enumerate(df.to_dict('records')):
-            if any(row.get(k) for k in self.ROW_TYPES.values()):
-                style: Dict[str, Any] = {
-                    'if': {'row_index': idx},
-                    'backgroundColor': '#f8f9fa',
-                    'fontWeight': 'bold'
-                }
-                if row.get(self.ROW_TYPES['SECTION']):
-                    style.update({
-                        'backgroundColor': '#E5E7EB',
-                        'borderTop': '0.05rem solid #D3D3D3',
-                        'color': '#374151'
+            """Generate all conditional styles.
+    
+            Args:
+                df: Input DataFrame to generate styles for
+    
+            Returns:
+                List of style dictionaries for conditional formatting
+            """
+            styles: List[Dict[str, Any]] = []
+    
+            # Softer, more professional color gradients
+            POSITIVE_GRADIENT = (
+                "linear-gradient(90deg, "
+                "transparent 0%, "
+                "transparent calc(50% - 2ch), "
+                "rgba(75, 181, 67, 0.15) calc(50% + 1.5ch), "  # Muted green with lower opacity
+                "rgba(75, 181, 67, 0.15) calc(50% + 2.5ch), "
+                "transparent calc(50% + 3ch), "
+                "transparent 100%)"
+            )
+            
+            NEGATIVE_GRADIENT = (
+                "linear-gradient(90deg, "
+                "transparent 0%, "
+                "transparent calc(50% - 1ch), "
+                "rgba(219, 68, 55, 0.15) calc(50% + 1.5ch), "  # Muted red with lower opacity
+                "rgba(219, 68, 55, 0.15) calc(50% + 2.5ch), "
+                "transparent calc(50% + 3ch), "
+                "transparent 100%)"
+            )
+    
+            # Handle all rank columns dynamically
+            rank_cols = [col for col in df.columns if 'rank' in col]
+            for col in rank_cols:
+                # Add positive value style
+                styles.append({
+                    'if': {
+                        'column_id': col,
+                        'filter_query': f'{{{col}}} contains "(+"'
+                    },
+                    'backgroundImage': POSITIVE_GRADIENT
+                })
+    
+                # Add negative value style for values 1-9
+                for i in range(1, 10):
+                    styles.append({
+                        'if': {
+                            'column_id': col,
+                            'filter_query': f'{{{col}}} contains "(-{i}"'
+                        },
+                        'backgroundImage': NEGATIVE_GRADIENT
                     })
-                styles.append(style)
-
-        return styles
+    
+            change_cols = [col for col in df.columns if '_change' in col]
+            for col in change_cols:
+                styles.extend([
+                    {'if': {'column_id': col, 'filter_query': f'{{{col}}} > 0'},
+                     'color': '#059669', 'backgroundColor': '#f8f9fa'},
+                    {'if': {'column_id': col, 'filter_query': f'{{{col}}} < 0'},
+                     'color': '#dc2626', 'backgroundColor': '#f8f9fa'}
+                ])
+    
+            for idx, row in enumerate(df.to_dict('records')):
+                if any(row.get(k) for k in self.ROW_TYPES.values()):
+                    style: Dict[str, Any] = {
+                        'if': {'row_index': idx},
+                        'backgroundColor': '#f8f9fa',
+                        'fontWeight': 'bold'
+                    }
+                    if row.get(self.ROW_TYPES['SECTION']):
+                        style.update({
+                            'backgroundColor': '#E5E7EB',
+                            'borderTop': '0.05rem solid #D3D3D3',
+                            'color': '#374151'
+                        })
+                    styles.append(style)
+    
+            return styles
 
     @classmethod
     def _get_css_rules(cls) -> Dict[str, Dict[str, str]]:

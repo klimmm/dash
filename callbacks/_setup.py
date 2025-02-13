@@ -4,7 +4,7 @@ import dash  # type: ignore
 import pandas as pd
 from callbacks import (
     setup_buttons,
-    setup_debug_panel,
+    setup_debug,
     setup_filters_summary,
     setup_insurer_selection,
     setup_line_selection,
@@ -33,7 +33,7 @@ def setup_all_callbacks(
     Centralized function to set up all callbacks in the application.
     """
     setup_sidebar(app)
-    setup_debug_panel(app, debug_handler)
+    setup_debug(app, debug_handler)
     setup_buttons(app)
     # setup_data_table(app)
 

@@ -32,8 +32,10 @@ class StyleConstants:
         "TOP_N_ACTIVE": "btn-custom btn-group-control active",
         "REPORTING_FORM": "btn-custom btn-group-control",
         "REPORTING_FORM_ACTIVE": "btn-custom btn-group-control active",
-        "TABLE_SPLIT": "btn-custom btn-group-control",
-        "TABLE_SPLIT_ACTIVE": "btn-custom btn-group-control active",
+
+        
+        "TABLE_SPLIT": "btn-custom btn-period",
+        "TABLE_SPLIT_ACTIVE": "btn-custom btn-period active",
 
 
         "VIEW_METRICS": "btn-custom btn-period",

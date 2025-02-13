@@ -31,7 +31,7 @@
 /* Tablet */
 @media screen and (min-width: 390px) {
     :root {
-        font-size: 9.5px;
+        font-size: 9px;
     }
 }
 
@@ -39,7 +39,7 @@
 /* Tablet */
 @media screen and (min-width: 410px) {
     :root {
-        font-size: 10px;
+        font-size: 9.5px;
     }
 }
 
@@ -47,7 +47,7 @@
 /* Tablet */
 @media screen and (min-width: 530px) {
     :root {
-        font-size: 10.5px;
+        font-size: 10.2px;
     }
 }
 

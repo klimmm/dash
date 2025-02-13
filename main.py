@@ -1,8 +1,10 @@
 import logging
 import os
+import warnings
 
 import dash  # type: ignore
 import dash_bootstrap_components as dbc  # type: ignore
+import pandas as pd
 
 from app import create_app_layout
 from callbacks._setup import setup_all_callbacks
@@ -11,10 +13,8 @@ from config import (
      get_logger,
      LINES_158_DICTIONARY,
      LINES_162_DICTIONARY,
-     setup_logging,
-     CallbackTracker
+     setup_logging
 )
-
 from core import (
      get_available_quarters,
      get_year_quarter_options,
@@ -22,10 +22,9 @@ from core import (
      load_json,
      Tree
 )
+pd.options.mode.chained_assignment = None  # default='warn'
+warnings.filterwarnings('ignore', category=FutureWarning)
 
-logger = get_logger(__name__)
-setup_logging(console_level=logging.INFO, file_level=logging.INFO)
-callback_tracker = CallbackTracker()
 
 dbc._js_dist = [
     {
@@ -36,8 +35,6 @@ dbc._js_dist = [
 ]
 
 print("Starting application initialization...")
-
-
 
 app = dash.Dash(
     __name__,
@@ -89,12 +86,13 @@ end_quarter_options_162 = get_year_quarter_options(df_162)
 available_quarters_158 = get_available_quarters(df_158)
 available_quarters_162 = get_available_quarters(df_162)
 
-debug_handler = setup_logging()
+debug_handler = setup_logging(
+    console_level=logging.INFO,
+    file_level=logging.DEBUG,
+    log_file='app.log'
+)
 
-logger = logging.getLogger()
-logger.debug("Test debug message")
-logger.info("Test info message")
-logger.warning("Test warning message")
+logger = get_logger(__name__)
 
 app.layout = create_app_layout(lines_tree_158, lines_tree_162)
 

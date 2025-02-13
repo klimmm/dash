@@ -9,7 +9,8 @@ from constants.translations import translate
 from core.insurers.mapper import map_insurer
 from core.lines.mapper import map_line
 from core.metrics.definitions import METRICS, MetricTuple
-
+from typing import Dict, List, Optional, Any, Tuple
+import pandas as pd
 
 logger = get_logger(__name__)
 
@@ -56,6 +57,7 @@ def get_base_unit(metric: str) -> str:
 def process_market_share(df: pd.DataFrame) -> pd.DataFrame:
     """Process market share columns."""
     for col in df.filter(like='market_share_change').columns:
+        logger.debug(f"col {col}")
         df[col] = df[col].map(lambda v: '-' if v in (0, '-') else v * 100)
     return df
 
@@ -107,99 +109,167 @@ def get_column_format(col: str) -> Format:
         sign='+' if 'change' in col else ''
     )
 
+from typing import Dict, Any
 
-def get_column_config(col: str, split_mode: Optional[str],
-                      metric: str, qtr: str,
-                      period_type: str, all_cols: List[str],
-                      line: Optional[List[str]] = None,
-                      insurer: Optional[List[str]] = None) -> Dict[str, Any]:
-    """Generate column configuration."""
-    # Handle identifier columns
-    if col in ['N', 'insurer', 'linemain']:
-        name = ([map_line(line[0]), translate(col), translate(col)]
-                if col in ['N', 'insurer'] and split_mode == 'line'
-                and line
-                else [map_insurer(insurer[0]), translate(col), translate(col)]
-                if col in ['N', 'linemain'] and split_mode == 'insurer'
-                and insurer
-                else [translate(col)] * 3)
-        return {"id": col, "name": name}
+METRICS_UNITS = {
+    'value': 'млрд. руб.',
+    'average_value': 'тыс. руб.',
+    'quantity': 'тыс. шт.',
+    'ratio': '%',
+    'default': 'млрд руб.'
+}
 
-    # Handle metric columns
-    is_change = 'change' in col
-    is_mkt_share = 'market_share' in col
-
-    if is_change:
-        comp = get_comparison_quarter(qtr, all_cols)
-        header = (f"{format_period(qtr, period_type, True)} vs "
-                  f"{format_period(comp, period_type, True)}"
-                  if comp else format_period(qtr, period_type))
-        base = 'Δ(п.п.)' if is_mkt_share else '%Δ'
+def get_column_config(
+    col: str,
+    period_type: str,
+    split_mode_value: str,
+    pivot_column: str = 'metric_base',
+    split_mode: str = 'line'
+) -> Dict[str, Any]:
+    """Generate column configuration with multi-level headers."""
+    
+    # Extract quarter from column name
+    qtr = next((part for part in col.split('_') 
+                if part.startswith('20') and 'Q' in part), '')
+    
+    # Initialize levels
+    first_level = ""
+    second_level = ""
+    third_level = ""
+    
+    # Determine if we're dealing with special columns
+    is_initial_cols = col in ['line', 'insurer', 'metric_base']
+    
+    # Handle list-type split_mode_value
+    value = split_mode_value[0] if isinstance(split_mode_value, list) else split_mode_value
+    
+    # For special columns (metric_base, insurer, line)
+    if is_initial_cols:
+        # For the first two columns, always use the mapped split_mode_value
+        if split_mode == 'line':
+            first_level = map_line(value)
+        elif split_mode == 'insurer':
+            first_level = map_insurer(value)
+        else:
+            first_level = translate(value)
+            
+        # Set second and third levels for initial columns
+        second_level = translate(col)
+        third_level = translate(col)
+    
+    # For data columns
     else:
-        header = format_period(qtr, period_type)
-        base = translate(
-            'market_share') if is_mkt_share else get_base_unit(metric)
+        # Extract base metric name (everything before _base, _rank, or _market)
+        base_parts = []
+        for part in col.split('_'):
+            if part in ['base', 'rank', 'market_share', 'market']:
+                break
+            base_parts.append(part)
+        base_metric = '_'.join(base_parts)
+        
+        # Determine column type flags
+        is_change = 'change' in col
+        is_mkt_share = 'market_share' in col
+        is_rank = 'rank' in col
+        is_default = 'base' in col
+        is_metric = base_metric if base_metric else None
+
+        # Set first level for data columns
+        # If base_metric is a 4-digit code or special value (top-20, total), treat it as an insurer
+        if base_metric.isdigit() and len(base_metric) == 4 or base_metric in ['top-20', 'total']:
+            first_level = map_insurer(base_metric)
+        else:
+            first_level = translate(base_metric)
+
+        # Set second level
+        if is_change:
+            second_level = 'Δ(п.п.)' if is_mkt_share else '%Δ'
+        elif is_mkt_share:
+            second_level = translate('market_share')
+        elif is_rank:
+            second_level = translate('rank')
+        elif is_default and is_metric:
+            # Default to 'default' unit if metric not found
+            second_level = METRICS_UNITS['default']
+            # Try to find metric in METRICS if it exists
+            try:
+                if isinstance(METRICS, dict) and is_metric in METRICS:
+                    metric_type = METRICS[is_metric].get('value', 'default')
+                    second_level = METRICS_UNITS.get(metric_type, METRICS_UNITS['default'])
+            except (AttributeError, KeyError):
+                pass
+        else:
+            second_level = format_period(qtr, period_type)
+
+        # Set third level
+        if is_change:
+            third_level = (f"{format_period(qtr, period_type, True)} vs "
+                         f"{format_period(qtr, period_type, True)}"
+                         if qtr else '')
+        elif is_rank:
+            third_level = f"{format_period(qtr, period_type)}."
+
+        else:
+            third_level = format_period(qtr, period_type) if qtr else ''
+
+    '''print(f"split_mode: {split_mode}")
+    print(f"split_mode_value: {split_mode_value}")
+    print(f"Column: {col}")
+    print(f"First level: {first_level}")
+    print(f"Second level: {second_level}")
+    print(f"Third level: {third_level}")'''
 
     return {
         "id": col,
-        "name": [translate(metric), base, header],
-        "type": "numeric",
+        "name": [
+            first_level,
+            second_level,
+            third_level
+        ],
+        "type": "numeric" if '_20' in col else "text",
         "format": get_column_format(col)
     }
 
-
-@timer
 def create_datatable(
     df: pd.DataFrame,
     table_selected_metric: List[str],
     period_type: str,
-    toggle_show_market_share: Optional[List[str]] = None,
-    toggle_show_change: Optional[List[str]] = None,
+    show_market_share: Optional[List[str]] = None,
+    show_change: Optional[List[str]] = None,
+    show_rank: Optional[List[str]] = None,
     split_mode: Optional[str] = None,
     line: Optional[List[str]] = None,
-    insurer: Optional[List[str]] = None
+    insurer: Optional[List[str]] = None,
+    metric: Optional[List[str]] = None,
+    pivot_column: str = 'metric_base'
+
 ) -> Dict[str, Any]:
     """Create complete datatable configuration."""
     try:
-        # Process data and generate configs
-        df_mod = process_market_share(df)
-        sorted_metrics = sorted(METRICS, key=len, reverse=True)
-        curr_metric = next((m for m in sorted_metrics
-                           if any(col.startswith(m) for col in df.columns)), '')
+        logger.debug(f"df col {df.columns}")
 
-        # Generate column configurations
-        columns = []
-        id_cols = ['N', 'insurer', 'linemain']
-        col_order = (['N', 'insurer', 'linemain'] if split_mode == 'line'
-                     else ['linemain', 'N', 'insurer'])
-
-        # Add identifier columns
-        for col in [c for c in col_order if c in df.columns]:
-            columns.append(get_column_config(
-                col, split_mode, curr_metric, '',
-                period_type, list(df.columns), line, insurer
-            ))
-
-        # Add metric columns
         for col in df.columns:
-            if col not in id_cols:
-                metric = next((m for m in sorted_metrics
-                              if col.startswith(m)), '')
-                qtr = (col[len(metric)+1:].split('_')[-1]
-                       if metric else '')
-                columns.append(get_column_config(
-                    col, split_mode, metric, qtr,
-                    period_type, list(df.columns), line, insurer
-                ))
-
+            logger.debug(f"df col {col}")
+        # Generate column configurations
+        columns = [
+            get_column_config(
+                col=col,
+                period_type=period_type,
+                split_mode_value=line if split_mode == 'line' else insurer if split_mode == 'insurer' else metric,
+                pivot_column=pivot_column,
+                split_mode=split_mode
+            )
+            for col in df.columns
+        ]
+        
         # Handle hidden columns
         hidden_cols = [
             col for col in df.columns
-            if (col not in set(id_cols) and
-                (('market_share' in col and not toggle_show_market_share) or
-                ('_change' in col and not toggle_show_change)))
+            if (('market_share' in col and not show_market_share) or
+                ('_change' in col and not show_change) or
+                ('_rank' in col and not show_rank))
         ]
-
+        
         # Generate table configuration
         base_config = get_table_styles_config(df)
         table_id = {
@@ -216,7 +286,7 @@ def create_datatable(
             'id': table_id,
             'columns': [{**col, 'hideable': False, 'selectable': False,
                         'deletable': False, 'renamable': False}
-                        for col in columns],
+                       for col in columns],
             'hidden_columns': hidden_cols,
             'sort_action': 'none',
             'filter_action': 'none',
@@ -228,19 +298,22 @@ def create_datatable(
             'page_action': 'none',
             'editable': False,
             'style_data': {**base_config.get('style_data', {}),
-                           'cursor': 'pointer'},
+                          'cursor': 'pointer'},
             'style_data_conditional': [
                 *base_config.get('style_data_conditional', []),
                 {'if': {'state': 'active'},
                  'backgroundColor': 'rgba(0, 116, 217, 0.1)'}
             ],
-            'data': df_mod.assign(
+            'data': df.assign(
                 insurer=lambda x: x['insurer'].fillna('').map(map_insurer)
                 if 'insurer' in x.columns else '',
-                linemain=lambda x: x['linemain'].fillna('').map(map_line)
-                if 'linemain' in x.columns else ''
+                line=lambda x: x['line'].fillna('').map(map_line)
+                if 'line' in x.columns else '',
+                metric_base=lambda x: x['metric_base'].fillna('').map(translate)
+                if 'metric_base' in x.columns else ''
+
             ).to_dict('records')
         }
     except Exception as e:
         logger.error(f"Datatable creation error: {e}")
-        raise
+        raise 

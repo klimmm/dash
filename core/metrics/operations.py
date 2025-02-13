@@ -8,8 +8,12 @@ from core.metrics.definitions import METRICS
 
 logger = get_logger(__name__)
 
+total_insurer = 'total'
+suffix = '_market_share'
+top_n_list = [5, 10, 20]
 
-@timer
+
+# @timer
 def get_required_metrics(
     selected_metrics: List[str]
 ) -> List[str]:
@@ -24,9 +28,9 @@ def get_required_metrics(
         logger.debug(f"base_metric {base_metric}")
         clean_metrics.append(base_metric)
 
-    ordered_metrics: List[str] = []
+    required_metrics: List[str] = []
     # First add selected metrics
-    ordered_metrics.extend(clean_metrics)
+    required_metrics.extend(clean_metrics)
     # Process each selected metric and its dependencies in order
     for metric in clean_metrics:
         if metric not in METRICS:
@@ -43,15 +47,15 @@ def get_required_metrics(
                 metric_deps.update(new_deps)
         # Add sorted dependencies for this metric while maintaining order
         for dep in sorted(metric_deps):
-            if dep not in ordered_metrics:
-                ordered_metrics.append(dep)
+            if dep not in required_metrics:
+                required_metrics.append(dep)
         logger.debug(f"metric {metric}")
         logger.debug(f"deps {metric_deps}")
-    logger.debug(f"required_metrics {ordered_metrics}")
-    return ordered_metrics
+    logger.debug(f"required_metrics {required_metrics}")
+    return required_metrics
 
 
-@timer
+# @timer
 def get_calculation_order(metrics: Set[str]) -> List[str]:
     # Cache dependencies and reverse dependencies
     deps: Dict[str, Set[str]] = {
@@ -80,8 +84,8 @@ def get_calculation_order(metrics: Set[str]) -> List[str]:
     return ordered
 
 
-@timer
-@monitor_memory
+# @timer
+# @monitor_memory
 def calculate_metrics(
     df: pd.DataFrame,
     selected_metrics: List[str],
@@ -154,10 +158,8 @@ def calculate_metrics(
 
 @timer
 @monitor_memory
-def add_top_n_rows(df: pd.DataFrame, top_n_list: List[int] = [5, 10, 20]
-                   ) -> pd.DataFrame:
+def add_top_n_rows(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Performance-optimized version that still avoids SettingWithCopyWarning
     """
     # Pre-filter excluded insurers once - use loc for boolean indexing
     group_by_cols = [
@@ -192,19 +194,11 @@ def add_top_n_rows(df: pd.DataFrame, top_n_list: List[int] = [5, 10, 20]
 
 
 @timer
-def calculate_market_share(
-    df: pd.DataFrame,
-    selected_insurers: List[str],
-    selected_metrics: List[str],
-    total_insurer: str = 'total',
-    suffix: str = '_market_share'
-) -> pd.DataFrame:
+def calculate_market_share(df: pd.DataFrame) -> pd.DataFrame:
     """Calculate market share metrics for insurance data.
 
     Args:
         df: Input DataFrame with insurer and value columns
-        selected_insurers: List of insurers to process
-        selected_metrics: List of metrics to calculate shares for
         total_insurer: Name of insurer representing total market
         suffix: Suffix to append to market share metric names
 
@@ -213,7 +207,8 @@ def calculate_market_share(
     """
     if df.empty:
         return df
-
+    total_insurer = 'total'
+    suffix = '_market_share'
     # Get grouping columns and calculate totals
     group_cols = [col for col in df.columns if col not in {'insurer', 'value'}]
     totals = (df[df['insurer'] == total_insurer]
@@ -250,12 +245,7 @@ def calculate_market_share(
 
 @timer
 @monitor_memory
-def calculate_growth(
-    df: pd.DataFrame,
-    selected_insurers: List[str],
-    num_periods_selected: int = 2,
-    period_type: str = 'qoq'
-) -> pd.DataFrame:
+def calculate_growth(df: pd.DataFrame, num_periods: int) -> pd.DataFrame:
     """Calculate growth metrics for insurance data."""
     if df.empty:
         return df
@@ -284,7 +274,7 @@ def calculate_growth(
 
         # Create growth DataFrame
         growth_regular = pd.DataFrame(index=regular.index)
-        growth_regular['metric'] = regular['metric'] + '_change'
+        growth_regular['metric'] = regular['metric'] + '_base_change'
         growth_regular['value'] = np.where(
             shifted > 1e-9,
             (regular['value'] - shifted) / shifted,
@@ -323,7 +313,7 @@ def calculate_growth(
 
     # Calculate periods using efficient operations
     unique_periods = df['year_quarter'].unique()
-    num_periods = min(num_periods_selected, len(unique_periods))
+    num_periods = min(num_periods, len(unique_periods))
     recent_periods = pd.Series(unique_periods).nlargest(num_periods)
     growth_periods = recent_periods.iloc[:max(num_periods - 1, 1)]
 

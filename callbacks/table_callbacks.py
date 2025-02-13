@@ -5,7 +5,8 @@ import dash  # type: ignore
 from dash import Dash, Input, Output, State, dash_table, html, ALL
 
 from app.table.data import get_data_table
-from config.logging import error_handler, log_callback, get_logger, timer
+from config.logging import error_handler, get_logger, log_callback, timer
+from core.io import save_df_to_csv
 
 logger = get_logger(__name__)
 
@@ -20,7 +21,7 @@ def create_data_tables_section(
 
     return html.Div([
         html.Div(id='click-details'),
-        table_data[0]
+        table_data
     ], className="data-section")
 
 
@@ -28,10 +29,11 @@ def setup_table(app: Dash) -> None:
     @app.callback(
         Output('tables-container', 'children'),
         [Input('filtered-insurers-data-store', 'data'),
-         Input('rankings-data-store', 'data'),
-         Input('top-n-rows', 'data'),
+         Input('top-insurers-selected', 'data'),
          Input('selected-insurers-store', 'data'),
-         Input('view-metrics', 'data')],
+         Input('view-metrics-selected', 'data'),
+         Input('pivot-column-selected', 'data'),
+        ],
         [State('table-split-mode-selected', 'data'),
          State('filter-state-store', 'data')],
         prevent_initial_call=True
@@ -41,10 +43,10 @@ def setup_table(app: Dash) -> None:
     @error_handler
     def generate_data_tables(
         processed_data: Dict,
-        rankings: Dict,
         top_n_list: List[int],
         selected_insurers: str,
         view_metrics_state: List[str],
+        pivot_column: str,
         split_mode: str,
         filter_state: Dict,
     ) -> List[Any]:
@@ -60,29 +62,30 @@ def setup_table(app: Dash) -> None:
 
         show_market_share = 'market-share' in view_metrics_state
         show_change = 'change' in view_metrics_state
-        logger.debug(f"view metrics {view_metrics_state}")
+        show_rank = 'rank' in view_metrics_state
+        logger.debug(f"pivot_column {pivot_column}")
         logger.debug(f"top_n_list {top_n_list}")
 
         df = pd.DataFrame.from_records(processed_data).assign(
             year_quarter=lambda x: pd.to_datetime(x['year_quarter']))
-        prev_ranks = rankings.get('prev_ranks')
-        current_ranks = rankings.get('current_ranks')
+
         selected_metrics = filter_state['selected_metrics']
         selected_lines = filter_state['selected_lines']
         period_type = filter_state['period_type']
         selected_lines = filter_state['selected_lines']
 
-        split_column = 'linemain' if split_mode == 'line' else 'insurer'
+        split_column = split_mode
         ordered_values = (selected_lines if split_mode == 'line'
-                          else df['insurer'].unique())
+                         else df['insurer'].unique() if split_mode == 'insurer' 
+                         else df[df['metric'] == df['metric_base']]['metric'].unique())
 
         tables = []
-
+        save_df_to_csv(df, "before_split_.csv")
         for value in ordered_values:
             if split_mode == 'line' and value not in df[split_column].unique():
                 continue
-
             df_filtered = df[df[split_column] == value]
+            save_df_to_csv(df_filtered, f"before_get_table_{value}.csv")
             table_data = get_data_table(
                 df=df_filtered,
                 split_mode=split_mode,
@@ -92,10 +95,11 @@ def setup_table(app: Dash) -> None:
                 top_n_list=top_n_list,
                 show_market_share=show_market_share,
                 show_change=show_change,
-                prev_ranks=prev_ranks,
-                current_ranks=current_ranks,
+                show_rank=show_rank,
                 insurer=list(df_filtered['insurer'].unique()),
-                line=list(df_filtered['linemain'].unique())
+                line=list(df_filtered['line'].unique()),
+                metric=list(df_filtered['metric_base'].unique()),
+                pivot_column=pivot_column
             )
             tables.append(create_data_tables_section(table_data))
 
@@ -119,7 +123,7 @@ def setup_table(app: Dash) -> None:
         active_cells: List[Dict[str, Any]], 
         all_table_data: List[List[Dict[str, Any]]]
     ) -> Union[str, html.Div]:
-        logger.warning(f"Callback triggered with active_cells: {active_cells}")
+        logger.debug(f"Callback triggered with active_cells: {active_cells}")
         ctx = dash.callback_context
         if not ctx.triggered:
             return ""

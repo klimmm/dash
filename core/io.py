@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from typing import Dict, Tuple
 
 import pandas as pd
@@ -22,20 +23,24 @@ def load_insurance_dataframes() -> Tuple[pd.DataFrame, pd.DataFrame]:
         'insurer': 'object',
         'value': 'float64'
     }
-
     try:
         # Load 158 dataset
         df_158 = pd.read_csv(DATA_FILE_158, dtype=dtype_map)
         df_158['year_quarter'] = pd.to_datetime(df_158['year_quarter'])
         df_158['metric'] = df_158['metric'].fillna(0)
+        # Rename linemain to line if present
+        if 'linemain' in df_158.columns:
+            df_158 = df_158.rename(columns={'linemain': 'line'})
 
         # Load 162 dataset
         df_162 = pd.read_csv(DATA_FILE_162, dtype=dtype_map)
         df_162['year_quarter'] = pd.to_datetime(df_162['year_quarter'])
         df_162['metric'] = df_162['metric'].fillna(0)
+        # Rename linemain to line if present
+        if 'linemain' in df_162.columns:
+            df_162 = df_162.rename(columns={'linemain': 'line'})
 
         return df_158, df_162
-
     except Exception as e:
         print(f"Failed to load datasets: {str(e)}")
         raise
@@ -54,35 +59,48 @@ def load_json(file_path: str) -> Dict:
         logger.error(f"Invalid JSON in file: {file_path}")
         raise
 
-@timer
-def save_df_to_csv(df: pd.DataFrame, filename: str, max_rows: int = 500) -> None:
-    """
-    Save a DataFrame to two CSV files - one with random rows and one with the first N rows.
 
+# @timer
+def save_df_to_csv(df: pd.DataFrame, filename: str, max_rows: int = 1000) -> None:
+    """
+    Save a DataFrame to CSV file with the first N rows, handling special characters in filenames.
     Args:
         df (pd.DataFrame): The DataFrame to save
         filename (str): The base name of the file to save to
         max_rows (int): The maximum number of rows to save (default: 1000)
     """
+    def sanitize_filename(name: str) -> str:
+        """Sanitize filename by replacing Cyrillic and special characters."""
+        transliteration = {
+            'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo',
+            'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
+            'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
+            'ф': 'f', 'х': 'h', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'sch',
+            'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya'
+        }
+        # Convert to lowercase and transliterate
+        name = name.lower()
+        for cyr, lat in transliteration.items():
+            name = name.replace(cyr, lat)
+        # Replace spaces and special characters with underscores
+        return re.sub(r'[^\w\-_.]', '_', name)
+
     output_dir = './outputs/intermediate'
     os.makedirs(output_dir, exist_ok=True)
 
-    n_rows = min(max_rows, len(df))
+    # Sanitize filename
+    base_name = os.path.splitext(filename)[0]  # Remove extension if present
+    safe_name = sanitize_filename(base_name)
 
-    # Create both samples
-    df_to_save = df.sample(n=n_rows)
+    # Prepare data
+    n_rows = min(max_rows, len(df))
     df_to_save_ordered = df.head(n=n_rows)
 
-    # Generate filenames
-    base_name = os.path.splitext(filename)[0]  # Remove extension if presen
-    full_path_sample = os.path.join(output_dir, f"{base_name}_random.csv")
-    full_path_ordered = os.path.join(output_dir, f"{base_name}_first.csv")
+    # Generate safe filepath
+    full_path_ordered = os.path.join(output_dir, f"{safe_name}.csv")
 
-    # Save both files
-    df_to_save.to_csv(full_path_sample, index=False)
+    # Save file
     df_to_save_ordered.to_csv(full_path_ordered, index=False)
-
-    logger.debug(f"Saved {n_rows} random rows to {full_path_sample}")
     logger.debug(f"Saved {n_rows} ordered rows to {full_path_ordered}")
 
 

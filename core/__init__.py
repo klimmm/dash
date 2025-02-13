@@ -8,10 +8,8 @@ from core.io import (
 )
 from core.insurers.mapper import map_insurer
 from core.insurers.operations import (
-     get_insurer_options,
-     get_rankings,
-     get_top_insurers,
-     process_insurers_df
+     filter_and_sort_by_insurer,
+     reindex_and_sort
 )
 from core.lines.mapper import map_line
 from core.lines.tree import Tree
@@ -39,6 +37,7 @@ __all__ = [
     'calculate_growth',
     'calculate_market_share',
     'calculate_metrics',
+    'filter_and_sort_by_insurer',
     'filter_by_period_type',
     'get_available_quarters',
     'get_calculation_order',
@@ -60,6 +59,7 @@ __all__ = [
     'METRICS',
     'MetricTuple',
     'process_insurers_df',
+    'reindex_and_sort',
     'save_df_to_csv',
     'TableTransformer',
     'Tree',

@@ -3,10 +3,10 @@ from typing import Any, Dict, List, Tuple
 
 import dash  # type: ignore
 import pandas as pd
-from dash import Input, Output, State, html # type: ignore
+from dash import Input, Output, State, html  # type: ignore
 
 from app.style_constants import StyleConstants
-from config.logging import log_callback, get_logger, timer, error_handler, DashDebugHandler
+from config.logging import log_callback, get_logger, timer, error_handler
 from constants.translations import translate
 from core.lines.mapper import map_line
 from core.insurers.mapper import map_insurer
@@ -164,35 +164,3 @@ def setup_filters_summary(app: dash.Dash) -> None:
         )
 
         return filters_summary
-
-
-def setup_debug_panel(app: dash.Dash, debug_handler: DashDebugHandler) -> None:
-    """Setup callbacks for debug panel functionality."""
-
-    @app.callback(
-        Output("debug-collapse", "is_open"),
-        Input("debug-toggle", "n_clicks"),
-        State("debug-collapse", "is_open"),
-        prevent_initial_call=True
-    )
-    def toggle_debug_button(n_clicks: int, is_open: bool) -> bool:
-        return not is_open if n_clicks else is_open
-
-    @app.callback(
-        Output("debug-logs", "children"),
-        [Input("log-update-interval", "n_intervals"),
-         Input("clear-logs-button", "n_clicks")],
-        prevent_initial_call=True
-    )
-    def update_logs(n_intervals, clear_clicks):
-        ctx = dash.callback_context
-        if not ctx.triggered:
-            return ""
-
-        trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
-
-        if trigger_id == "clear-logs-button":
-            debug_handler.log_entries.clear()
-            return ""
-
-        return "\n".join(list(debug_handler.log_entries))

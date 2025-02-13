@@ -1,264 +1,279 @@
-from typing import Any, cast, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
 import dash
 import pandas as pd
 from dash import Input, Output, State, html
 from dash.exceptions import PreventUpdate
 
-
-from app.style_constants import StyleConstants
 from app.components.button import create_button_group_from_config
+from app.style_constants import StyleConstants
 from config.components import BUTTON_GROUP_CONFIG
-from config.types import ButtonGroupConfig
-from config.logging import log_callback, error_handler, get_logger, timer
+from config.logging import log_callback, error_handler, timer, get_logger
 
 logger = get_logger(__name__)
 
 
-def get_button_classes(total: int,
-                       active_indices: Union[int, List[int]],
-                       class_key: str,
+def get_button_classes(total: int, active_indices: Union[int, List[int]],
+                       class_key: str, 
                        disabled_indices: Optional[List[int]] = None
                        ) -> List[str]:
-    """Generate button classes based on state"""
-    classes = (
-        {k: f"{StyleConstants.BTN[class_key]}{' ' + k if k != 'base' else ''}"
-         for k in ['base', 'active', 'disabled']})
-    active_indices = [active_indices] if isinstance(
+    """Generate button classes based on state, preserving disabled state"""
+    active_list = [active_indices] if isinstance(
         active_indices, int) else active_indices
+    disabled = disabled_indices or []
+    base_class = StyleConstants.BTN[class_key]
 
-    return [classes['disabled'] if i in (disabled_indices or []) else
-            classes['active'] if i in active_indices else
-            classes['base'] for i in range(total)]
+    return [
+        base_class + " disabled" if i in disabled else  # Keep disabled state regardless
+        base_class + " active" if i in active_list and i not in disabled else
+        base_class
+        for i in range(total)
+    ]
 
-
-def update_button_state(config: ButtonGroupConfig, button_index: int,
-                        current_values: List[str]) -> List[Any]:
-    """Handle button state updates"""
-    clicked_value = str(config['buttons'][button_index]['value'])
-    multi_select = config.get('multi_select', False)
-
-    new_values = ([v for v in current_values if v != clicked_value]
-                  if clicked_value in current_values else
-                  current_values + [
-                      clicked_value]) if multi_select else [clicked_value]
-
-    active_indices = [i for i, btn in enumerate(config['buttons'])
-                      if str(btn['value']) in new_values]
-    button_classes = get_button_classes(len(config['buttons']), active_indices,
-                                        config['class_key'])
-
-    result = [*button_classes, new_values if multi_select else new_values[0]]
-
-    return result
-
-
-class ButtonCallbackManager:
-    """Manages button callbacks"""
-
+class ButtonCallbacks:
     def __init__(self, app: dash.Dash):
         self.app = app
         self._register_callbacks()
-        self._setup_top_insurers_callback()
 
-    def _get_io_components(self, group_id: str,
-                           config: ButtonGroupConfig
-                           ) -> Tuple[List[Output], List[Input], List[State]]:
-        """Get outputs, inputs and states for a button group"""
-        multi_select = config.get('multi_select', False)
-        store_id = group_id if multi_select else f"{group_id}-selected"
+    def _register_callbacks(self) -> None:
+        """Register button group callbacks"""
+        # Set up split mode and pivot column synchronization
+        self._setup_split_mode_pivot_sync(
+            BUTTON_GROUP_CONFIG['table-split-mode'],
+            BUTTON_GROUP_CONFIG['pivot-column']
+        )
 
-        outputs = [Output(f"btn-{group_id}-{btn['value']}", "className")
-                   for btn in config['buttons']]
-        outputs.append(Output(store_id, "data"))
+        # Register standard button group callbacks
+        for group_id, config in BUTTON_GROUP_CONFIG.items():
+            total_buttons = len(config['buttons'])
 
+            # Define outputs and states
+            outputs = [
+                Output(f"btn-{group_id}-{btn['value']}", "className",
+                       allow_duplicate=True)
+                for btn in config['buttons']
+            ]
+            if group_id == 'top-insurers':
+                outputs.append(Output('selected-insurers', 'disabled',
+                                      allow_duplicate=True))
+            outputs.append(Output(f"{group_id}-selected", "data",
+                                  allow_duplicate=True))
+
+            states = [State(f"{group_id}-selected", "data")]
+
+            # Register callbacks
+            self._setup_group_callback(group_id, config, total_buttons,
+                                       outputs, states)
+            if group_id in ['periods-data-table', 'top-insurers',
+                            'period-type', 'view-metrics']:
+                self._setup_data_store_callback(group_id, config, total_buttons,
+                                                outputs, states)
+
+    def _setup_group_callback(self, group_id: str, config: dict,
+                                  total_buttons: int, outputs: List,
+                                  states: List[State]) -> None:
+        """Set up button group interaction callback"""
         inputs = [Input(f"btn-{group_id}-{btn['value']}", "n_clicks")
                   for btn in config['buttons']]
-        states = [State(store_id, "data")]
-
-        return outputs, inputs, states
-
-    def _setup_period_data_callback(self, group_id: str,
-                                    config: ButtonGroupConfig) -> None:
-        """Setup period data specific callback"""
-        total_buttons = len(config['buttons'])
-        outputs = [Output(f"btn-{group_id}-{btn['value']}", "className",
-                          allow_duplicate=True) for btn in config['buttons']]
-
-        @self.app.callback(
-            outputs,
-            Input("processed-data-store", "data"),
-            State(f'{group_id}-selected', 'data'),
-            prevent_initial_call=True
-        )
+        
+        # Add table-split-mode state for pivot-column to track disabled button
+        if group_id == 'pivot-column':
+            states.append(State("table-split-mode-selected", "data"))
+    
+        @self.app.callback(outputs, inputs, states, prevent_initial_call=True)
         @log_callback
         @timer
         @error_handler
-        def update_period_buttons(processed_data: Any,
-                                  num_periods_selected: int) -> List[str]:
-            if not processed_data or not isinstance(processed_data, dict):
+        def update_button_state(*args: Any) -> List[Any]:
+            triggered_id = dash.callback_context.triggered[0]["prop_id"].split(".")[0]
+            current_values = args[-2] if group_id == 'pivot-column' else args[-1]
+            split_mode_value = args[-1] if group_id == 'pivot-column' else None
+            
+            current_values = current_values or []
+    
+            button_index = next(
+                (i for i, btn in enumerate(config['buttons'])
+                 if f"btn-{group_id}-{btn['value']}" == triggered_id), None
+            )
+            if button_index is None:
+                return [dash.no_update] * len(outputs)
+    
+            clicked_value = str(config['buttons'][button_index]['value'])
+            new_values = (
+                [clicked_value] if not config.get('multi_select') else
+                [v for v in current_values if v != clicked_value] + (
+                 [clicked_value] if clicked_value not in current_values else []
+                )
+            )
+    
+            active_indices = [i for i, btn in enumerate(config['buttons'])
+                              if str(btn['value']) in new_values]
+                              
+            # Get disabled indices for pivot-column based on split-mode value
+            disabled_indices = None
+            if group_id == 'pivot-column' and split_mode_value:
+                disabled_indices = [
+                    i for i, btn in enumerate(config['buttons'])
+                    if str(btn['value']) == split_mode_value
+                ]
+                
+            button_classes = get_button_classes(
+                total_buttons,
+                active_indices,
+                config['class_key'],
+                disabled_indices
+            )
+    
+            result = int(new_values[0]) if group_id in [
+                'top-insurers', 'periods-data-table'
+            ] else new_values if config.get('multi_select') else new_values[0]
+    
+            logger.debug(
+                f"Button state updated for {group_id}: classes={button_classes}, value={result}")
+            return [*button_classes, button_index != total_buttons - 1, result
+                   ] if group_id == 'top-insurers' else [
+                       *button_classes, result]
+
+    def _setup_data_store_callback(self, group_id: str, config: dict,
+                                   total_buttons: int, outputs: List,
+                                   states: List[State]) -> None:
+        """Set up data store update callback"""
+        @self.app.callback(outputs, Input("processed-data-store", "data"), 
+                           states, prevent_initial_call=True)
+        @log_callback
+        @timer
+        @error_handler
+        def update_from_data_store(processed_data: Any, state: Any = None
+                                   ) -> List[Any]:
+            if not isinstance(processed_data, dict) or not processed_data:
                 raise PreventUpdate
 
             df = pd.DataFrame(processed_data.get('df', {}))
-            if df.empty:
-                raise PreventUpdate
+            if df.empty and group_id == 'top-insurers':
+                disabled_indices = list(range(0, total_buttons))
+                button_classes = get_button_classes(total_buttons,
+                                                    total_buttons - 1,
+                                                    config['class_key'],
+                                                    disabled_indices)
+                return [*button_classes, True, 0]
+            elif df.empty:
+                disabled_indices = list(range(0, total_buttons))
+                button_classes = get_button_classes(total_buttons,
+                                                    total_buttons - 1,
+                                                    config['class_key'],
+                                                    disabled_indices)
+                return [*button_classes, dash.no_update]
 
-            num_available = len(df['year_quarter'].unique())
-            active_index = min(num_periods_selected or 1, num_available) - 1
-            disabled_indices = (list(range(num_available, total_buttons))
-                                if num_available < num_periods_selected
-                                else [])
+            if group_id == 'periods-data-table':
+                num_available = len(df['year_quarter'].unique())
+                active_index = min(state, num_available) - 1
+                disabled_indices = list(range(num_available, total_buttons))
+                button_classes = get_button_classes(
+                    total_buttons, active_index, config['class_key'],
+                    disabled_indices if num_available < state else []
+                )
+                return [*button_classes, active_index + 1]
 
-            return get_button_classes(total_buttons, active_index,
-                                      config['class_key'], disabled_indices)
+            if group_id == 'top-insurers':
+                active_index = next(
+                    (i for i,
+                     btn in enumerate(config['buttons']) if str(btn['value'])
+                     == str(state)), 0)
 
-    def _setup_top_insurers_callback(self) -> None:
-        """Setup top insurers callback"""
-        config = cast(ButtonGroupConfig, BUTTON_GROUP_CONFIG['top-insurers'])
-        buttons = config['buttons']
-        total_buttons = len(buttons)
+                button_classes = get_button_classes(total_buttons,
+                                                    active_index,
+                                                    config['class_key'])
+                is_disabled = active_index != total_buttons - 1
+                logger.debug(f"Data store update for {group_id}: classes={button_classes}, is_disabled={is_disabled}, value={state}")
+                return [*button_classes, is_disabled, state]
 
+            else:
+                active_indices = [i for i, btn in enumerate(config['buttons'])
+                                  if str(btn['value']) in state]
+                button_classes = get_button_classes(total_buttons,
+                                                    active_indices,
+                                                    config['class_key'])
+                logger.debug(f"Data store update for {group_id}: classes={button_classes}")
+                
+                return [*button_classes, dash.no_update]
+                
+            raise PreventUpdate
+    
+    def _setup_split_mode_pivot_sync(self, split_mode_config: dict, pivot_config: dict) -> None:
+        """Set up synchronization between split mode and pivot column button groups"""
+        total_buttons = len(pivot_config['buttons'])
+        
+        # Define outputs for pivot-column buttons
         outputs = [
-            Output(f"btn-top-insurers-{btn['value']}", "className")
-            for btn in buttons
-        ] + [
-            Output('top-n-rows', 'data'),
-            Output('selected-insurers', 'disabled')
+            Output(f"btn-pivot-column-{btn['value']}", "className", allow_duplicate=True)
+            for btn in pivot_config['buttons']
         ]
+        outputs.append(Output("pivot-column-selected", "data", allow_duplicate=True))
+        
+        # Define inputs and states
+        inputs = [Input("table-split-mode-selected", "data")]
+        states = [State("pivot-column-selected", "data")]
 
-        inputs = [
-            Input(f"btn-top-insurers-{btn['value']}", "n_clicks")
-            for btn in buttons
-        ] + [Input('processed-data-store', 'data')]
-
-        @self.app.callback(
-            outputs,
-            inputs,
-            State('top-n-rows', 'data'),
-            prevent_initial_call=True
-        )
+        @self.app.callback(outputs, inputs, states, prevent_initial_call='initial_duplicate')
         @log_callback
         @timer
         @error_handler
-        def update_top_insurers(*args: Any
-                                ) -> Tuple[Union[str, int, bool], ...]:
-            ctx = dash.callback_context
-            if not ctx.triggered:
+        def update_pivot_buttons(split_mode_value: str, pivot_current_value: str) -> List[Any]:
+            if not split_mode_value:
                 raise PreventUpdate
 
-            processed_data = args[-2]  # -2 because -1 is top-n-rows data
-            triggered = ctx.triggered[0]["prop_id"].split(".")[0]
-            logger.debug(f"trigger {triggered}")
+            # Find button indices
+            disabled_index = next(
+                (i for i, btn in enumerate(pivot_config['buttons'])
+                 if str(btn['value']) == split_mode_value),
+                None
+            )
 
-            df = pd.DataFrame(
-                processed_data.get('df', {})
-            ) if processed_data else pd.DataFrame()
-
-            logger.debug(f"df is empty {df.empty}")
-            if df.empty:
-                current_idx = total_buttons - 1
-                button_classes = get_button_classes(total_buttons, current_idx,
-                                                    config['class_key'])
-                return (*button_classes, 0, True)
-
-            if triggered == 'processed-data-store':
-                if not processed_data or 'df' not in processed_data:
-                    current_idx = total_buttons - 1
-                    button_classes = get_button_classes(total_buttons,
-                                                        current_idx,
-                                                        config['class_key'])
-                    return (*button_classes, 0, True)
-                logger.debug(f"prevent update trigger {triggered}")
+            if disabled_index is None:
                 raise PreventUpdate
 
-            current_value = args[-1] if args[-1] is not None else config.get(
-                'default', 0)  # Added default value
+            # If current pivot value matches split mode, we need to change it
+            if pivot_current_value == split_mode_value:
+                # Select first available value that's not the disabled one
+                new_value = next(
+                    str(btn['value']) for i, btn in enumerate(pivot_config['buttons'])
+                    if i != disabled_index
+                )
+                active_index = next(
+                    i for i, btn in enumerate(pivot_config['buttons'])
+                    if str(btn['value']) == new_value
+                )
+            else:
+                # Keep current value
+                new_value = pivot_current_value
+                active_index = next(
+                    i for i, btn in enumerate(pivot_config['buttons'])
+                    if str(btn['value']) == pivot_current_value
+                )
 
-            button_index = next(
-                (i for i, btn in enumerate(buttons)
-                 if f"btn-top-insurers-{btn['value']}" == triggered),
-                -1  # Changed None to -1
+            # Generate button classes with the disabled button
+            button_classes = get_button_classes(
+                total_buttons,
+                active_index,
+                pivot_config['class_key'],
+                disabled_indices=[disabled_index]
             )
-            if button_index >= 0:  # Changed condition
-                current_value = buttons[button_index]['value']
 
-            current_idx = next(
-                (i for i, btn in enumerate(buttons)
-                 if str(btn['value']) == str(current_value)),
-                total_buttons - 1  # Changed None to default index
+            logger.debug(
+                f"Pivot buttons updated: split_mode={split_mode_value}, "
+                f"new_value={new_value}, classes={button_classes}"
             )
 
-            button_classes = get_button_classes(total_buttons, current_idx,
-                                                config['class_key'])
-            logger.debug(f"button_classes {button_classes}")
+            return [*button_classes, new_value]
 
-            try:
-                val_int = int(str(
-                    current_value)) if current_value is not None else 0
-                is_valid_top_n = val_int in [5, 10, 20]
-            except (ValueError, TypeError):
-                val_int = 0
-                is_valid_top_n = False
-            output_value = val_int if is_valid_top_n else 0
-            logger.debug(f"output_value {output_value}")
-            return (*button_classes, output_value, is_valid_top_n)
 
-    def _register_callbacks(self) -> None:
-        """Register all button callbacks"""
-        for group_id, config in BUTTON_GROUP_CONFIG.items():
-            if group_id == 'top-insurers':
-                continue
-
-            outputs, inputs, states = self._get_io_components(group_id, config)
-            
-            @self.app.callback(outputs, inputs, states,
-                               prevent_initial_call=True)
-            @log_callback
-            @timer
-            @error_handler
-            def update_state(*args: Any, _group_id: str = group_id,
-                             _config: ButtonGroupConfig = config,
-                             _outputs: List[Output] = outputs) -> List[Any]:
-                ctx = dash.callback_context
-                if not ctx.triggered:
-                    raise PreventUpdate
-
-                triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
-                button_index = next(
-                    (i for i, btn in enumerate(_config['buttons']) if
-                     f"btn-{_group_id}-{btn['value']}" == triggered_id), None)
-
-                if button_index is None:
-                    return [dash.no_update] * len(_outputs)
-
-                result = update_button_state(
-                    _config, button_index, args[-1] or [])
-
-                # Handle period data conversion
-                if _group_id == 'periods-data-table':
-                    data_idx = next(
-                        i for i, output in enumerate(_outputs)
-                        if output.component_property != 'className')
-                    try:
-                        result[data_idx] = int(result[data_idx])
-                    except (ValueError, TypeError):
-                        logger.debug(
-                            f"Invalid period value: {result[data_idx]}")
-
-                # Ensure result length matches outputs
-                if len(result) < len(_outputs):
-                    result.extend([None] * (len(_outputs) - len(result)))
-                logger.debug(f"result {result}")
-
-                return result
-
-            if group_id == 'periods-data-table':
-                self._setup_period_data_callback(group_id, config)
 
 
 def setup_buttons(app: dash.Dash) -> Dict[str, html.Div]:
     """Initialize button groups and callbacks"""
     button_groups = {key: create_button_group_from_config(key)
                      for key in BUTTON_GROUP_CONFIG}
-    ButtonCallbackManager(app)
+    # Register callbacks
+    ButtonCallbacks(app)
+
     return button_groups

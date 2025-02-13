@@ -66,8 +66,19 @@ def create_buttons_control_row() -> html.Div:
     buttons = create_button_components()
     return create_filter_row([
         ("", buttons['period_type'], 0, 4, "pe-2 me-2"),
-        ("", buttons['periods_data_table'], 0, 4, "ps-2 pe-2"),
-        ("", buttons['view_metrics'], 0, 4, "ps-2 ms-2 me-2 pe-2")
+        ("", buttons['periods_data_table'], 0, 3, "ps-2 pe-2"),
+        ("", buttons['view_metrics'], 0, 5, "ps-2 ms-2 me-2 pe-2")
+    ])
+
+
+def create_table_pivot_view_buttons() -> html.Div:
+
+    buttons = create_button_components()
+    return create_filter_row([
+       ("split:", buttons['table_split_mode'], 2, 6,
+        "pe-2 me-2"),
+       ("pivot:", buttons['pivot_column'], 2, 6,
+        "ps-2 ms-2 me-2 pe-2"),
     ])
 
 
@@ -87,8 +98,6 @@ def create_filter_panel(lines_tree_158: Tree, lines_tree_162: Tree
 
         create_filter_row([("Отчетность:", buttons['reporting_form'], 3, 5,
                             "px-3"),
-                           ("В разрезе:", buttons['table_split_mode'], 3, 7,
-                            "pe-4"),
                            ], extra_classes="px 0"),
 
         html.Div(style={"marginBottom": "0.5rem"}),
@@ -106,6 +115,7 @@ def create_filter_panel(lines_tree_158: Tree, lines_tree_162: Tree
 
         create_filter_row([(" ", dropdowns['insurer'], 3, 12,
                             "pe-4")])
+
 
     ], id='sidebar', className="sidebar")
 

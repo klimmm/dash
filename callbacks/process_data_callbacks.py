@@ -7,20 +7,27 @@ from dash.exceptions import PreventUpdate  # type: ignore
 
 from app.components.checklist import create_btype_checklist
 from core.metrics.checklist_config import get_checklist_config
-from config.logging import log_callback, error_handler, get_logger, timer, monitor_memory
+from config.logging import (
+     error_handler,
+     get_logger,
+     log_callback,
+     monitor_memory,
+     timer
+)
 from core.metrics.operations import (
-     get_required_metrics,
-     calculate_metrics,
-     calculate_growth,
      add_top_n_rows,
-     calculate_market_share
+     calculate_growth,
+     calculate_market_share,
+     calculate_metrics,
+     get_required_metrics,
 )
 from core.period.operations import filter_by_period_type, get_start_quarter
 from core.period.options import YearQuarter, YearQuarterOption
 
+
+
 logger = get_logger(__name__)
 
-# Type aliases for clarity
 ProcessedDataDict = Dict[str, List[Dict[str, Any]]]
 FilterStateDict = Dict[str, Any]
 
@@ -35,7 +42,7 @@ def filter_by_lines_metrics_and_date_range(
     end_quarter: str
 ) -> pd.DataFrame:
     return df[
-        (df['linemain'].isin(selected_lines)) &
+        (df['line'].isin(selected_lines)) &
         (df['metric'].isin(required_metrics)) &
         (df['year_quarter'] >= start_quarter) &
         (df['year_quarter'] <= end_quarter)
@@ -120,8 +127,8 @@ def setup_process_data(
             .pipe(filter_by_period_type, end_quarter, num_periods, period_type)
             .pipe(add_top_n_rows)
             .pipe(calculate_metrics, selected_metrics, required_metrics)
-            .pipe(calculate_market_share, selected_insurers, selected_metrics)
-            .pipe(calculate_growth, selected_insurers, num_periods, period_type)
+            .pipe(calculate_market_share)
+            .pipe(calculate_growth, num_periods)
         )
 
         filter_state: FilterStateDict = {
@@ -132,7 +139,7 @@ def setup_process_data(
             'start_quarter': start_quarter,
             'end_quarter': end_quarter,
             'period_type': period_type
-            
+
         }
 
         records: List[Dict[str, Any]] = [

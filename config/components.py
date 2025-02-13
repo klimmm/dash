@@ -36,7 +36,8 @@ BUTTON_GROUP_CONFIG: Dict[str, ButtonGroupConfig] = {
     'view-metrics': {
         'buttons': [
             {'label': 'Динамика', 'value': 'change'},
-            {'label': 'Доля рынка', 'value': 'market-share'}
+            {'label': 'Доля рынка', 'value': 'market-share'},
+            {'label': 'Ранк', 'value': 'rank'},
         ],
         'class_key': 'VIEW_METRICS',
         'multi_select': True,
@@ -47,7 +48,7 @@ BUTTON_GROUP_CONFIG: Dict[str, ButtonGroupConfig] = {
             {'label': 'Топ-5', 'value': 5},
             {'label': 'Топ-10', 'value': 10},
             {'label': 'Топ-20', 'value': 20},
-            {'label': 'Выбрать:', 'value': 'custom'}
+            {'label': 'Выбрать:', 'value': 0}
         ],
         'class_key': 'TOP_N',
         'default': [cast(Union[str, int], DEFAULT_BUTTON_VALUES['top_n'])]
@@ -83,12 +84,25 @@ BUTTON_GROUP_CONFIG: Dict[str, ButtonGroupConfig] = {
     },
     'table-split-mode': {
         'buttons': [
-            {'label': 'Страховщиков', 'value': 'insurer'},
-            {'label': 'Видов страхования', 'value': 'line'}
+
+            {'label': 'Линия', 'value': 'line'},
+            {'label': 'Страховщик', 'value': 'insurer'},
+            {'label': 'Показатель', 'value': 'metric_base'}
         ],
         'class_key': 'TABLE_SPLIT',
         'default': [cast(Union[str, int], DEFAULT_BUTTON_VALUES['split_mode'])]
-    }
+    },
+    'pivot-column': {
+        'buttons': [
+            {'label': 'Линия', 'value': 'line'},
+            {'label': 'Страховщик', 'value': 'insurer'},
+            {'label': 'Показатель', 'value': 'metric_base'},
+        ],
+        'class_key': 'TABLE_SPLIT',
+        'default': [cast(Union[str, int], DEFAULT_BUTTON_VALUES['pivot_column'])]
+    },
+
+
 }
 
 DROPDOWN_CONFIG: DropdownConfigs = {

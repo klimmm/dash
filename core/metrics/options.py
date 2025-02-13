@@ -15,7 +15,7 @@ def get_metric_options(
     metrics_dict: Dict = METRICS
 ) -> Tuple[List[Dict[str, Any]], List[str]]:
 
-    logger.info(
+    logger.debug(
         f"Getting metric options: "
         f"form={reporting_form}, "
         f"selected={selected_metrics}"

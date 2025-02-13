@@ -1,7 +1,5 @@
 .row>* {
-
 }
-
 
 .container-fluid {
     min-width: 100%;
@@ -92,4 +90,11 @@
 .filters-summary-second-row {
     font-size: 0.875rem;
     white-space: pre-line;
+}
+
+.debug-panel {
+    max-width: 430px;
+    min-width: 375px;
+    font-size: 0.875rem;
+
 }

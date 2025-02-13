@@ -80,6 +80,7 @@ def create_button_components() -> Dict[str, Any]:
         'top_insurers': create_button_group_from_config('top-insurers'),
         'periods_data_table': create_button_group_from_config('periods-data-table'),
         'view_metrics': create_button_group_from_config('view-metrics'),
+        'pivot_column': create_button_group_from_config('pivot-column'),
     }
 
 
