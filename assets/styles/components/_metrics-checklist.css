@@ -1,0 +1,101 @@
+
+/* Metrics section */
+.metrics-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Card Styling */
+.metric-group-card {
+    border: 0rem solid #dee2e6;
+    border-radius: 0.25rem;
+    width: 100%; /* Take full width of parent */
+    box-sizing: border-box; /* Include padding in width calculation */
+    overflow: visible; /* Hide overflow */
+    margin-bottom: 0.5rem;
+}
+
+/* Card Body */
+.metric-group-card .card-body {
+    padding-left: 0.3rem;
+    padding-right: 0.3rem; /* Add right padding */
+    width: 100%; /* Take full width */
+    box-sizing: border-box; /* Include padding in width calculation */
+}
+
+
+.metric-group-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem;
+  background-color: #f8f9fa;
+  border: none;
+  color: #212529;
+}
+
+.metric-checklist {
+  padding: 0.5rem;
+}
+
+
+/* Parent container constraints */
+.metric-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-width: 100%; /* Ensure it doesn't exceed parent width */
+    overflow: visible; /* Hide any overflow */
+}
+
+/* Button Styling */
+.metric-group-button {
+    display: flex !important;
+    font-size: var(--font-size-dd);
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100%; /* Changed from auto to 100% */
+    margin-right: 0 !important; /* Remove right margin */
+    padding: 0rem 0.5rem !important; /* Add horizontal padding */
+    color: inherit !important;
+    text-decoration: none !important;
+    font-weight: 700 !important;
+    text-align: left !important;
+    background: none !important;
+    border: none !important;
+    overflow: visible; /* Prevent text overflow */
+    text-overflow: ellipsis; /* Add ellipsis for overflowing text */
+    /* white-space: nowrap; /* Keep text on one line */
+}
+
+/* Checklist container */
+.metric-checklist {
+    font-size: var(--font-size-dd);
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    margin: 0 !important;
+    padding: 0rem 0.5rem !important; /* Add horizontal padding */
+    width: 100%; /* Take full width */
+    box-sizing: border-box; /* Include padding in width calculation */
+}
+
+/* Checklist items */
+.metric-checklist .form-check {
+    margin: 0.1rem 0 0.1rem 0.1rem !important;
+    width: 100%; /* Take full width */
+    box-sizing: border-box; /* Include padding in width calculation */
+    overflow: visible; /* Hide overflow */
+}
+
+/* Checklist labels */
+.metric-checklist .form-check-label {
+    display: flex;
+    width: calc(100% - 2rem); /* Account for checkbox width */
+    align-items: center;
+    margin-left: 0.5rem;
+    overflow: visible; /* Hide overflow */
+    text-overflow: ellipsis; /* Add ellipsis for overflowing text */
+}

@@ -5,9 +5,9 @@
 @import url('./settings/_mixins.css');
 @import url('./settings/_reset.css');
 @import url('./components/_layout.css');
-@import url('./components/_data-table.css');
+@import url('./components/_sidebar.css');
+@import url('./components/_main-content.css');
 @import url('./components/_buttons.css');
 @import url('./components/_dropdown.css');
-@import url('./components/_tag-remove.css');
-@import url('./components/_arrow.css');
-
+@import url('./components/_checklist.css')
+@import url('./components/_metrics-checklist.css');

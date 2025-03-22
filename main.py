@@ -1,31 +1,20 @@
-import logging
+# main.py
+
 import os
 import warnings
-
-import dash  # type: ignore
-import dash_bootstrap_components as dbc  # type: ignore
+import dash
+import dash_bootstrap_components as dbc
 import pandas as pd
+from flask import Flask
 
-from app import create_app_layout
-from callbacks._setup import setup_all_callbacks
-from config import (
-     default_lines_dict,
-     get_logger,
-     LINES_158_DICTIONARY,
-     LINES_162_DICTIONARY,
-     setup_logging
-)
-from core import (
-     get_available_quarters,
-     get_year_quarter_options,
-     load_insurance_dataframes,
-     load_json,
-     Tree
-)
+from presentation.app_layout import create_app_layout
+from application.bootstrap import initialize_application
+from presentation.callbacks_registry import CallbacksRegistry
+
 pd.options.mode.chained_assignment = None  # default='warn'
 warnings.filterwarnings('ignore', category=FutureWarning)
 
-
+# DBC configuration
 dbc._js_dist = [
     {
         "relative_package_path": "_components/dash_bootstrap_components.min.js",
@@ -35,7 +24,6 @@ dbc._js_dist = [
 ]
 
 print("Starting application initialization...")
-
 app = dash.Dash(
     __name__,
     url_base_pathname="/",
@@ -44,16 +32,13 @@ app = dash.Dash(
     suppress_callback_exceptions=True,
     update_title=None
 )
-
 app._favicon = None  # prevent favicon errors
-
 print("DBC version:", dbc.__version__)
 print("Dash version:", dash.__version__)
 print("Registered paths after init:", app.registered_paths)
 print("DBC paths:", dbc._js_dist)
 
 app.title = "Insurance Data Dashboard"
-
 app.index_string = '''
 <!DOCTYPE html>
 <html>
@@ -76,36 +61,19 @@ app.index_string = '''
 </html>
 '''
 
-df_158, df_162 = load_insurance_dataframes()
 
-lines_tree_158 = Tree(load_json(LINES_158_DICTIONARY), default_lines_dict)
-lines_tree_162 = Tree(load_json(LINES_162_DICTIONARY), default_lines_dict)
+services, config = initialize_application()
+storage_type = config.app_config.DEFAULT_STORAGE_TYPE
 
-end_quarter_options_158 = get_year_quarter_options(df_158)
-end_quarter_options_162 = get_year_quarter_options(df_162)
-available_quarters_158 = get_available_quarters(df_158)
-available_quarters_162 = get_available_quarters(df_162)
+callbacks_registry = CallbacksRegistry(services, config)
 
-debug_handler = setup_logging(
-    console_level=logging.INFO,
-    file_level=logging.DEBUG,
-    log_file='app.log'
-)
+components, stores = callbacks_registry.create_all_components(storage_type)
 
-logger = get_logger(__name__)
+app.layout = create_app_layout(components, stores)
 
-app.layout = create_app_layout(lines_tree_158, lines_tree_162)
+callbacks_registry.register_all_callbacks(app, components)
 
-server = app.server
-
-setup_all_callbacks(
-    app,
-    lines_tree_158, lines_tree_162,
-    df_158, df_162,
-    end_quarter_options_158, end_quarter_options_162,
-    available_quarters_158, available_quarters_162,
-    debug_handler
-)
+server: Flask = app.server
 
 
 def main() -> None:
@@ -115,7 +83,7 @@ def main() -> None:
         app.run_server(
             host='0.0.0.0',
             port=port,
-            debug=True
+            debug=False
         )
     except Exception as e:
         print(f"Error during startup: {e}")

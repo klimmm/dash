@@ -1,7 +1,6 @@
-# wsgi.py
-
 import sys
 from pathlib import Path
+
 from main import server
 
 current_dir = str(Path(__file__).parent.absolute())

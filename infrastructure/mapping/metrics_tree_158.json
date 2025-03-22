@@ -1,0 +1,72 @@
+{
+  "base": {
+    "label": "Основные показатели",
+    "children": [
+      "ceded_premiums",
+      "ceded_losses",
+      "total_premiums",
+      "total_losses",
+      "net_premiums",
+      "net_losses"
+    ]
+  },
+  "calculated_metrics": {
+    "label": "Расчетные показатели",
+    "children": [
+      "net_result",
+      "gross_result",
+      "ceded_premiums_ratio",
+      "ceded_losses_ratio",
+      "net_loss_ratio",
+      "gross_loss_ratio",
+      "ceded_loss_ratio",
+      "reinsurance_impact",
+      "reinsurance_effect"
+    ]
+  },
+  "ceded_premiums": {
+    "label": "Премии по договорам, переданным в перестрахование"
+  },
+  "ceded_losses": {
+    "label": "Выплаты по договорам, переданным в перестрахование"
+  },
+  "total_premiums": {
+    "label": "Премии по договорам страхования и перестрахования"
+  },
+  "total_losses": {
+    "label": "Выплаты по договорам страхования и перестрахования"
+  },
+  "net_premiums": {
+    "label": "Премии по договорам страхования и перестрахования – нетто-перестрахование"
+  },
+  "net_losses": {
+    "label": "Выплаты по договорам страхования и перестрахования – нетто-перестрахование"
+  },
+  "net_result": {
+    "label": "Результат с учетом перестраховочной защиты"
+  },
+  "gross_result": {
+    "label": "Результат без учета перестраховочной защиты"
+  },
+  "ceded_premiums_ratio": {
+    "label": "Доля премий, переданных в перестрахование"
+  },
+  "ceded_losses_ratio": {
+    "label": "Доля перестраховщиков в выплатах"
+  },
+  "net_loss_ratio": {
+    "label": "Коэффициент убыточности – нетто-перестрахование"
+  },
+  "gross_loss_ratio": {
+    "label": "Коэффициент убыточности – брутто"
+  },
+  "ceded_loss_ratio": {
+    "label": "Коэффициент убыточности исходящего перестрахования"
+  },
+  "reinsurance_impact": {
+    "label": "Эффективность перестраховочной защиты"
+  },
+  "reinsurance_effect": {
+    "label": "Влияние перестрахования на убыточность"
+  }
+}

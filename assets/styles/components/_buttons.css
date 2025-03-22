@@ -1,3 +1,16 @@
+/* Make button groups inline-flex to stay on same line as label */
+.btn-group {
+  display: inline-flex !important; /* This is key - inline behavior with flex children */
+  vertical-align: middle;
+  margin-bottom: 10px;
+}
+
+/* Make buttons expand to fill the button group width */
+.btn-group .btn {
+  flex: 1 !important;
+  text-align: center;
+}
+
 /* Base button styles */
 .btn-custom {
     height: 0.875rem;
@@ -83,43 +96,3 @@
 .btn-group-control:last-child {
     margin-right: 0;
 }
-
-
-/* Shared styles for both toggle buttons */
-.btn-sidebar-toggle-show,
-.btn-sidebar-toggle-hide {
-    width: 30%;
-    color: #333333;
-    border: 1px solid #e0e0e0;
-    background-color: #e8e8e8;
-}
-
-/* Specific styles for hide button */
-.btn-sidebar-toggle-hide {
-    background-color: #e8e8e8;  /* Muted blue */
-    color: #333333;
-    border-color: #e0e0e0;
-}
-
-/* Active states for both buttons */
-.btn-sidebar-toggle-show.active,
-.btn-sidebar-toggle-hide.active {
-    background-color: #e8e8e8;
-    color: #333333;
-    border-color: #e0e0e0;
-}
-
-/* Hover states for both buttons */
-.btn-sidebar-toggle-show:not(.active):hover,
-.btn-sidebar-toggle-hide:not(.active):hover {
-    background-color: #e8e8e8;
-    color: #333333;
-    border-color: #e0e0e0;
-}
-
-/* Specific hover for hide button */
-.btn-sidebar-toggle-hide:not(.active):hover {
-    background-color: #e8e8e8;  /* Darker muted blue */
-    color: #333333;
-}
-

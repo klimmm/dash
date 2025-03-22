@@ -1,0 +1,10 @@
+year_quarter,value_type,metric,line,insurer,value
+2024-07-01T00:00:00,base,direct_premiums,все линии,total,2407.47192500854
+2023-07-01T00:00:00,base,direct_premiums,все линии,total,1646.7367584393098
+2024-07-01T00:00:00,base_change,direct_premiums,все линии,total,0.4619652550236474
+2024-07-01T00:00:00,base,premiums_interm,все линии,total,1906.17808691649
+2023-07-01T00:00:00,base,premiums_interm,все линии,total,1047.2367187621
+2024-07-01T00:00:00,base_change,premiums_interm,все линии,total,0.8201979101436712
+2024-07-01T00:00:00,base,premiums_interm_ratio,все линии,total,0.7917758321978057
+2023-07-01T00:00:00,base,premiums_interm_ratio,все линии,total,0.6359466462354406
+2024-07-01T00:00:00,base_change,premiums_interm_ratio,все линии,total,0.24503499921701585

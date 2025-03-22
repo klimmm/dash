@@ -1,0 +1,105 @@
+.tree-item {
+    display: flex;
+    margin: 0;
+    padding: 3px 0 0 0 !important;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+/* Form Elements */
+.form-check {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    min-height: 100% !important;
+    max-height: 100% !important;
+}
+
+.form-check-input {
+    margin-top: 0;
+    vertical-align: middle;
+}
+
+.expand-button {
+    padding: 0;
+    margin: 0 3px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+    line-height: 1;
+    width: 5.9px;
+    vertical-align: top;
+}
+
+.expand-button-placeholder {
+    width: 11.9px;
+    min-width: 11.9px;
+    display: inline-block;
+}
+
+/* Parent Selection */
+.parent-of-selected .form-check-input {
+    background: rgba(13, 110, 253, 0.25);
+}
+
+/* Checklist */
+.checklist {
+    font-size: var(--font-size-dd);
+    display: flex !important;
+    flex-direction: column !important;  /* Make items stack vertically */
+    align-items: flex-start !important; /* Align items to the left */
+    margin: 0 !important;
+    padding: 0.5rem 0 !important;
+    white-space: nowrap
+}
+
+.checklist .form-check {
+    margin: 0.3rem 0 0.1rem 0.1rem !important; /* Add vertical spacing between items */
+    width: 100% !important;                     /* Make items take full width */
+}
+
+.checklist .form-check-label {
+    display: flex;
+    align-items: center;
+    margin-left: 0.5rem;
+}
+
+
+/* CSS for custom tree component styling */
+
+/* Tree container */
+.custom-tree-container {
+  padding: 10px 0;
+}
+
+/* Top level node styling */
+.top-level-node {
+  margin-bottom: 0.1rem;
+  margin-left: 1rem !important;
+}
+
+/* Top level label styling - bold font */
+.top-level-label {
+  font-weight: bold;
+}
+
+/* Top level expand button styling */
+.top-level-expand-button {
+  margin-left: 8px;
+  background: none;
+  border: none;
+  color: #555;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.top-level-expand-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Ensure proper alignment with flex display */
+.top-level-node .d-flex.align-items-center {
+  justify-content: space-between;
+}

@@ -1,137 +1,104 @@
-/* Base Dropdown Styles */
-.dash-dropdown,
-.Select,
-.dd-control,
-.has-value,
-.is-disabled,
-.Select--multi,
-.Select-value-label,
-.Select-aria-only {
-    color: #000000;
-    background-color: #f5f5f5;
-    font-size: 0.85rem;
-    padding: 0;
-    margin: 0;
-    border: 0;
-    display: flex;
-    align-items: center;
+.dash-dropdown {
+  display: inline-block; /* This is key - inline behavior with flex children */
+  vertical-align: middle;
 }
 
-/* Make the input take no space vertically */
-.Select-input {
-    height: 0 !important;
-    min-height: 0 !important;
-    position: absolute;
-    width: 1px !important;
-}
-
-/* Adjust the wrapper to match value height */
-.Select-multi-value-wrapper {
-    padding: 0 8px;
-    display: flex;
-    align-items: center;
-    min-height: 0 !important;
-}
-
-/* Make the value determine the height */
+/* Value and Placeholder */
 .Select-value {
     margin: 2px 0 !important;  /* Small margin for visual spacing */
-    display: flex;
-    background-color: #f5f5f5;
-    align-items: center;
-}
-
-.Select.dd-control {
-    height: auto !important;
-    min-height: 0 !important;
-}
-
-/* Add styles for placeholder state */
-.Select-placeholder {
-    position: relative !important; /* Override any absolute positioning */
-    padding: 2px !important;      /* Match the value padding */
-    margin: 0 !important;     /* Match the value margin */
-    display: flex !important;
-    align-items: center !important;
-    line-height: 1.2 !important;
-    height: auto !important;
-    font-size: 0.85rem;       
-    background-color: transparent !important;   /* Make background transparent */
-    color: #1F2937 !important;
-}
-
-.Select-placeholder::after {
-    content: " *";
-    color: #DC2626; /* Red color for the asterisk */
-}
-
-.dropdown-placeholder {
-    font-size: 0.85rem;       
-    margin-left: 1px !important;      /* Match the value padding */
-    line-height: 1.2 !important;
-    color: #1F2937 !important;
-    display: flex; /* For better alignment */
-    align-items: center;
-}
-
-.dropdown-placeholder::after {
-    content: " *";
-    color: #DC2626;
-    margin-left: 2px;
-}
-
-/* Ensure wrapper handles placeholder same as values */
-.Select-multi-value-wrapper {
-    padding: 0 8px;
-    background-color:  #E8E8E8;
-    min-height: 0 !important;
-    display: flex;
-    align-items: center;
-    position: relative; /* Establish positioning context */
-}
-
-/* Ensure control maintains consistent height in placeholder state */
-.Select-control {
-    background-color: #E8E8E8 !important;
-    height: auto !important;
-    border: 1px solid #CCCCCC !important;  /* Changed to grey */
-    min-height: 0 !important;
+    background-color: #dcdcdc !important;
+    border: none !important;
     padding: 0 !important;
-    display: flex;
-    align-items: center;
+    align-items: center !important;
 }
 
-/* Layout and Dimensions */
-.dash-dropdown,
-.Select--multi {
-    width: 100%;
+.Select-value {
+    display: inline-flex !important;
 }
 
-.dash-dropdown {
-    height: auto !important;
+.Select-value-label {
+    color: #000000;
+    background-color: #dcdcdc;
+    font-size: 0.75rem;
+    padding: 0 !important;
+    margin: 0;
+    border: 0;
+    text-overflow: ellipsis;    /* Adds an ellipsis (...) when content overflows */
+    overflow: hidden;           /* Hides overflow content */
+    display: inline-block;      /* Keeps the element inline */
 }
 
-/* Tags */
-.dropdown-tags-container {
-    display: flex;
-    flex: 1;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 4px;
-    min-height: 1.4rem !important;
-    background-color: #E8E8E8 !important;
+/* Center content inside the control */
+.Select--single .Select-control {
+  display: flex;
+  justify-content: center;
 }
 
-.tree-dropdown-header {
-    display: flex;
-    border: 1px solid #CCCCCC;  /* Changed to grey */
-    border-radius: 4px;         /* Added rounded corners */
-    align-items: center;
-    overflow: hidden;
-    justify-content: space-between;
-    padding: 0;
-    background-color: #E8E8E8 !important;
-    min-height: 1.4rem !important;
+/* Center the value wrapper */
+.Select--single .Select-multi-value-wrapper {
+  text-align: center;
+  flex: 1;
+}
+
+/* Center the selected value */
+.Select--single .Select-value {
+  display: flex;
+  justify-content: center;
+  max-height: 100% !important;
+}
+
+/* Make sure text is centered */
+.Select--single .Select-value-label {
+  text-align: center;
+  line-height: 1 !important;
+  min-width: 100% !important;
+  margin-right: 0.5rem !important;
+}
+
+/* Base styles for X icons */
+.Select-value-icon {
+  display: inline-flex;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 11px;
+  height: 100%;
+  padding: 0 !important;
+  cursor: pointer;
+  margin: 0 !important;
+  position: relative;
+  font-size: 0;  /* Hide original text content */
+  /* Reset and set new background */
+  background: rgba(0, 0, 0, 0.08) !important;
+  /* Explicit border settings */
+  border: none;  /* Reset any existing borders first */
+  border-right: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Centered X for both icons */
+.Select-value-icon:after {
+  content: "×";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background: rgba(0, 0, 0, 0.08) !important;
+  transform: translate(-50%, -50%);
+  font-size: 1rem;  /* Ensure parent has a base font size */
+  line-height: 1;
+  display: block;
+  color: rgba(0, 0, 0, 0.45);
+  white-space: nowrap;
+}
+
+/* Hide any default content */
+.Select-value-icon > * {
+  display: none;
+}
+
+.Select-multi-value-wrapper {
+  flex: 1;                /* Allow the value area to take up remaining space */
+  display: flex;          /* Use flex here as well */
+  align-items: center;    /* Center vertically */
+  white-space: nowrap;    /* Prevent text wrapping */
 }
 
 /* Style the disabled state through the parent container */
@@ -141,10 +108,50 @@
     opacity: 0.3;
 }
 
-/* Style the placeholder specifically when dropdown is disabled */
-.Select.is-disabled .Select-placeholder {
-    color: #999999;
-    cursor: not-allowed;
+.Select-control {
+    display: flex !important;      /* Enable flex layout */
+    align-items: center;            /* Center children vertically */
+    white-space: nowrap !important;
+    background-color: #E8E8E8 !important;
+    color: #000000;
+    height: auto !important;
+    border: 1px solid #CCCCCC !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+}
+
+
+.Select-arrow-zone {
+  flex-shrink: 0;         /* Prevent the arrow from shrinking */
+  display: flex;
+  align-items: center;
+  padding: 0 3px;         /* Adjust spacing as needed */
+}
+/* Completely remove the default Select arrow */
+.Select-arrow {
+    display: none !important;
+    border: none !important;
+    width: 0 !important;
+    border-color: #999 transparent transparent;
+    height: 0 !important;
+    border-style: solid; 
+    border-width: 5px 5px 2.5px;
+    
+}
+
+.Select-arrow {
+    display: none !important;
+    /*display: inline-block;*/
+}
+
+/* Single arrow for Select */
+.Select-arrow-zone::after {
+  content: "▼";
+  font-size: 0.8em;   
+}
+
+.Select-arrow-zone:hover {
+  color: #333;
 }
 
 /* Style the arrow when disabled */
@@ -157,6 +164,50 @@
 .Select.is-disabled .Select-input[aria-disabled="true"] {
     cursor: not-allowed;
     background-color: transparent; /* Since it's just a 1px wide input */
+}
+
+.Select-input{
+    display: none !important;
+}
+
+/* Add styles for placeholder state */
+.Select-placeholder {
+    position: relative !important; /* Override any absolute positioning */
+    padding: 2px !important;      /* Match the value padding */
+    margin: 0 !important;     /* Match the value margin */
+    display: flex !important;
+    align-items: center !important;
+    line-height: 1.2 !important;
+    height: auto !important;
+    font-size: 0.8rem;       
+    background-color: transparent !important;   /* Make background transparent */
+    color: #1F2937 !important;
+}
+
+.Select-placeholder::after {
+    content: " *";
+    color: #DC2626; /* Red color for the asterisk */
+}
+
+/* Style the placeholder specifically when dropdown is disabled */
+.Select.is-disabled .Select-placeholder {
+    color: #999999;
+    cursor: not-allowed;
+}
+
+.dropdown-placeholder {
+    font-size: 0.8rem;       
+    margin-left: 1px !important;      /* Match the value padding */
+    line-height: 1.2 !important;
+    color: #1F2937 !important;
+    display: flex; /* For better alignment */
+    align-items: center;
+}
+
+.dropdown-placeholder::after {
+    content: " *";
+    color: #DC2626;
+    margin-left: 2px;
 }
 
 /* Virtualized Select */
@@ -172,111 +223,4 @@
 
 .ReactVirtualized__Grid__innerScrollContainer {
     max-height: none !important;
-}
-
-/* Arrow Styling */
-.Select-arrow-zone {
-    padding: 8px;
-}
-
-.Select-arrow {
-    border-color: #999 transparent transparent;
-    border-style: solid;
-    border-width: 5px 5px 2.5px;
-    display: inline-block;
-}
-
-/* Tree Dropdown */
-.tree-dropdown-container {
-    color: #000000;
-    font-size: 0.85rem;
-    border: 0;
-    border-radius: 4px;
-    background-color: #f5f5f5 !important;    
-}
-
-/* Tree Content */
-.tree-dropdown-content {
-    background-color: #f5f5f5;
-    border: 0;
-    padding: 0;
-    margin-top: 2px;
-    border-radius: 4px;
-}
-
-.tree-container {
-    max-width: 430px;
-    margin-left: 0.5rem;
-}
-
-.tree-item {
-    display: flex;
-    margin: 0;
-    padding: 3px 0 0 0 !important;
-    align-items: center;
-    font-size: 0.85rem;
-}
-
-/* Form Elements */
-.form-check {
-    display: flex;
-    align-items: center;
-    margin: 0;
-    min-height: 100% !important;
-    max-height: 100% !important;
-}
-
-.form-check-input {
-    margin-top: 0;
-    vertical-align: middle;
-}
-
-.expand-button {
-    padding: 0;
-    margin: 0 3px;
-    border: none;
-    background: none;
-    cursor: pointer;
-    font-size: 0.8rem;
-    line-height: 1;
-    width: 5.9px;
-    vertical-align: top;
-}
-
-.expand-button-placeholder {
-    width: 11.9px;
-    min-width: 11.9px;
-    display: inline-block;
-}
-
-/* Parent Selection */
-.parent-of-selected .form-check-input {
-    background: rgba(13, 110, 253, 0.25);
-}
-
-
-.period-type__text {
-    font-size: var(--font-size-dd);
-    color: var(--color-text-secondary);
-    min-height: 1.9rem !important;
-    max-height: 1.9rem !important;
-    margin-bottom: 0 !important;
-}
-
-/* Checklist */
-.checklist {
-    display: flex !important;
-    align-items: center !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-.checklist .form-check {
-    margin: 0 0 0 0.7rem !important;
-}
-
-.checklist .form-check-label {
-    display: flex;
-    align-items: center;
-    margin-left: 0.5rem;
 }

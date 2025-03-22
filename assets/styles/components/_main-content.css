@@ -1,0 +1,116 @@
+/* Main content */
+.main-content {
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    margin-left: 0.5rem;
+    transition: margin-left 0.3s ease;
+    overflow-x: visible;
+    display: flex;
+    z-index: 50;
+}
+
+/* Main content when sidebar collapsed */
+.main-content-when-sidebar-collapsed {
+    margin-left: 30px; /* Space for the fixed button */
+}
+
+.filters-summary {
+    font-size: 0.875rem;
+    white-space: pre-line;
+    margin-bottom: 1.8rem;
+}
+
+.filters-summary-second-row {
+    font-size: 0.875rem;
+    white-space: pre-line;
+}
+
+.view-mode-buttons {
+
+    width: 300px;
+    margin-bottom: 1rem;
+}
+
+.visualization-grid {
+    display: flex;
+    flex-direction: column !important;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.viz-section {
+  flex: 0 0 100%;  /* Each section takes full width by default */
+  margin-bottom: 20px;
+}
+
+.viz-section:last-child {
+    margin-bottom: 0;
+}
+
+.dash-spreadsheet-menu *,
+.dash-spreadsheet-menu *::before,
+.dash-spreadsheet-menu *::after {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    visibility: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    margin-bottom: 2rem;
+}
+.dash-spreadsheet-container {
+}
+.dash-spreadsheet-inner {
+}
+.dash-cell.dash-header {
+}
+
+/* Chart container styles */
+.chart-container {
+    min-width: 390px !important;
+    max-width: 390px !important;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 1rem;
+    width: 100%;
+    padding: 0rem;
+}
+
+/* Force Plotly charts to be responsive */
+.responsive-chart,
+.responsive-chart .js-plotly-plot,
+.responsive-chart .plotly,
+.responsive-chart .plot-container {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Optional: If you want two sections side by side on larger screens 
+@media (min-width: 992px) {
+  .viz-section {
+    flex: 0 0 48%;
+    margin-right: 2%;
+  }
+}
+/* Responsive adjustments 
+@media (max-width: 768px) {
+  .visualization-grid {
+    grid-template-columns: 1fr; /* Single column on smaller screens */
+  }
+}
+
+/* Mobile responsiveness 
+@media (max-width: 768px) {
+
+  .main-content-when-sidebar-collapsed {
+    margin-left: 25px;
+  }
+}*/

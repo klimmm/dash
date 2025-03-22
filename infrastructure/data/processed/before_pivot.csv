@@ -1,0 +1,211 @@
+year_quarter,value_type,metric,insurer,line,value
+2024Q3,base,direct_premiums,3692,все линии,585.90344315676
+2023Q3,base,direct_premiums,3692,все линии,194.45398433860998
+2024Q3,base_change,direct_premiums,3692,все линии,2.0130698794862667
+2024Q3,market_share,direct_premiums,3692,все линии,0.24336875419832013
+2023Q3,market_share,direct_premiums,3692,все линии,0.11808443780832537
+2024Q3,market_share_change,direct_premiums,3692,все линии,12.528431638999477
+2024Q3,base,direct_premiums,3447,все линии,221.15931485409
+2023Q3,base,direct_premiums,3447,все линии,119.48021448633
+2024Q3,base_change,direct_premiums,3447,все линии,0.8510120341254773
+2024Q3,market_share,direct_premiums,3447,все линии,0.09186371502683484
+2023Q3,market_share,direct_premiums,3447,все линии,0.07255574631100543
+2024Q3,market_share_change,direct_premiums,3447,все линии,1.9307968715829404
+2024Q3,base,direct_premiums,1208,все линии,195.86328400422
+2023Q3,base,direct_premiums,1208,все линии,232.08016800945998
+2024Q3,base_change,direct_premiums,1208,все линии,-0.15605333413824368
+2024Q3,market_share,direct_premiums,1208,все линии,0.08135641457315237
+2023Q3,market_share,direct_premiums,1208,все линии,0.14093337433568515
+2024Q3,market_share_change,direct_premiums,1208,все линии,-5.9576959762532775
+2024Q3,base,direct_premiums,2239,все линии,163.96522741138
+2023Q3,base,direct_premiums,2239,все линии,134.74329878532
+2024Q3,base_change,direct_premiums,2239,все линии,0.21687110891219816
+2024Q3,market_share,direct_premiums,2239,все линии,0.06810680768823436
+2023Q3,market_share,direct_premiums,2239,все линии,0.08182443131531393
+2024Q3,market_share_change,direct_premiums,2239,все линии,-1.3717623627079567
+2024Q3,base,direct_premiums,0928,все линии,144.09818958626002
+2023Q3,base,direct_premiums,0928,все линии,126.33245641434
+2024Q3,base_change,direct_premiums,0928,все линии,0.14062683237673063
+2024Q3,market_share,direct_premiums,0928,все линии,0.05985456697932162
+2023Q3,market_share,direct_premiums,0928,все линии,0.07671684971316924
+2024Q3,market_share_change,direct_premiums,0928,все линии,-1.6862282733847613
+2024Q3,base,direct_premiums,3825,все линии,116.26293315582
+2023Q3,base,direct_premiums,3825,все линии,49.66727953478
+2024Q3,base_change,direct_premiums,3825,все линии,1.3408355409199677
+2024Q3,market_share,direct_premiums,3825,все линии,0.048292539550760315
+2023Q3,market_share,direct_premiums,3825,все линии,0.03016103167688564
+2024Q3,market_share_change,direct_premiums,3825,все линии,1.8131507873874675
+2024Q3,base,direct_premiums,1209,все линии,107.64845346536
+2023Q3,base,direct_premiums,1209,все линии,104.19498395714
+2024Q3,base_change,direct_premiums,1209,все линии,0.03314429713469292
+2024Q3,market_share,direct_premiums,1209,все линии,0.044714313112905
+2023Q3,market_share,direct_premiums,1209,все линии,0.06327361275149436
+2024Q3,market_share_change,direct_premiums,1209,все линии,-1.8559299638589357
+2024Q3,base,direct_premiums,0621,все линии,97.06386132474
+2023Q3,base,direct_premiums,0621,все линии,82.85031881369
+2024Q3,base_change,direct_premiums,0621,все линии,0.1715568837219899
+2024Q3,market_share,direct_premiums,0621,все линии,0.040317754203673915
+2023Q3,market_share,direct_premiums,0621,все линии,0.05031181722828071
+2024Q3,market_share_change,direct_premiums,0621,все линии,-0.9994063024606793
+2024Q3,base,direct_premiums,4331,все линии,69.33102315612
+2023Q3,base,direct_premiums,4331,все линии,53.85437852809
+2024Q3,base_change,direct_premiums,4331,все линии,0.2873795047130198
+2024Q3,market_share,direct_premiums,4331,все линии,0.028798268605302244
+2023Q3,market_share,direct_premiums,4331,все линии,0.032703696114204886
+2024Q3,market_share_change,direct_premiums,4331,все линии,-0.3905427508902642
+2024Q3,base,direct_premiums,0001,все линии,65.48701958462
+2023Q3,base,direct_premiums,0001,все линии,64.80505703819
+2024Q3,base_change,direct_premiums,0001,все линии,0.010523292125614762
+2024Q3,market_share,direct_premiums,0001,все линии,0.027201571451092914
+2023Q3,market_share,direct_premiums,0001,все линии,0.03935362267592108
+2024Q3,market_share_change,direct_premiums,0001,все линии,-1.2152051224828166
+2024Q3,base,premiums_interm,3692,все линии,564.3489492051599
+2023Q3,base,premiums_interm,3692,все линии,138.24470381633
+2024Q3,base_change,premiums_interm,3692,все линии,3.0822464342282947
+2024Q3,market_share,premiums_interm,3692,все линии,0.29606307672861426
+2023Q3,market_share,premiums_interm,3692,все линии,0.13200903037447348
+2024Q3,market_share_change,premiums_interm,3692,все линии,16.40540463541408
+2024Q3,base,premiums_interm,3447,все линии,220.88541307641
+2023Q3,base,premiums_interm,3447,все линии,82.94767910845
+2024Q3,base_change,premiums_interm,3447,все линии,1.6629486858530813
+2024Q3,market_share,premiums_interm,3447,все линии,0.11587868656790777
+2023Q3,market_share,premiums_interm,3447,все линии,0.07920623639562543
+2024Q3,market_share_change,premiums_interm,3447,все линии,3.667245017228234
+2024Q3,base,premiums_interm,1208,все линии,74.5286434324
+2023Q3,base,premiums_interm,1208,все линии,106.14646793946001
+2024Q3,base_change,premiums_interm,1208,все линии,-0.2978697748576339
+2024Q3,market_share,premiums_interm,1208,все линии,0.03909846826167251
+2023Q3,market_share,premiums_interm,1208,все линии,0.10135861934342012
+2024Q3,market_share_change,premiums_interm,1208,все линии,-6.226015108174762
+2024Q3,base,premiums_interm,2239,все линии,105.27175182601
+2023Q3,base,premiums_interm,2239,все линии,72.14275280014
+2024Q3,base_change,premiums_interm,2239,все линии,0.4592145120612269
+2024Q3,market_share,premiums_interm,2239,все линии,0.055226608966165276
+2023Q3,market_share,premiums_interm,2239,все линии,0.06888867770547359
+2024Q3,market_share_change,premiums_interm,2239,все линии,-1.3662068739308315
+2024Q3,base,premiums_interm,0928,все линии,99.74078776624
+2023Q3,base,premiums_interm,0928,все линии,68.56734402422
+2024Q3,base_change,premiums_interm,0928,все линии,0.45463980245477525
+2024Q3,market_share,premiums_interm,0928,все линии,0.052325010160821174
+2023Q3,market_share,premiums_interm,0928,все линии,0.06547454152034599
+2024Q3,market_share_change,premiums_interm,0928,все линии,-1.314953135952481
+2024Q3,base,premiums_interm,3825,все линии,94.89109306215
+2023Q3,base,premiums_interm,3825,все линии,47.467384332349994
+2024Q3,base_change,premiums_interm,3825,все линии,0.9990798818354055
+2024Q3,market_share,premiums_interm,3825,все линии,0.04978081204136054
+2023Q3,market_share,premiums_interm,3825,все линии,0.04532631780564326
+2024Q3,market_share_change,premiums_interm,3825,все линии,0.44544942357172823
+2024Q3,base,premiums_interm,1209,все линии,96.48965595049
+2023Q3,base,premiums_interm,1209,все линии,81.65354990997
+2024Q3,base_change,premiums_interm,1209,все линии,0.18169578734639316
+2024Q3,market_share,premiums_interm,1209,все линии,0.05061943404594244
+2023Q3,market_share,premiums_interm,1209,все линии,0.07797048026208406
+2024Q3,market_share_change,premiums_interm,1209,все линии,-2.7351046216141617
+2024Q3,base,premiums_interm,0621,все линии,81.58819190943001
+2023Q3,base,premiums_interm,0621,все линии,56.74753636922
+2024Q3,base_change,premiums_interm,0621,все линии,0.43773980562940595
+2024Q3,market_share,premiums_interm,0621,все линии,0.042801977669048925
+2023Q3,market_share,premiums_interm,0621,все линии,0.054187878779020635
+2024Q3,market_share_change,premiums_interm,0621,все линии,-1.138590110997171
+2024Q3,base,premiums_interm,4331,все линии,58.193610291409996
+2023Q3,base,premiums_interm,4331,все линии,32.963548053749996
+2024Q3,base_change,premiums_interm,4331,все линии,0.7653927968105904
+2024Q3,market_share,premiums_interm,4331,все линии,0.030528947264075578
+2023Q3,market_share,premiums_interm,4331,все линии,0.03147669238786336
+2024Q3,market_share_change,premiums_interm,4331,все линии,-0.0947745123787782
+2024Q3,base,premiums_interm,0001,все линии,52.33539585626
+2023Q3,base,premiums_interm,0001,все линии,45.04321591602
+2024Q3,base_change,premiums_interm,0001,все линии,0.16189296860676572
+2024Q3,market_share,premiums_interm,0001,все линии,0.02745566965409818
+2023Q3,market_share,premiums_interm,0001,все линии,0.04301149406722859
+2024Q3,market_share_change,premiums_interm,0001,все линии,-1.5555824413130408
+2024Q3,base,premiums_interm_ratio,3692,все линии,0.9632115253744411
+2023Q3,base,premiums_interm_ratio,3692,все линии,0.7109378822271871
+2024Q3,base_change,premiums_interm_ratio,3692,все линии,0.3548462523293104
+2024Q3,base,premiums_interm_ratio,3447,все линии,0.9987615182391901
+2023Q3,base,premiums_interm_ratio,3447,все линии,0.6942377820885167
+2024Q3,base_change,premiums_interm_ratio,3447,все линии,0.4386447180021758
+2024Q3,base,premiums_interm_ratio,1208,все линии,0.3805136006541902
+2023Q3,base,premiums_interm_ratio,1208,все линии,0.4573698340960064
+2024Q3,base_change,premiums_interm_ratio,1208,все линии,-0.16803957697324506
+2024Q3,base,premiums_interm_ratio,2239,все линии,0.6420370555879437
+2023Q3,base,premiums_interm_ratio,2239,все линии,0.5354088362871505
+2024Q3,base_change,premiums_interm_ratio,2239,все линии,0.19915289415135143
+2024Q3,base,premiums_interm_ratio,0928,все линии,0.6921723864305263
+2023Q3,base,premiums_interm_ratio,0928,все линии,0.5427531924126896
+2024Q3,base_change,premiums_interm_ratio,0928,все линии,0.27529860000201306
+2024Q3,base,premiums_interm_ratio,3825,все линии,0.8161766651368872
+2023Q3,base,premiums_interm_ratio,3825,все линии,0.9557073545594639
+2024Q3,base_change,premiums_interm_ratio,3825,все линии,-0.14599729588446425
+2024Q3,base,premiums_interm_ratio,1209,все линии,0.8963403824611306
+2023Q3,base,premiums_interm_ratio,1209,все линии,0.7836610440245158
+2024Q3,base_change,premiums_interm_ratio,1209,все линии,0.14378581058201714
+2024Q3,base,premiums_interm_ratio,0621,все линии,0.8405619846140873
+2023Q3,base,premiums_interm_ratio,0621,все линии,0.684940470740146
+2024Q3,base_change,premiums_interm_ratio,0621,все линии,0.22720443676773378
+2024Q3,base,premiums_interm_ratio,4331,все линии,0.8393588849881718
+2023Q3,base,premiums_interm_ratio,4331,все линии,0.6120866855153937
+2024Q3,base_change,premiums_interm_ratio,4331,все линии,0.37130720999331773
+2024Q3,base,premiums_interm_ratio,0001,все линии,0.7991720525414057
+2023Q3,base,premiums_interm_ratio,0001,все линии,0.6950571139760864
+2024Q3,base_change,premiums_interm_ratio,0001,все линии,0.1497933572245998
+2024Q3,rank,direct_premiums,3692,все линии,1 (+1)
+2023Q3,rank,direct_premiums,3692,все линии,2 (-)
+2024Q3,rank,direct_premiums,3447,все линии,2 (+3)
+2023Q3,rank,direct_premiums,3447,все линии,5 (+1)
+2024Q3,rank,direct_premiums,1208,все линии,3 (-2)
+2023Q3,rank,direct_premiums,1208,все линии,1 (-)
+2024Q3,rank,direct_premiums,2239,все линии,4 (-1)
+2023Q3,rank,direct_premiums,2239,все линии,3 (+1)
+2024Q3,rank,direct_premiums,0928,все линии,5 (-1)
+2023Q3,rank,direct_premiums,0928,все линии,4 (-1)
+2024Q3,rank,direct_premiums,3825,все линии,6 (+5)
+2023Q3,rank,direct_premiums,3825,все линии,11 (-)
+2024Q3,rank,direct_premiums,1209,все линии,7 (-1)
+2023Q3,rank,direct_premiums,1209,все линии,6 (-1)
+2024Q3,rank,direct_premiums,0621,все линии,8 (-1)
+2023Q3,rank,direct_premiums,0621,все линии,7 (-)
+2024Q3,rank,direct_premiums,4331,все линии,9 (-)
+2023Q3,rank,direct_premiums,4331,все линии,9 (+3)
+2024Q3,rank,direct_premiums,0001,все линии,10 (-2)
+2023Q3,rank,direct_premiums,0001,все линии,8 (-)
+2024Q3,rank,premiums_interm,3692,все линии,1 (-)
+2023Q3,rank,premiums_interm,3692,все линии,1 (+1)
+2024Q3,rank,premiums_interm,3447,все линии,2 (+1)
+2023Q3,rank,premiums_interm,3447,все линии,3 (+1)
+2024Q3,rank,premiums_interm,1208,все линии,8 (-6)
+2023Q3,rank,premiums_interm,1208,все линии,2 (-1)
+2024Q3,rank,premiums_interm,2239,все линии,3 (+2)
+2023Q3,rank,premiums_interm,2239,все линии,5 (-)
+2024Q3,rank,premiums_interm,0928,все линии,4 (+2)
+2023Q3,rank,premiums_interm,0928,все линии,6 (-)
+2024Q3,rank,premiums_interm,3825,все линии,6 (+3)
+2023Q3,rank,premiums_interm,3825,все линии,9 (-1)
+2024Q3,rank,premiums_interm,1209,все линии,5 (-1)
+2023Q3,rank,premiums_interm,1209,все линии,4 (-1)
+2024Q3,rank,premiums_interm,0621,все линии,7 (-)
+2023Q3,rank,premiums_interm,0621,все линии,7 (-)
+2024Q3,rank,premiums_interm,4331,все линии,9 (+2)
+2023Q3,rank,premiums_interm,4331,все линии,11 (+1)
+2024Q3,rank,premiums_interm,0001,все линии,11 (-1)
+2023Q3,rank,premiums_interm,0001,все линии,10 (-1)
+2024Q3,rank,premiums_interm_ratio,3692,все линии,23 (+27)
+2023Q3,rank,premiums_interm_ratio,3692,все линии,50 (-4)
+2024Q3,rank,premiums_interm_ratio,3447,все линии,11 (+45)
+2023Q3,rank,premiums_interm_ratio,3447,все линии,56 (-2)
+2024Q3,rank,premiums_interm_ratio,1208,все линии,86 (-5)
+2023Q3,rank,premiums_interm_ratio,1208,все линии,81 (+5)
+2024Q3,rank,premiums_interm_ratio,2239,все линии,75 (+3)
+2023Q3,rank,premiums_interm_ratio,2239,все линии,78 (+1)
+2024Q3,rank,premiums_interm_ratio,0928,все линии,71 (+4)
+2023Q3,rank,premiums_interm_ratio,0928,все линии,75 (+6)
+2024Q3,rank,premiums_interm_ratio,3825,все линии,49 (-29)
+2023Q3,rank,premiums_interm_ratio,3825,все линии,20 (-4)
+2024Q3,rank,premiums_interm_ratio,1209,все линии,36 (+5)
+2023Q3,rank,premiums_interm_ratio,1209,все линии,41 (+1)
+2024Q3,rank,premiums_interm_ratio,0621,все линии,47 (+12)
+2023Q3,rank,premiums_interm_ratio,0621,все линии,59 (+4)
+2024Q3,rank,premiums_interm_ratio,4331,все линии,48 (+16)
+2023Q3,rank,premiums_interm_ratio,4331,все линии,64 (+10)
+2024Q3,rank,premiums_interm_ratio,0001,все линии,53 (+2)
+2023Q3,rank,premiums_interm_ratio,0001,все линии,55 (+11)
