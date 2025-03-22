@@ -13,7 +13,7 @@ class AppConfig:
     # Data file paths
     DATA_FILE_REINSURANCE = './infrastructure/data/raw/reinsurance_market.csv'
     DATA_FILE_158 = './infrastructure/data/raw/3rd_158_net.csv'
-    DATA_FILE_162 = './infrastructure/data/etl/form162/processing/intermediate_data/3rd_162_net.csv'
+    DATA_FILE_162 = './infrastructure/data/raw/3rd_162_net.csv'
 
     # Dictionary file paths
     INSURERS_DICTIONARY = './infrastructure/data/json/insurers.json'
